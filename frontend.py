@@ -11,7 +11,7 @@ def further_req(text, prompt):
     return response.content
 
 # Streamlit UI
-st.title("Upload Image and Prompt for Gemini Processing")
+st.title("CREATE CSV FROM BILL")
 
 # File uploader for the image
 uploaded_image = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
@@ -40,7 +40,7 @@ if submitted:
         data = {'prompt': prompt}
         
         # Send a POST request to FastAPI
-        response = requests.post("http://127.0.0.1:8000/process-image-and-prompt/", files=files, data=data)
+        response = requests.post("https://python-intern.onrender.com/process-image-and-prompt/", files=files, data=data)
         
         if response.status_code == 200:
             # Save the CSV file locally
