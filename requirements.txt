@@ -1,0 +1,6 @@
+python-multipart
+google-generativeai
+fastapi
+streamlit
+pandas
+pillow
