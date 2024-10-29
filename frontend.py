@@ -7,7 +7,7 @@ def further_req(text, prompt):
     text += "\n"
     text += prompt
     text += "Give output formatted as json list where the columns will be the elements of the JSON\nNo preambles or postambles i.e. the response should start with '[' and end with ']'\n"
-    response = requests.post("http://127.0.0.1:8000/further_req/", data={'prompt': text})
+    response = requests.post("https://python-intern.onrender.com/further_req/", data={'prompt': text})
     return response.content
 
 # Streamlit UI
