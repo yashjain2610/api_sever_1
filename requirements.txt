@@ -4,3 +4,5 @@ fastapi
 streamlit
 pandas
 pillow
+python-dotenv
+uvicorn
