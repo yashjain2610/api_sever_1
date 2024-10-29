@@ -137,6 +137,8 @@ async def process_image_and_prompt(image: UploadFile = File(...), prompt: str = 
         f.write(csv_file.getvalue())
     
     ret=FileResponse(temp_csv_file, media_type="text/csv", filename=temp_csv_file)
+    # os.remove("save.jpg")
+    # os.remove(temp_csv_file)
     # os.remove(temp_csv_file)
     # Return the CSV file as a downloadable response
     return ret
@@ -188,6 +190,7 @@ async def generate_caption(files: List[UploadFile] = File(...)):
             # Now you can use `save_path` to upload the file to Gemini or process further
             sample_file = genai.upload_file(path=save_path, display_name=image_name)
             final.append(sample_file)
+            os.remove(save_path)
         
         final.append(f"please generate a fine description for each image of given jwellery. Give output formatted as json list where the elements will be display_names and corresponding generated caption\nNo preambles or postambles i.e. the response should start with '[' and end with ']'\n")
         print(len(final),"  \n ",final)
@@ -229,6 +232,8 @@ async def generate_caption(files: List[UploadFile] = File(...)):
         #     fs.delete(image["_id"]) 
         # os.remove(temp_csv_file)
         # Return the CSV file as a downloadable response
+        # os.remove(temp_csv_file)
+        
         return ret
         
         
