@@ -50,7 +50,7 @@ genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 
 
-
+gl=None
 
 
 
@@ -97,7 +97,7 @@ async def further_req(prompt: str=Form(...)):
 
 @app.post("/process-image-and-prompt/")
 async def process_image_and_prompt(image: UploadFile = File(...), prompt: str = Form(...)):
-    
+    global gl
     
     # Save the uploaded image to a file
     image_content = await image.read()
@@ -131,37 +131,58 @@ async def process_image_and_prompt(image: UploadFile = File(...), prompt: str = 
 
     # Create a CSV in-memory file
     csv_file = io.StringIO()
+    c2=io.StringIO()
     writer = csv.writer(csv_file)
-
+    w2=csv.writer(c2)
     # Write headers
     # Dynamically get field names from the first item of the response
     if my_dict:
         header = my_dict[0].keys()  # Get field names from the first item
         writer.writerow(header)
-
+        item=0
         # Write each row based on fields dynamically
-        for item in my_dict:
-            writer.writerow([item[field] for field in header])
+        while item < len(my_dict):
+            try:
+                writer.writerow([my_dict[item][field] for field in header])
+            except:
+                break
+            item+=1
+        h2=[]
+        it=[]
+
+        while item < len(my_dict):
+            h2.extend(my_dict[item].keys())
+            it.extend([my_dict[item][field] for field in my_dict[item].keys()])
+            item+=1
+        w2.writerow(h2)
+        w2.writerow(it)
 
     # Save the CSV content
     csv_file.seek(0)  # Move back to the start of the file for reading
-
+    c2.seek(0)
     # Save CSV to a temporary file on disk for downloading
+    t2= f"bill_extra.csv"
     temp_csv_file = f"gemini_output_bill.csv"
     with open(temp_csv_file, "w", newline='') as f:
         f.write(csv_file.getvalue())
-    
+    with open(t2, "w", newline='') as f:
+        f.write(c2.getvalue())
     ret=FileResponse(temp_csv_file, media_type="text/csv", filename=temp_csv_file)
+    r2=FileResponse(t2, media_type="text/csv", filename=t2)
     # os.remove("save.jpg")
     # os.remove(temp_csv_file)
     # os.remove(temp_csv_file)
     # Return the CSV file as a downloadable response
+    gl=r2
     return ret
 
 
     
 
-
+@app.get("/download")
+async def download():
+    global gl
+    return gl
 
 
 # @app.post("/upload_image")
