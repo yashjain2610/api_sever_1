@@ -7,6 +7,7 @@ import io
 import os
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 # from pymongo.mongo_client import MongoClient
 # from gridfs import GridFS
 import json
@@ -56,7 +57,15 @@ model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 @app.post('/further_req')
 async def further_req(prompt: str=Form(...)):
 
-    response = model.generate_content([ prompt])
+    response = model.generate_content([ prompt],
+                                      safety_settings={
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+
+    }
+    )
     print(response)
     # Get the response data from Gemini
     gemini_response = response.text
@@ -100,7 +109,13 @@ async def process_image_and_prompt(image: UploadFile = File(...), prompt: str = 
     
 
     # Prompt the model with text and the previously uploaded image.
-    response = model.generate_content([sample_file, prompt])
+    response = model.generate_content([sample_file, prompt],safety_settings={
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+
+    })
 
 
     # if response.status_code != 200:
@@ -137,6 +152,8 @@ async def process_image_and_prompt(image: UploadFile = File(...), prompt: str = 
         f.write(csv_file.getvalue())
     
     ret=FileResponse(temp_csv_file, media_type="text/csv", filename=temp_csv_file)
+    # os.remove("save.jpg")
+    # os.remove(temp_csv_file)
     # os.remove(temp_csv_file)
     # Return the CSV file as a downloadable response
     return ret
@@ -188,6 +205,7 @@ async def generate_caption(files: List[UploadFile] = File(...)):
             # Now you can use `save_path` to upload the file to Gemini or process further
             sample_file = genai.upload_file(path=save_path, display_name=image_name)
             final.append(sample_file)
+            os.remove(save_path)
         
         final.append(f"please generate a fine description for each image of given jwellery. Give output formatted as json list where the elements will be display_names and corresponding generated caption\nNo preambles or postambles i.e. the response should start with '[' and end with ']'\n")
         print(len(final),"  \n ",final)
@@ -229,6 +247,8 @@ async def generate_caption(files: List[UploadFile] = File(...)):
         #     fs.delete(image["_id"]) 
         # os.remove(temp_csv_file)
         # Return the CSV file as a downloadable response
+        # os.remove(temp_csv_file)
+        
         return ret
         
         
