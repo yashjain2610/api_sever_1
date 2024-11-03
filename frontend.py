@@ -62,9 +62,15 @@ if submitted:
 
 # Check if the response exists to show modification options
 if st.session_state.df is not None:
-    column_names = st.text_input("Enter column names (optional)")
+    options = st.session_state.df.columns
+
+    # Store the selected options in a list
+    selected_options = st.multiselect('Select options:', options)
+    column_names = ",".join(selected_options)
+    print(column_names)
+    print(type(column_names))
     row_filter = st.text_input("Enter row filter (optional)")
-    add_info = st.text_input("Enter additional information (optional)")
+    # add_info = st.text_input("Enter additional information (optional)")
     sec_req = st.button("Modify")
 
     if sec_req:
@@ -73,11 +79,11 @@ if st.session_state.df is not None:
             new_prompt += f"Select only those entries which follow: {row_filter}\n"
         if column_names:
             new_prompt += f"Only select the following columns: {column_names}\n"
-        if add_info:
-            new_prompt += f"Additional Information: {add_info}\n"
+        # if add_info:
+        #     new_prompt += f"Additional Information: {add_info}\n"
         
         # Call the further_req function with the new prompt
-        print(type(st.session_state.response.content.decode()))
+        # print(type(st.session_state.response.content.decode()))
         new_res = further_req(st.session_state.response.content.decode(), new_prompt)  # Decode response.content
         output_file = "final.csv"
         with open(output_file, "wb") as f:

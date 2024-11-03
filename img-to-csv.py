@@ -7,6 +7,7 @@ import io
 import os
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 # from pymongo.mongo_client import MongoClient
 # from gridfs import GridFS
 import json
@@ -56,7 +57,15 @@ model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 @app.post('/further_req')
 async def further_req(prompt: str=Form(...)):
 
-    response = model.generate_content([ prompt])
+    response = model.generate_content([ prompt],
+                                      safety_settings={
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+
+    }
+    )
     print(response)
     # Get the response data from Gemini
     gemini_response = response.text
@@ -100,7 +109,13 @@ async def process_image_and_prompt(image: UploadFile = File(...), prompt: str = 
     
 
     # Prompt the model with text and the previously uploaded image.
-    response = model.generate_content([sample_file, prompt])
+    response = model.generate_content([sample_file, prompt],safety_settings={
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+
+    })
 
 
     # if response.status_code != 200:
