@@ -6,3 +6,13 @@ pandas
 pillow
 python-dotenv
 uvicorn
+chromadb
+pydantic
+uuid
+typing
+pymilvus
+torch
+numpy
+tqdm
+transformers
+boto3
