@@ -430,7 +430,12 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
             f.write(image_bytes)  # Write the image data to the file
 
         try:
-            s3.upload_file(save_path, S3_BUCKET, image_name)
+            s3.upload_file(
+                Filename=save_path,
+                Bucket=S3_BUCKET,
+                Key=image_name,
+                ExtraArgs={"ContentType": "image/jpeg"}
+            )
             s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{image_name}"
         except Exception as e:
             return JSONResponse(status_code=500, content={"error": f"Failed to upload to S3: {str(e)}"})
