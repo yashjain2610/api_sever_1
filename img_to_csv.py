@@ -505,18 +505,9 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
 
 @app.post("/regenerate")
 async def regenerate(previous_prompt: str=Form(...),style: str=Form(...)):
-    new_prompt=model.generate_content([f"""
-    Change the following prompt to {style}:- 
-    {previous_prompt}
-Return a prompt only following the same structure as the previous prompt.
-Keep the jwellery features same, and change the description to {style} describing jwellery features. The change should be significant.
-                                       """],safety_settings={
-        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-
-    }).text
+    new_prompt = previous_prompt + f"""Keep the jwellery features same and the type of jwellery should not change, and change the description to {style} describing jwellery features. The change should be significant.
+     you should not give any prambles or postambles and not give any option to users as I have to directly display it on a website                   
+    """
     new_res = model.generate_content([new_prompt],safety_settings={
         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
