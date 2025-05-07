@@ -359,23 +359,6 @@ async def undo():
 
 ALLOWED_EXTENSIONS = (".jpg", ".jpeg", ".png", ".webp")
 
-def upload_images_to_s3(local_folder, bucket_name, s3_prefix=""):
-    for root, dirs, files in os.walk(local_folder):
-        for file in files:
-            if file.lower().endswith(ALLOWED_EXTENSIONS):
-                local_path = os.path.join(root, file)
-                s3_key = os.path.join(s3_prefix, file).replace("\\", "/")  # Ensure POSIX path
-
-                try:
-                    s3.upload_file(local_path, bucket_name, s3_key)
-                    print(f"✅ Uploaded: {file} → s3://{bucket_name}/{s3_key}")
-                except NoCredentialsError:
-                    print("❌ AWS credentials not found.")
-                    return
-                except Exception as e:
-                    print(f"❌ Failed to upload {file}: {e}")
-
-
 
 
 @app.post("/generate_caption")
@@ -430,7 +413,12 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
             f.write(image_bytes)  # Write the image data to the file
 
         try:
-            s3.upload_file(save_path, S3_BUCKET, image_name)
+            s3.upload_file(
+                Filename=save_path,
+                Bucket=S3_BUCKET,
+                Key=image_name,
+                ExtraArgs={"ContentType": "image/jpeg"}
+            )
             s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{image_name}"
         except Exception as e:
             return JSONResponse(status_code=500, content={"error": f"Failed to upload to S3: {str(e)}"})
@@ -473,7 +461,7 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
         if response0[0] == "`":
             response0 = response0[7:-4]
         js = json.loads(response0)
-        prom = f"Give an eye-catching, one-line description of jwellery for e-commerce listing, according to the given description : {js['description']}, jwellery features : {js['attributes']}"
+        prom = f"Give an eye-catching, one-line description of jwellery for e-commerce listing, according to the given description : {js['description']}, jwellery features : {js['attributes']} , jwellery type : {type} "
         # r2 = model.generate_content([prom], safety_settings={
         #     HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
         #     HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
@@ -500,18 +488,22 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
 
 @app.post("/regenerate")
 async def regenerate(previous_prompt: str=Form(...),style: str=Form(...)):
-    new_prompt=model.generate_content([f"""
-    Change the following prompt to {style}:- 
-    {previous_prompt}
-Return a prompt only following the same structure as the previous prompt.
-Keep the jwellery features same, and change the description to {style} describing jwellery features. The change should be significant.
-                                       """],safety_settings={
-        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+#     new_prompt=model.generate_content([f"""
+#         Change the following prompt to {style}:- 
+#         {previous_prompt}
+#     Return a prompt only following the same structure as the previous prompt.
+#     Keep the jwellery features same and the type of jwellery should not change, and change the description to {style} describing jwellery features. The change should be significant.
+#     in the prompt also add that it should not give any prambles or postambles and the it should not give any option to users as i have to directly display it on a website                   
+# """],safety_settings={
+#         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+#         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+#         HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+#         HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
 
-    }).text
+#     }).text
+    new_prompt = previous_prompt + f"""Keep the jwellery features same and the type of jwellery should not change, and change the description to {style} describing jwellery features. The change should be significant.
+     you should not give any prambles or postambles and not give any option to users as I have to directly display it on a website                   
+    """
     new_res = model.generate_content([new_prompt],safety_settings={
         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
@@ -519,6 +511,7 @@ Keep the jwellery features same, and change the description to {style} describin
         HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
 
     }).text
+    print(new_prompt)
     return new_res
     
 @app.post("/regenerate_title")
