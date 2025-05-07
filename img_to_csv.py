@@ -478,7 +478,7 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
         if response0[0] == "`":
             response0 = response0[7:-4]
         js = json.loads(response0)
-        prom = f"Give an eye-catching, one-line description of jwellery for e-commerce listing, according to the given description : {js['description']}, jwellery features : {js['attributes']}"
+        prom = f"Give an eye-catching, one-line description of jwellery for e-commerce listing, according to the given description : {js['description']}, jwellery features : {js['attributes']} , jwellery type : {type}"
         # r2 = model.generate_content([prom], safety_settings={
         #     HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
         #     HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
