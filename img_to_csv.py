@@ -412,8 +412,14 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
                 path = id_to_path.get(str(_id), "unknown")
                 matches.append({"id": _id, "distance": dist, "path": path})
 
+        duplicate = False
+
         if matches:
-            return {"results" : matches}
+            duplicate = True
+
+        s3_url = ""
+        if duplicate:
+            s3_url = matches[0]["path"]
 
 
         
@@ -429,16 +435,17 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
         with open(save_path, "wb") as f:
             f.write(image_bytes)  # Write the image data to the file
 
-        try:
-            s3.upload_file(
-                Filename=save_path,
-                Bucket=S3_BUCKET,
-                Key=image_name,
-                ExtraArgs={"ContentType": "image/jpeg"}
-            )
-            s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{image_name}"
-        except Exception as e:
-            return JSONResponse(status_code=500, content={"error": f"Failed to upload to S3: {str(e)}"})
+        if not duplicate:
+            try:
+                s3.upload_file(
+                    Filename=save_path,
+                    Bucket=S3_BUCKET,
+                    Key=image_name,
+                    ExtraArgs={"ContentType": "image/jpeg"}
+                )
+                s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{image_name}"
+            except Exception as e:
+                return JSONResponse(status_code=500, content={"error": f"Failed to upload to S3: {str(e)}"})
 
 
         # Now you can use `save_path` to upload the file to Gemini or process further
@@ -492,7 +499,8 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
         os.remove(save_path)
 
         
-        return {
+        if duplicate:
+            return {
                 "display_name": image_name,
                 "generated_name": js["name"],
                 "quality": js["quality"],
@@ -500,7 +508,19 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
                 "attributes": js["attributes"],
                 "prompt": js["prompt"],
                 "color" : js["color"],
-                "s3_url": js["s3_url"]
+                "s3_url": js["s3_url"],
+                "duplicate": "duplicate found"
+            }
+        else:
+            return {
+                "display_name": image_name,
+                "generated_name": js["name"],
+                "quality": js["quality"],
+                "description": js["final_caption"],
+                "attributes": js["attributes"],
+                "prompt": js["prompt"],
+                "color" : js["color"],
+                "s3_url": js["s3_url"],
             }
 
 @app.post("/regenerate")
