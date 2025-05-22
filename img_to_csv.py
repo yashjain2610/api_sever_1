@@ -660,7 +660,7 @@ async def catalog_ai(files: List[UploadFile], type: str = Form(...), marketplace
 
         static_file_name = filename_map.get(format)
         static_file_path = os.path.join("static", static_file_name)
-        static_url = f"C:/Users/yash jain/Desktop/aryanai_modules/python_intern/static/{static_file_name}"  
+        static_url = f"http://15.206.26.88:8000/static/{static_file_name}"  
 
         excel_results.append((skuid,response_json,description))
 
@@ -696,7 +696,7 @@ async def catalog_ai(files: List[UploadFile], type: str = Form(...), marketplace
 @app.post("/clear-excel/")
 def clear_excel_file(filename: str = Form(...)):
     static_dir = "static"
-    file_path = f"C:/Users/yash jain/Desktop/aryanai_modules/python_intern/static/{filename}"
+    file_path = f"http://15.206.26.88:8000/static/{filename}"
 
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
