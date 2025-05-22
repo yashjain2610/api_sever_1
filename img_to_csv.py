@@ -20,6 +20,10 @@ import uvicorn
 from PIL import Image
 from io import BytesIO
 from pymilvus import Collection
+from typing import List
+from utils import input_image_setup, get_gemini_responses, get_gemini_dims_responses
+from prompts import *
+from excel_fields import *
 
 
 app = FastAPI()
@@ -466,7 +470,7 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
         if response0[0] == "`":
             response0 = response0[7:-4]
         js = json.loads(response0)
-        prom = f"Give an eye-catching, one-line description of jwellery for e-commerce listing, according to the given description : {js['description']}, jwellery features : {js['attributes']} , jwellery type : {type} "
+        prom = f"Give an eye-catching, one-line description of jwellery for e-commerce listing, according to the given description : {js['description']}, jwellery features : {js['attributes']} , jwellery type : {type}"
         # r2 = model.generate_content([prom], safety_settings={
         #     HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
         #     HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
@@ -505,19 +509,6 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
 
 @app.post("/regenerate")
 async def regenerate(previous_prompt: str=Form(...),style: str=Form(...)):
-#     new_prompt=model.generate_content([f"""
-#         Change the following prompt to {style}:- 
-#         {previous_prompt}
-#     Return a prompt only following the same structure as the previous prompt.
-#     Keep the jwellery features same and the type of jwellery should not change, and change the description to {style} describing jwellery features. The change should be significant.
-#     in the prompt also add that it should not give any prambles or postambles and the it should not give any option to users as i have to directly display it on a website                   
-# """],safety_settings={
-#         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-#         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-#         HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-#         HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-
-#     }).text
     new_prompt = previous_prompt + f"""Keep the jwellery features same and the type of jwellery should not change, and change the description to {style} describing jwellery features. The change should be significant.
      you should not give any prambles or postambles and not give any option to users as I have to directly display it on a website                   
     """
@@ -578,6 +569,87 @@ async def image_searh(file: UploadFile = File(...), top_k: int = 1):
             matches.append({"id": _id, "distance": dist, "path": path})
 
     return {"results": matches}
+
+@app.post("/catalog-ai")
+async def catalog_ai(files: List[UploadFile] = File(...), type: str = Form(...), marketplace: str = Form(...)):
+
+    type = type.lower()
+    marketplace = marketplace.lower()
+
+
+    format = marketplace[0:3] + "_" + type[0:3]
+
+
+    input_prompt_map = {
+        "fli_ear": ([prompt_description_earrings_flipkart, prompt_questions_earrings_flipkart], fixed_values_earrings),
+        "ama_ear": ([prompt_description_earrings_amz, prompt_questions_earrings_amz], fixed_values_earrings_amz),
+        "mee_ear": ([prompt_description_earrings_meesho, prompt_questions_earrings_meesho], fixed_values_earrings_meesho),
+        "fli_nec": ([prompt_description_necklace_flipkart, prompt_questions_necklace_flipkart], fixed_values_necklace_flipkart),
+        "ama_nec": ([prompt_description_necklace_amz, prompt_questions_necklace_amz], fixed_values_necklace_amz),
+        "mee_nec": ([prompt_description_necklace_meesho, prompt_questions_necklace_meesho], fixed_values_necklace_meesho),
+        "fli_bra": ([prompt_description_bracelet_flipkart, prompt_questions_bracelet_flipkart], fixed_values_bracelet_flipkart),
+        "mee_bra": ([prompt_description_bracelet_meesho, prompt_questions_bracelet_meesho], fixed_values_bracelet_meesho),
+    }
+
+    dims_prompt_map = {
+        "fli_ear": [prompt_dimensions_earrings_flipkart],
+        "ama_ear": [prompt_dimensions_earrings_amz],
+        "fli_nec": [prompt_dimensions_necklace_flipkart],
+        "fli_bra": [prompt_dimensions_bracelet_flipkart],
+    }
+
+    input_prompts , fixed_values = input_prompt_map.get(format)
+    dims_prompts = dims_prompt_map.get(format, [])
+
+    if not input_prompts:
+        return JSONResponse(status_code=400, content={"error": "Invalid format"})
+    
+
+    results = []
+    for file in files:
+        image_bytes = await file.read()
+        # image=file
+        # image_name = image.filename
+
+        # save_path = f"./{image_name}"
+        
+        # # Save the uploaded image directly to the disk
+        # with open(save_path, "wb") as f:
+        #     f.write(image_bytes)  # Write the image data to the file
+
+        image_data = input_image_setup(io.BytesIO(image_bytes),file.content_type)
+        response_list = get_gemini_responses("Analyze this image carefully.", image_data, input_prompts)
+
+        description = response_list[0] if len(response_list) > 0 else "No description"
+        response_json = {}
+
+        if len(response_list) > 1:
+            try:
+                cleaned = response_list[1].strip().replace("```json", "").replace("```", "").strip()
+                response_json = json.loads(cleaned)
+            except Exception as e:
+                response_json = {"error": f"Failed to parse JSON: {str(e)}"}
+
+        if dims_prompts:
+            dims_response = get_gemini_dims_responses("Analyze this image carefully.", image_data, dims_prompts)
+            try:
+                cleaned_dims = dims_response.strip().replace("```json", "").replace("```", "").strip()
+                dims_json = json.loads(cleaned_dims)
+                response_json.update(dims_json)
+            except Exception as e:
+                response_json["dimensions_error"] = f"Failed to parse dimensions: {str(e)}"
+        
+        final_response = {**response_json, **fixed_values}
+
+        results.append({
+            "filename": file.filename,
+            "description": description,
+            "attributes": final_response
+        })
+
+    return {"results": results}
+
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
