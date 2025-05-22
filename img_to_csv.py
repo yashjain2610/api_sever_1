@@ -483,6 +483,7 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
         js["s3_url"] = s3_url
         os.remove(save_path)
 
+        
         if duplicate:
             return {
                 "display_name": image_name,
