@@ -1,6 +1,9 @@
 import streamlit as st
 import os
 import base64
+import openpyxl
+
+from openpyxl import Workbook
 
 import google.generativeai as genai
 
@@ -73,3 +76,217 @@ def input_image_setup_local(image_path):
 def encode_image(uploaded_image):
     img_bytes = uploaded_image.read()
     return base64.b64encode(img_bytes).decode("utf-8")
+
+
+
+def write_to_excel_meesho(results,filename,target_fields,fixed_values):
+    if os.path.exists(filename):
+        #print("started loading")
+        #print()
+        wb = openpyxl.load_workbook(filename)
+        #print("finished")
+        #print()
+        ws = wb.worksheets[1]
+
+        # Read headers dynamically from row 1
+        headers = {cell.value: cell.column for cell in ws[3] if cell.value}
+        headers = {key.strip().split('\n\n')[0]: value for key, value in headers.items()}
+
+        #print(headers)
+        #print()
+    else:
+        wb = Workbook()
+        ws = wb.active  
+
+        # Define default headers
+        default_headers = [
+            "Image Name", "Type", "Color", "Gemstone", "Pearl Type",
+            "Collection", "Occasion", "Piercing Required", "Number of Gemstones",
+            "Earring Back Type", "Finish", "Design", "Metal Color", "Diamond Type",
+            "Pearl Shape", "Pearl Color", "Search Keywords", "Key Features", "Trend",
+            "Closure Type", "Sub Type", "Shape", "Ear Chain", "Earring Set Type",
+            "Ornamentation Type", "Trend"
+        ]
+        
+        headers = {name: idx + 1 for idx, name in enumerate(default_headers)}
+        ws.append(default_headers)  # Write headers in row 1 if creating a new file
+
+    #print()
+    # Combine target fields and fixed value fields
+    all_fields = set(target_fields).union(fixed_values.keys())
+
+    # Get column indices for all relevant fields
+    target_columns = {field: headers[field] for field in all_fields if field in headers}
+    # print(target_columns)
+
+    # **Write output from row 6 onwards**
+    row_idx = 1
+    while ws.cell(row=row_idx, column=1).value:  # Assuming column 1 is "Image Name" or always filled
+        row_idx += 1
+
+    for image_name, response , description in results:
+        #print(response)
+        # answers = response.split("\n")  
+        # answers = [ans.strip() for ans in answers]
+        # answers.insert(0, image_name)
+
+        # print()
+        # print(answers)  
+        # print()
+
+        # Create a dictionary mapping field names to values
+        # print(target_fields)
+        # field_values = {field: answers[i] if i < len(answers) else "" for i, field in enumerate(target_fields)}
+        # print()
+        # print(field_values)
+        field_values = response
+
+        # Write values only in the specified fields
+        for key, val in fixed_values.items():
+            field_values[key] = val
+
+        field_values["Product Description"] = description
+        field_values["Fields + Description:"] = os.path.splitext(image_name)[0]
+
+        for field, col_idx in target_columns.items():
+            ws.cell(row=row_idx, column=col_idx, value=field_values.get(field, ""))
+
+        row_idx += 1  # Move to the next row
+
+    wb.save(filename)
+
+
+def write_to_excel_flipkart(results,filename,target_fields,fixed_values):
+    if os.path.exists(filename):
+        #print("started loading")
+        #print()
+        wb = openpyxl.load_workbook(filename)
+        #print("finished")
+        #print()
+        ws = wb.worksheets[2]
+
+        # Read headers dynamically from row 1
+        headers = {cell.value: cell.column for cell in ws[1] if cell.value}
+        #print(headers)
+        #print()
+    else:
+        wb = Workbook()
+        ws = wb.active  
+
+        # Define default headers
+        default_headers = [
+            "Image Name", "Type", "Color", "Gemstone", "Pearl Type",
+            "Collection", "Occasion", "Piercing Required", "Number of Gemstones",
+            "Earring Back Type", "Finish", "Design", "Metal Color", "Diamond Type",
+            "Pearl Shape", "Pearl Color", "Search Keywords", "Key Features", "Trend",
+            "Closure Type", "Sub Type", "Shape", "Ear Chain", "Earring Set Type",
+            "Ornamentation Type", "Trend"
+        ]
+        
+        headers = {name: idx + 1 for idx, name in enumerate(default_headers)}
+        ws.append(default_headers)  # Write headers in row 1 if creating a new file
+
+    #print()
+    # Combine target fields and fixed value fields
+    all_fields = set(target_fields).union(fixed_values.keys())
+
+    # Get column indices for all relevant fields
+    target_columns = {field: headers[field] for field in all_fields if field in headers}
+    # print(target_columns)
+
+    # **Write output from row 6 onwards**
+    row_idx = 1
+    while ws.cell(row=row_idx, column=7).value:  # Assuming column 1 is "Image Name" or always filled
+        row_idx += 1
+    #print(row_idx)  
+    for image_name, response , description in results:
+        field_values = response
+
+        # Write values only in the specified fields
+        for key, val in fixed_values.items():
+            field_values[key] = val
+
+        field_values["Description"] = description
+        field_values["Seller SKU ID"] = os.path.splitext(image_name)[0]
+
+        for field, col_idx in target_columns.items():
+            ws.cell(row=row_idx, column=col_idx, value=field_values.get(field, ""))
+
+        row_idx += 1  # Move to the next row
+
+    wb.save(filename)
+
+
+def write_to_excel_amz_xl(results,filename,target_fields,fixed_values):
+    if os.path.exists(filename):
+        #print("started loading")
+        #print()
+        wb = openpyxl.load_workbook(filename)
+        #print("finished")
+        #print()
+        ws = wb.worksheets[0]
+
+        # Read headers dynamically from row 1
+        headers = {cell.value: cell.column for cell in ws[3] if cell.value}
+        #print(headers)
+        #print()
+    else:
+        wb = Workbook()
+        ws = wb.active  
+
+        # Define default headers
+        default_headers = [
+            "Image Name", "Type", "Color", "Gemstone", "Pearl Type",
+            "Collection", "Occasion", "Piercing Required", "Number of Gemstones",
+            "Earring Back Type", "Finish", "Design", "Metal Color", "Diamond Type",
+            "Pearl Shape", "Pearl Color", "Search Keywords", "Key Features", "Trend",
+            "Closure Type", "Sub Type", "Shape", "Ear Chain", "Earring Set Type",
+            "Ornamentation Type", "Trend"
+        ]
+        
+        headers = {name: idx + 1 for idx, name in enumerate(default_headers)}
+        ws.append(default_headers)  # Write headers in row 1 if creating a new file
+
+    #print()
+    # Combine target fields and fixed value fields
+    all_fields = set(target_fields).union(fixed_values.keys())
+
+    # Get column indices for all relevant fields
+    target_columns = {field: headers[field] for field in all_fields if field in headers}
+    #print(target_columns)
+
+    # **Write output from row 6 onwards**
+    row_idx = 1
+    while ws.cell(row=row_idx, column=2).value:  # Assuming column 1 is "Image Name" or always filled
+        row_idx += 1
+    #print(row_idx)  
+    for image_name, response , description in results:
+        # print(response)
+        # answers = response.split("\n")  
+        # answers = [ans.strip() for ans in answers]
+        # answers.insert(0, os.path.splitext(image_name)[0])
+
+        # print()
+        # print(answers)  
+        # print()
+
+        # Create a dictionary mapping field names to values
+        # print(target_fields)
+        # field_values = {field: answers[i] if i < len(answers) else "" for i, field in enumerate(target_fields)}
+        # print()
+        # print(field_values)
+        field_values = response
+
+        # Write values only in the specified fields
+        for key, val in fixed_values.items():
+            field_values[key] = val
+
+        field_values["product_description"] = description
+        field_values["item_sku"] = os.path.splitext(image_name)[0]
+
+        for field, col_idx in target_columns.items():
+            ws.cell(row=row_idx, column=col_idx, value=field_values.get(field, ""))
+
+        row_idx += 1  # Move to the next row
+
+    wb.save(filename)

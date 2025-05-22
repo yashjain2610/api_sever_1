@@ -1,4 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, Form,Request,HTTPException,APIRouter
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse,StreamingResponse
 import csv
 import io
@@ -21,7 +22,7 @@ from PIL import Image
 from io import BytesIO
 from pymilvus import Collection
 from typing import List
-from utils import input_image_setup, get_gemini_responses, get_gemini_dims_responses
+from utils import *
 from prompts import *
 from excel_fields import *
 
@@ -35,6 +36,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 API_KEY = os.getenv("API_KEY")
@@ -572,7 +575,7 @@ async def image_searh(file: UploadFile = File(...), top_k: int = 1):
     return {"results": matches}
 
 @app.post("/catalog-ai")
-async def catalog_ai(files: List[UploadFile] = File(...), type: str = Form(...), marketplace: str = Form(...)):
+async def catalog_ai(files: List[UploadFile], type: str = Form(...), marketplace: str = Form(...), skuids: List[str] = Form(...)):
 
     type = type.lower()
     marketplace = marketplace.lower()
@@ -605,9 +608,11 @@ async def catalog_ai(files: List[UploadFile] = File(...), type: str = Form(...),
     if not input_prompts:
         return JSONResponse(status_code=400, content={"error": "Invalid format"})
     
-
+    excel_results = []
     results = []
-    for file in files:
+    skuid_list = [("SKU-" + sku.strip()) for sku in skuids[0].split(",")]
+    for file , skuid in zip(files,skuid_list):
+        print(f"Processing file {file.filename} for SKU {skuid}")
         image_bytes = await file.read()
         # image=file
         # image_name = image.filename
@@ -642,13 +647,90 @@ async def catalog_ai(files: List[UploadFile] = File(...), type: str = Form(...),
         
         final_response = {**response_json, **fixed_values}
 
+        filename_map = {
+            "fli_ear": "earrings_flipkart.xlsx",
+            "ama_ear": "earrings_amz.xlsx",
+            "mee_ear": "earrings_meesho.xlsx",
+            "fli_nec": "necklace_flipkart.xlsx",
+            "ama_nec": "necklace_amz.xlsx",
+            "mee_nec": "necklace_meesho.xlsx",
+            "fli_bra": "bracelet_flipkart.xlsx",
+            "mee_bra": "bracelet_meesho.xlsx"
+        }
+
+        static_file_name = filename_map.get(format)
+        static_file_path = os.path.join("static", static_file_name)
+        static_url = f"C:/Users/yash jain/Desktop/aryanai_modules/python_intern/static/{static_file_name}"  
+
+        excel_results.append((skuid,response_json,description))
+
         results.append({
             "filename": file.filename,
             "description": description,
-            "attributes": final_response
+            "skuid": skuid,
+            "attributes": final_response,
         })
+    
 
-    return {"results": results}
+    if format == "fli_ear":
+        write_to_excel_flipkart(excel_results, filename=static_file_path, target_fields=target_fields_earrings, fixed_values=fixed_values_earrings)
+    elif format == "ama_ear":
+        write_to_excel_amz_xl(excel_results, filename=static_file_path, target_fields=target_fields_earrings_amz, fixed_values=fixed_values_earrings_amz)
+    elif format == "mee_ear":
+        write_to_excel_meesho(excel_results, filename=static_file_path, target_fields=target_fields_earrings_meesho, fixed_values=fixed_values_earrings_meesho)
+    elif format == "fli_nec":
+        write_to_excel_flipkart(excel_results, filename=static_file_path, target_fields=target_fields_necklace_flipkart, fixed_values=fixed_values_necklace_flipkart)
+    elif format == "ama_nec":
+        write_to_excel_amz_xl(excel_results, filename=static_file_path, target_fields=target_fields_necklace_amz, fixed_values=fixed_values_necklace_amz)
+    elif format == "mee_nec":
+        write_to_excel_meesho(excel_results, filename=static_file_path, target_fields=target_fields_necklace_meesho, fixed_values=fixed_values_necklace_meesho)
+    elif format == "fli_bra":
+        write_to_excel_flipkart(excel_results, filename=static_file_path, target_fields=target_fields_bracelet_flipkart, fixed_values=fixed_values_bracelet_flipkart)
+    elif format == "mee_bra":   
+        write_to_excel_meesho(excel_results, filename=static_file_path, target_fields=target_fields_bracelet_meesho, fixed_values=fixed_values_bracelet_meesho)
+
+
+    return {"results": results , "excel_file": static_url}
+
+
+@app.post("/clear-excel/")
+def clear_excel_file(filename: str = Form(...)):
+    static_dir = "static"
+    file_path = f"C:/Users/yash jain/Desktop/aryanai_modules/python_intern/static/{filename}"
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    # Determine starting row based on filename
+    filename_lower = filename.lower()
+    sheet_number = 0
+    if "amz" in filename_lower or "ama" in filename_lower:
+        start_row = 4
+        sheet_number = 0
+    elif "fli" in filename_lower:
+        start_row = 5
+        sheet_number = 2
+    elif "mee" in filename_lower:
+        start_row = 5
+        sheet_number = 1
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+
+    try:
+        wb = openpyxl.load_workbook(file_path)
+        ws = wb.worksheets[sheet_number]
+
+        max_row = ws.max_row
+        if max_row >= start_row:
+            ws.delete_rows(start_row, max_row - start_row + 1)
+
+        wb.save(file_path)
+        wb.close()
+
+        return {"message": f"Cleared rows from row {start_row} in {filename}"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to clear Excel file: {str(e)}")
 
 
 

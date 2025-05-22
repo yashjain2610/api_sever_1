@@ -11,8 +11,10 @@ pydantic
 uuid
 typing
 pymilvus
-torch
 numpy
 tqdm
 transformers
 boto3
+openpyxl
+
+torch
