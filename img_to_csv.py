@@ -25,6 +25,7 @@ from typing import List
 from utils import *
 from prompts import *
 from excel_fields import *
+import httpx
 
 
 app = FastAPI()
@@ -574,14 +575,17 @@ async def image_searh(file: UploadFile = File(...), top_k: int = 1):
 
     return {"results": matches}
 
+class CatalogRequest(BaseModel):
+    image_urls: List[str]
+    type: str
+    marketplace: str
+    skuids: List[str]
+
+
 @app.post("/catalog-ai")
-async def catalog_ai(files: List[UploadFile], type: str = Form(...), marketplace: str = Form(...), skuids: List[str] = Form(...)):
+async def catalog_ai(req: CatalogRequest):
 
-    type = type.lower()
-    marketplace = marketplace.lower()
-
-
-    format = marketplace[0:3] + "_" + type[0:3]
+    format = req.marketplace.lower()[:3] + "_" + req.type.lower()[:3]
 
 
     input_prompt_map = {
@@ -610,66 +614,83 @@ async def catalog_ai(files: List[UploadFile], type: str = Form(...), marketplace
     
     excel_results = []
     results = []
-    skuid_list = [("SKU-" + sku.strip()) for sku in skuids[0].split(",")]
-    for file , skuid in zip(files,skuid_list):
-        print(f"Processing file {file.filename} for SKU {skuid}")
-        image_bytes = await file.read()
-        # image=file
-        # image_name = image.filename
 
-        # save_path = f"./{image_name}"
-        
-        # # Save the uploaded image directly to the disk
-        # with open(save_path, "wb") as f:
-        #     f.write(image_bytes)  # Write the image data to the file
+    # print(req.image_urls)
+    # print()
 
-        image_data = input_image_setup(io.BytesIO(image_bytes),file.content_type)
-        response_list = get_gemini_responses("Analyze this image carefully.", image_data, input_prompts)
+    # # url_list = [(url.strip()) for url in req.image_urls[0].split(",")]
+    # # skuid_list = [(sku.strip()) for sku in req.skuids[0].split(",")]
 
-        description = response_list[0] if len(response_list) > 0 else "No description"
-        response_json = {}
+    # print(skuid_list)
+    # print()
+    # print(url_list)
 
-        if len(response_list) > 1:
-            try:
-                cleaned = response_list[1].strip().replace("```json", "").replace("```", "").strip()
-                response_json = json.loads(cleaned)
-            except Exception as e:
-                response_json = {"error": f"Failed to parse JSON: {str(e)}"}
 
-        if dims_prompts:
-            dims_response = get_gemini_dims_responses("Analyze this image carefully.", image_data, dims_prompts)
-            try:
-                cleaned_dims = dims_response.strip().replace("```json", "").replace("```", "").strip()
-                dims_json = json.loads(cleaned_dims)
-                response_json.update(dims_json)
-            except Exception as e:
-                response_json["dimensions_error"] = f"Failed to parse dimensions: {str(e)}"
-        
-        final_response = {**response_json, **fixed_values}
+    #https://alyaimg.s3.amazonaws.com/SKU-107.jpg
+    #https://alyaimg.s3.amazonaws.com/SKU-113.jpg
 
-        filename_map = {
-            "fli_ear": "earrings_flipkart.xlsx",
-            "ama_ear": "earrings_amz.xlsx",
-            "mee_ear": "earrings_meesho.xlsx",
-            "fli_nec": "necklace_flipkart.xlsx",
-            "ama_nec": "necklace_amz.xlsx",
-            "mee_nec": "necklace_meesho.xlsx",
-            "fli_bra": "bracelet_flipkart.xlsx",
-            "mee_bra": "bracelet_meesho.xlsx"
-        }
+    async with httpx.AsyncClient() as client:
+        for url, skuid in zip(req.image_urls, req.skuids):
+            r = await client.get(url)
+            if r.status_code != 200:
+                raise HTTPException(400, f"Failed to fetch {url}")
+            image_bytes = r.content
+            # image=file
+            # image_name = image.filename
 
-        static_file_name = filename_map.get(format)
-        static_file_path = os.path.join("static", static_file_name)
-        static_url = f"http://15.206.26.88:8000/static/{static_file_name}"  
+            # save_path = f"./{image_name}"
+            
+            # # Save the uploaded image directly to the disk
+            # with open(save_path, "wb") as f:
+            #     f.write(image_bytes)  # Write the image data to the file
 
-        excel_results.append((skuid,response_json,description))
+            image_data = input_image_setup(io.BytesIO(image_bytes), "image/jpeg")
+            response_list = get_gemini_responses("Analyze this image carefully.", image_data, input_prompts)
 
-        results.append({
-            "filename": file.filename,
-            "description": description,
-            "skuid": skuid,
-            "attributes": final_response,
-        })
+            description = response_list[0] if len(response_list) > 0 else "No description"
+            response_json = {}
+
+            if len(response_list) > 1:
+                try:
+                    cleaned = response_list[1].strip().replace("```json", "").replace("```", "").strip()
+                    response_json = json.loads(cleaned)
+                except Exception as e:
+                    response_json = {"error": f"Failed to parse JSON: {str(e)}"}
+
+            if dims_prompts:
+                dims_response = get_gemini_dims_responses("Analyze this image carefully.", image_data, dims_prompts)
+                try:
+                    cleaned_dims = dims_response.strip().replace("```json", "").replace("```", "").strip()
+                    dims_json = json.loads(cleaned_dims)
+                    response_json.update(dims_json)
+                except Exception as e:
+                    response_json["dimensions_error"] = f"Failed to parse dimensions: {str(e)}"
+            
+            final_response = {**response_json, **fixed_values}
+
+            filename_map = {
+                "fli_ear": "earrings_flipkart.xlsx",
+                "ama_ear": "earrings_amz.xlsx",
+                "mee_ear": "earrings_meesho.xlsx",
+                "fli_nec": "necklace_flipkart.xlsx",
+                "ama_nec": "necklace_amz.xlsx",
+                "mee_nec": "necklace_meesho.xlsx",
+                "fli_bra": "bracelet_flipkart.xlsx",
+                "mee_bra": "bracelet_meesho.xlsx"
+            }
+
+            static_file_name = filename_map.get(format)
+            static_file_path = os.path.join("static", static_file_name)
+            static_url = f"http://15.206.26.88:8000/static/{static_file_name}"  
+
+            excel_results.append((skuid,response_json,description))
+
+            results.append({
+                "filename": url,
+                "description": description,
+                "skuid": skuid,
+                "attributes": final_response,
+            })
     
 
     if format == "fli_ear":
@@ -696,7 +717,7 @@ async def catalog_ai(files: List[UploadFile], type: str = Form(...), marketplace
 @app.post("/clear-excel/")
 def clear_excel_file(filename: str = Form(...)):
     static_dir = "static"
-    file_path = f"http://15.206.26.88:8000/static/{filename}"
+    file_path = file_path = os.path.join("api_sever_1", "static", filename)
 
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
