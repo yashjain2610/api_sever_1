@@ -666,8 +666,14 @@ async def catalog_ai(req: CatalogRequest):
                     response_json.update(dims_json)
                 except Exception as e:
                     response_json["dimensions_error"] = f"Failed to parse dimensions: {str(e)}"
+
+            dict = {
+                "filename": url,
+                "description": description,
+                "skuid": skuid
+            }
             
-            final_response = {**response_json, **fixed_values}
+            final_response = {**response_json, **fixed_values , **dict}
 
             filename_map = {
                 "fli_ear": "earrings_flipkart.xlsx",
@@ -687,9 +693,6 @@ async def catalog_ai(req: CatalogRequest):
             excel_results.append((skuid,response_json,description))
 
             results.append({
-                "filename": url,
-                "description": description,
-                "skuid": skuid,
                 "attributes": final_response,
             })
     
