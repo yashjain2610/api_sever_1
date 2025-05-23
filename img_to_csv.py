@@ -576,10 +576,10 @@ async def image_searh(file: UploadFile = File(...), top_k: int = 1):
     return {"results": matches}
 
 class CatalogRequest(BaseModel):
-    image_urls: List[str]
+    image_urls: str
     type: str
     marketplace: str
-    skuids: List[str]
+    skuids: str
 
 
 @app.post("/catalog-ai")
@@ -617,9 +617,10 @@ async def catalog_ai(req: CatalogRequest):
 
     # print(req.image_urls)
     # print()
+    # print(req.skuids)
 
-    # # url_list = [(url.strip()) for url in req.image_urls[0].split(",")]
-    # # skuid_list = [(sku.strip()) for sku in req.skuids[0].split(",")]
+    url_list = [(url.strip()) for url in req.image_urls.split(",")]
+    skuid_list = [(sku.strip()) for sku in req.skuids.split(",")]
 
     # print(skuid_list)
     # print()
@@ -630,7 +631,7 @@ async def catalog_ai(req: CatalogRequest):
     #https://alyaimg.s3.amazonaws.com/SKU-113.jpg
 
     async with httpx.AsyncClient() as client:
-        for url, skuid in zip(req.image_urls, req.skuids):
+        for url, skuid in zip(url_list, skuid_list):
             r = await client.get(url)
             if r.status_code != 200:
                 raise HTTPException(400, f"Failed to fetch {url}")
