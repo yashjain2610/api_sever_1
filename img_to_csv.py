@@ -668,7 +668,7 @@ async def catalog_ai(req: CatalogRequest):
                     response_json["dimensions_error"] = f"Failed to parse dimensions: {str(e)}"
 
             dict = {
-                "filename": f'<img src="{url}" height="80">',
+                "filename": url,
                 "description": description,
                 "skuid": skuid
             }
