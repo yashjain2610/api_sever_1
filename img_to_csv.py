@@ -26,6 +26,7 @@ from utils import *
 from prompts import *
 from excel_fields import *
 import httpx
+import tempfile
 
 
 app = FastAPI()
@@ -758,6 +759,34 @@ def clear_excel_file(filename: str = Form(...)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to clear Excel file: {str(e)}")
+    
+
+@app.post("/create_order")
+async def create_order(file: UploadFile = File(...)):
+    if file.content_type != "application/pdf":
+        return {"error": "Only PDF files are allowed"}
+
+    # Save the PDF to a temp file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        temp_path = tmp.name
+        tmp.write(await file.read())
+
+    # Load the file for Gemini
+    pdf_part = genai.upload_file(path=temp_path)
+
+    response = model.generate_content([order_prompt, pdf_part])
+    response = response.text
+    cleaned = response.strip().replace("```json", "").replace("```", "").strip()
+    response_json = json.loads(cleaned)
+
+    # Optional: delete the uploaded file from Gemini servers
+    genai.delete_file(pdf_part.name)
+    os.remove(temp_path)
+
+
+    return {
+        "parsed_data": response_json
+    } 
 
 
 

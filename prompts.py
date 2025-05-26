@@ -1039,3 +1039,42 @@ Questions {
 
     For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
 """
+
+
+
+order_prompt = """
+You are an expert document parser. Extract the following fields from this Ecommeerce platform (amazon,flipkart etc) invoice PDF. Return the output strictly in JSON format with no extra text.
+
+Fields to extract:
+
+order_id: The order number.
+
+customer_name: Full name of the customer.
+
+order_date: The date the order was placed.
+
+shipping_address: Full shipping address (single line).
+
+tracking_id: The tracking number for the shipment.
+
+payment_method: The payment method used (e.g., UPI, Credit Card, etc.).
+
+item_type: A brief description of the item ordered. , can be only earrings , bracelet or necklace
+
+quantity: Number of units ordered.
+
+sku_id: Extract the number from product descriptions like "earrings6" (e.g., if it says "earrings6", sku_id is 6).
+
+Format the output like this:
+{
+  "order_id": "...",
+  "customer_name": "...",
+  "order_date": "...",
+  "shipping_address": "...",
+  "tracking_id": "...",
+  "payment_method": "...",
+  "item_type": "...",
+  "quantity": ...,
+  "sku_id": ...
+}
+"""
