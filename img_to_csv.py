@@ -668,12 +668,12 @@ async def catalog_ai(req: CatalogRequest):
                     response_json["dimensions_error"] = f"Failed to parse dimensions: {str(e)}"
 
             dict = {
-                "filename": url,
+                "filename": f'<img src="{url}" height="80">',
                 "description": description,
                 "skuid": skuid
             }
             
-            final_response = {**response_json, **fixed_values , **dict}
+            final_response = {**dict ,**response_json, **fixed_values}
 
             filename_map = {
                 "fli_ear": "earrings_flipkart.xlsx",
