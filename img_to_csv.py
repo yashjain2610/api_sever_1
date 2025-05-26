@@ -721,7 +721,9 @@ async def catalog_ai(req: CatalogRequest):
 @app.post("/clear-excel/")
 def clear_excel_file(filename: str = Form(...)):
     static_dir = "static"
-    file_path = file_path = os.path.join("api_sever_1", "static", filename)
+    base_dir = os.path.dirname(__file__)
+    file_path = file_path = os.path.join(base_dir, "static", filename)
+    print(file_path)
 
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
