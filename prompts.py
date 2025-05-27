@@ -1065,6 +1065,11 @@ quantity: Number of units ordered.
 
 sku_id: Extract the number from product descriptions like "earrings6" (e.g., if it says "earrings6", sku_id is 6).
 
+if there are multiple sku_ids then in the output then return a string for sku id , item type , quantites like the following example dont add multiple entries for any other fields.
+item_type : "earrings , earrings, earrings"
+quantities : "1, 2, 3"
+sku_ids : "6, 7, 8"
+
 Format the output like this:
 {
   "order_id": "...",
@@ -1073,8 +1078,8 @@ Format the output like this:
   "shipping_address": "...",
   "tracking_id": "...",
   "payment_method": "...",
-  "item_type": "...",
-  "quantity": ...,
-  "sku_id": ...
+  "item_types": "...",
+  "quantities": ...,
+  "sku_ids": ...
 }
 """

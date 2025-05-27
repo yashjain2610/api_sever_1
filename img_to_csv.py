@@ -783,9 +783,31 @@ async def create_order(file: UploadFile = File(...)):
     genai.delete_file(pdf_part.name)
     os.remove(temp_path)
 
+    item_types = response_json["item_types"]
+    sku_ids = response_json["sku_ids"]
+    quantities = response_json["quantities"]
+
+    response_json.pop("item_types")
+    response_json.pop("sku_ids")
+    response_json.pop("quantities")
+
+    item_types_array = item_types.split(",")
+    sku_ids_array = sku_ids.split(",")
+    quantities_array = quantities.split(",")
+
+    products_array = []
+
+    for i in range(len(item_types_array)):
+        product = {
+            "item_type": item_types_array[i],
+            "sku_id": sku_ids_array[i],
+            "quantity": quantities_array[i]
+        }
+        products_array.append(product)
 
     return {
-        "parsed_data": response_json
+        "parsed_data": response_json,
+        "products_data": products_array
     } 
 
 
