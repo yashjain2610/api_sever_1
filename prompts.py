@@ -1059,6 +1059,8 @@ tracking_id: The tracking number for the shipment.
 
 payment_method: The payment method used (e.g., UPI, Credit Card, etc.).
 
+marketplace: The marketplace where the order was placed dont add the domain like .in , .com etc (e.g., Amazon, Flipkart, etc.).
+
 item_type: A brief description of the item ordered. , can be only earrings , bracelet or necklace
 
 quantity: Number of units ordered.
@@ -1066,6 +1068,7 @@ quantity: Number of units ordered.
 sku_id: Extract the number from product descriptions like "earrings6" (e.g., if it says "earrings6", sku_id is 6).
 
 if there are multiple sku_ids then in the output then return a string for sku id , item type , quantites like the following example dont add multiple entries for any other fields.
+return everything in a string with doube quotes
 item_type : "earrings , earrings, earrings"
 quantities : "1, 2, 3"
 sku_ids : "6, 7, 8"
@@ -1078,6 +1081,7 @@ Format the output like this:
   "shipping_address": "...",
   "tracking_id": "...",
   "payment_method": "...",
+  "marketplace": "...",
   "item_types": "...",
   "quantities": ...,
   "sku_ids": ...
