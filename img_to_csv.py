@@ -771,10 +771,18 @@ async def create_order(file: UploadFile = File(...)):
         temp_path = tmp.name
         tmp.write(await file.read())
 
+    model_1 = genai.GenerativeModel('gemini-1.5-flash',
+                                  generation_config=genai.types.GenerationConfig(
+                                      temperature=0.5,
+                                      top_p=0.9,
+                                      top_k=40,
+                                      max_output_tokens=1024
+                                  ))
+
     # Load the file for Gemini
     pdf_part = genai.upload_file(path=temp_path)
 
-    response = model.generate_content([order_prompt, pdf_part])
+    response = model_1.generate_content([order_prompt, pdf_part])
     response = response.text
     cleaned = response.strip().replace("```json", "").replace("```", "").strip()
     response_json = json.loads(cleaned)
@@ -786,11 +794,14 @@ async def create_order(file: UploadFile = File(...)):
     item_types = response_json["item_types"]
     sku_ids = response_json["sku_ids"]
     quantities = response_json["quantities"]
+    product_price = response_json["product_price"]
 
+    response_json.pop("product_price")
     response_json.pop("item_types")
     response_json.pop("sku_ids")
     response_json.pop("quantities")
 
+    product_price_array = product_price.split(",")
     item_types_array = item_types.split(",")
     sku_ids_array = sku_ids.split(",")
     quantities_array = quantities.split(",")
@@ -799,6 +810,7 @@ async def create_order(file: UploadFile = File(...)):
 
     for i in range(len(item_types_array)):
         product = {
+            "product_price": product_price_array[i].strip(),
             "item_type": item_types_array[i].strip(),
             "sku_id": sku_ids_array[i].strip(),
             "quantity": quantities_array[i].strip()

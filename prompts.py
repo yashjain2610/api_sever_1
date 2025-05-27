@@ -1053,13 +1053,19 @@ customer_name: Full name of the customer.
 
 order_date: The date the order was placed.
 
+order_time: The time the order was placed (if it is in AM/PM format then add AM/PM and if in 24hrs format add hrs).
+
 shipping_address: Full shipping address (single line).
 
 tracking_id: The tracking number for the shipment.
 
-payment_method: The payment method used (e.g., UPI, Credit Card, etc.).
+payment_method: The payment method used (e.g., UPI, Credit Card, prepaid , cod etc.).
 
 marketplace: The marketplace where the order was placed dont add the domain like .in , .com etc (e.g., Amazon, Flipkart, etc.).
+
+total_price_order: The total price of the order sum of all items prices.
+
+product_price: The price of each item this is the total amount of each item dont give the unit price look for total amount or gross amount of each product.
 
 item_type: A brief description of the item ordered. , can be only earrings , bracelet or necklace
 
@@ -1067,8 +1073,9 @@ quantity: Number of units ordered.
 
 sku_id: Extract the number from product descriptions like "earrings6" (e.g., if it says "earrings6", sku_id is 6).
 
-if there are multiple sku_ids then in the output then return a string for sku id , item type , quantites like the following example dont add multiple entries for any other fields.
-return everything in a string with doube quotes
+if there are multiple sku_ids then in the output then return a string for product price, sku id , item type , quantites like the following example dont add multiple entries for any other fields.
+
+product_price : "100, 200, 300"
 item_type : "earrings , earrings, earrings"
 quantities : "1, 2, 3"
 sku_ids : "6, 7, 8"
@@ -1078,10 +1085,13 @@ Format the output like this:
   "order_id": "...",
   "customer_name": "...",
   "order_date": "...",
+  "order_time": "...",
   "shipping_address": "...",
   "tracking_id": "...",
   "payment_method": "...",
   "marketplace": "...",
+  "total_price_order": "...",
+  "product_price": "...",
   "item_types": "...",
   "quantities": ...,
   "sku_ids": ...
