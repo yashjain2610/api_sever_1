@@ -799,9 +799,9 @@ async def create_order(file: UploadFile = File(...)):
 
     for i in range(len(item_types_array)):
         product = {
-            "item_type": item_types_array[i],
-            "sku_id": sku_ids_array[i],
-            "quantity": quantities_array[i]
+            "item_type": item_types_array[i].strip(),
+            "sku_id": sku_ids_array[i].strip(),
+            "quantity": quantities_array[i].strip()
         }
         products_array.append(product)
 
