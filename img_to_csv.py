@@ -27,7 +27,7 @@ from prompts import *
 from excel_fields import *
 import httpx
 import tempfile
-
+import re
 
 app = FastAPI()
 load_dotenv()
@@ -811,7 +811,7 @@ async def create_order(file: UploadFile = File(...)):
     for i in range(len(item_types_array)):
         product = {
             "product_price": product_price_array[i].strip(),
-            "item_type": item_types_array[i].strip(),
+            "item_type": re.match(r'[A-Za-z]+', item_types_array[i].strip()).group(),
             "sku_id": sku_ids_array[i].strip(),
             "quantity": quantities_array[i].strip()
         }
