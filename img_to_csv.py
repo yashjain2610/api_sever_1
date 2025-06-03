@@ -28,6 +28,9 @@ from excel_fields import *
 import httpx
 import tempfile
 import re
+from prompts2 import *
+from utils2 import get_gemini_responses as gen_image_responses
+from urllib.parse import urlparse
 
 app = FastAPI()
 load_dotenv()
@@ -47,6 +50,7 @@ genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel(model_name="gemini-2.0-flash")
 
 S3_BUCKET = os.getenv("S3_BUCKET", "alyaimg")
+GENERATED_FOLDER = "gen_images/"
 
 from image_search_engine import *
 
@@ -821,6 +825,117 @@ async def create_order(file: UploadFile = File(...)):
         "parsed_data": response_json,
         "products_data": products_array
     } 
+
+class ImageRequest(BaseModel):
+    s3_urls: str
+    product_type: str
+
+@app.post("/generate-images")
+async def generate_images(request: ImageRequest):
+    prompt_map = {
+        "earrings": [white_bgd_prompt, multicolor_1_prompt, multicolor_2_prompt, props_img_prompt, hand_prompt],
+        "bracelet": [white_bgd_bracelet_prompt, multicolor_1_bracelet_prompt, multicolor_2_bracelet_prompt, props_img_bracelet_prompt, hand_bracelet_prompt],
+        "necklace": [white_bgd_necklace_prompt, multicolor_1_necklace_prompt, multicolor_2_necklace_prompt, props_img_necklace_prompt, hand_necklace_prompt, neck_necklace_prompt]
+    }
+
+    product_type = request.product_type
+
+    prompt_list = prompt_map.get(product_type.lower())
+    if not prompt_list:
+        return JSONResponse(status_code=400, content={"error": "Invalid product_type"})
+
+    results = {}
+    url = request.s3_urls
+    async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(url)
+                response.raise_for_status()
+            except httpx.HTTPError as e:
+                return JSONResponse(status_code=400, content={"error": f"Failed to fetch image from URL: {url}", "details": str(e)})
+
+            try:
+                image = Image.open(io.BytesIO(response.content))
+            except Exception as e:
+                return JSONResponse(status_code=400, content={"error": f"Failed to decode image from URL: {url}", "details": str(e)})
+
+            responses = gen_image_responses("analyse the image", image, prompt_list)
+            image_urls = []
+            parsed = urlparse(url)
+            filename_base = os.path.basename(parsed.path) 
+            name_no_ext = os.path.splitext(filename_base)[0]
+
+            for i, item in enumerate(responses):
+                img_data = item["images"][0]
+                filename = f"{name_no_ext}_prompt{i}.png"
+                key = f"{GENERATED_FOLDER}{filename}"
+
+                # Upload to S3
+                s3.put_object(Bucket=S3_BUCKET, Key=key, Body=img_data, ContentType="image/png")
+
+                image_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{key}"
+                image_urls.append({
+                    "prompt_index": i,
+                    "image_url": image_url
+                })
+
+            results["gen_images"] = image_urls
+
+    return results
+
+@app.post("/regenerate-image")
+async def regenerate_image(
+    original_image_url: str = Form(...),
+    old_generated_url: str = Form(...),
+    product_type: str = Form(...),
+    prompt_index: int = Form(...)
+):
+    # 1. Validate product_type and prompt_index
+    prompt_map = {
+        "earrings": [white_bgd_prompt, multicolor_1_prompt, multicolor_2_prompt, props_img_prompt, hand_prompt],
+        "bracelets": [white_bgd_bracelet_prompt, multicolor_1_bracelet_prompt, multicolor_2_bracelet_prompt, props_img_bracelet_prompt, hand_bracelet_prompt],
+        "necklaces": [white_bgd_necklace_prompt, multicolor_1_necklace_prompt, multicolor_2_necklace_prompt, props_img_necklace_prompt, hand_necklace_prompt, neck_necklace_prompt]
+    }
+
+    prompts = prompt_map.get(product_type.lower())
+    if not prompts or not (0 <= prompt_index < len(prompts)):
+        raise HTTPException(400, "Invalid product_type or prompt_index")
+
+    # 2. Download original image from S3 URL
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(original_image_url)
+            response.raise_for_status()
+            image = Image.open(io.BytesIO(response.content))
+    except Exception as e:
+        raise HTTPException(400, f"Failed to download original image: {e}")
+
+    # 3. Delete old image from S3
+    try:
+        parsed = urlparse(old_generated_url)
+        old_key = parsed.path.lstrip("/")
+        s3.delete_object(Bucket=S3_BUCKET, Key=old_key)
+    except Exception as e:
+        raise HTTPException(500, f"Failed to delete old image: {e}")
+
+    # 4. Generate new image
+    new_response = gen_image_responses("analyse the image", image, [prompts[prompt_index]])[0]
+    img_bytes = new_response["images"][0]
+
+    # 5. Upload new image to same S3 path
+    try:
+        s3.put_object(
+            Bucket=S3_BUCKET,
+            Key=old_key,
+            Body=img_bytes,
+            ContentType="image/png",
+        )
+    except Exception as e:
+        raise HTTPException(500, f"Failed to upload new image: {e}")
+
+    # 6. Return same S3 URL
+    return {"image_url": old_generated_url}
+
+
 
 
 
