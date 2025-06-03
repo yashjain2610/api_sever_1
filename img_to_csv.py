@@ -30,6 +30,7 @@ import tempfile
 import re
 from prompts2 import *
 from utils2 import get_gemini_responses as gen_image_responses
+from utils2 import resize_img,resize_img2
 from urllib.parse import urlparse
 
 app = FastAPI()
@@ -865,12 +866,20 @@ async def generate_images(request: ImageRequest):
             name_no_ext = os.path.splitext(filename_base)[0]
 
             for i, item in enumerate(responses):
-                img_data = item["images"][0]
+                img_bytes = item["images"][0]
+
+                gen_image = Image.open(io.BytesIO(img_bytes))
+                gen_image = resize_img(gen_image)
+
+                img_buffer = io.BytesIO()
+                gen_image.save(img_buffer, format="PNG")
+                resized_img_bytes = img_buffer.getvalue()
+
                 filename = f"{name_no_ext}_prompt{i}.png"
                 key = f"{GENERATED_FOLDER}{filename}"
 
                 # Upload to S3
-                s3.put_object(Bucket=S3_BUCKET, Key=key, Body=img_data, ContentType="image/png")
+                s3.put_object(Bucket=S3_BUCKET, Key=key, Body=resized_img_bytes, ContentType="image/png")
 
                 image_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{key}"
                 image_urls.append({
@@ -920,13 +929,19 @@ async def regenerate_image(
     # 4. Generate new image
     new_response = gen_image_responses("analyse the image", image, [prompts[prompt_index]])[0]
     img_bytes = new_response["images"][0]
+    gen_image = Image.open(io.BytesIO(img_bytes))
+    gen_image = resize_img(gen_image)
+
+    img_buffer = io.BytesIO()
+    gen_image.save(img_buffer, format="PNG")
+    resized_img_bytes = img_buffer.getvalue()
 
     # 5. Upload new image to same S3 path
     try:
         s3.put_object(
             Bucket=S3_BUCKET,
             Key=old_key,
-            Body=img_bytes,
+            Body=resized_img_bytes,
             ContentType="image/png",
         )
     except Exception as e:
