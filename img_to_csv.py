@@ -32,6 +32,7 @@ from prompts2 import *
 from utils2 import get_gemini_responses as gen_image_responses
 from utils2 import resize_img,resize_img2
 from urllib.parse import urlparse
+import zipfile
 
 app = FastAPI()
 load_dotenv()
@@ -831,6 +832,29 @@ class ImageRequest(BaseModel):
     s3_urls: str
     product_type: str
 
+def create_zip_from_s3_urls(image_urls, zip_filename):
+    # Create an in-memory ZIP file
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for url in image_urls:
+            try:
+                filename = url.split("/")[-1]
+                response = requests.get(url)
+                response.raise_for_status()
+                zip_file.writestr(filename, response.content)
+            except Exception as e:
+                print(f"Error downloading {url}: {e}")
+
+    # Upload ZIP to S3
+    zip_buffer.seek(0)
+    s3_key = f"{GENERATED_FOLDER}{zip_filename}"
+    s3.upload_fileobj(zip_buffer, S3_BUCKET, s3_key, ExtraArgs={"ContentType": "application/zip"})
+
+    # Return public URL
+    public_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{s3_key}"
+    return public_url
+
 @app.post("/generate-images")
 async def generate_images(request: ImageRequest):
     prompt_map = {
@@ -886,15 +910,53 @@ async def generate_images(request: ImageRequest):
                     "prompt_index": i,
                     "image_url": image_url
                 })
+            
+            urls = [img['image_url'] for img in image_urls]
+            zip_url = create_zip_from_s3_urls(urls, f"{name_no_ext}.zip")
+            results["zip_url"] = zip_url
 
+            results["original_image_url"] = url
             results["gen_images"] = image_urls
 
     return results
+
+
+def update_zip_on_s3(zip_url: str, new_image_bytes: bytes, new_filename: str):
+    # Parse original zip key
+    parsed = urlparse(zip_url)
+    zip_key = parsed.path.lstrip("/")
+    zip_name = zip_key.split("/")[-1]
+
+    # Download original ZIP
+    response = requests.get(zip_url)
+    if response.status_code != 200:
+        raise Exception("Failed to download original zip")
+
+    # Read ZIP into memory
+    zip_buffer_in = io.BytesIO(response.content)
+    zip_buffer_out = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer_in, 'r') as zin:
+        with zipfile.ZipFile(zip_buffer_out, 'w', zipfile.ZIP_DEFLATED) as zout:
+            for item in zin.infolist():
+                if item.filename != new_filename:
+                    # Copy everything except the file to be replaced
+                    zout.writestr(item.filename, zin.read(item.filename))
+            # Add the new/updated image
+            zout.writestr(new_filename, new_image_bytes)
+
+    # Upload new ZIP to S3 (overwrite)
+    zip_buffer_out.seek(0)
+    s3.put_object(Bucket=S3_BUCKET, Key=zip_key, Body=zip_buffer_out.read(), ContentType="application/zip")
+
+    # Return same public URL
+    return f"https://{S3_BUCKET}.s3.amazonaws.com/{zip_key}"
 
 @app.post("/regenerate-image")
 async def regenerate_image(
     original_image_url: str = Form(...),
     old_generated_url: str = Form(...),
+    old_zip_url: str = Form(...),
     product_type: str = Form(...),
     prompt_index: int = Form(...)
 ):
@@ -936,6 +998,10 @@ async def regenerate_image(
     gen_image.save(img_buffer, format="PNG")
     resized_img_bytes = img_buffer.getvalue()
 
+    filename = os.path.basename(parsed.path)
+
+    updated_zip_url = update_zip_on_s3(old_zip_url, resized_img_bytes, filename)
+
     # 5. Upload new image to same S3 path
     try:
         s3.put_object(
@@ -948,7 +1014,7 @@ async def regenerate_image(
         raise HTTPException(500, f"Failed to upload new image: {e}")
 
     # 6. Return same S3 URL
-    return {"image_url": old_generated_url}
+    return {"image_url": old_generated_url, "zip_url": updated_zip_url}
 
 
 
