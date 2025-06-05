@@ -259,7 +259,7 @@ def write_to_excel_flipkart(results, filename, target_fields, fixed_values):
     if "Seller SKU ID" not in headers:
         raise RuntimeError("Column 'Seller SKU ID' not found in header.")
     sku_col = headers["Seller SKU ID"]
-    row_idx = 2
+    row_idx = 4
     while True:
         val = ws.cell(row=row_idx, column=sku_col).value
         if val is None or str(val).strip() == "":
