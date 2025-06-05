@@ -33,6 +33,7 @@ from utils2 import get_gemini_responses as gen_image_responses
 from utils2 import resize_img,resize_img2
 from urllib.parse import urlparse
 import zipfile
+import time
 
 app = FastAPI()
 load_dotenv()
@@ -637,6 +638,8 @@ async def catalog_ai(req: CatalogRequest):
     #https://alyaimg.s3.amazonaws.com/SKU-107.jpg
     #https://alyaimg.s3.amazonaws.com/SKU-113.jpg
 
+    count = 1
+
     async with httpx.AsyncClient() as client:
         for url, skuid in zip(url_list, skuid_list):
             r = await client.get(url)
@@ -702,6 +705,9 @@ async def catalog_ai(req: CatalogRequest):
             results.append({
                 "attributes": final_response,
             })
+            count += 1
+            if count%5 == 0:
+                time.sleep(30)
     
 
     if format == "fli_ear":
