@@ -698,6 +698,8 @@ async def catalog_ai(req: CatalogRequest):
 
             static_file_name = filename_map.get(format)
             static_file_path = os.path.join("static", static_file_name)
+
+            print(static_file_path)
             static_url = f"http://15.206.26.88:8000/static/{static_file_name}"  
 
             excel_results.append((skuid,response_json,description))
@@ -711,7 +713,9 @@ async def catalog_ai(req: CatalogRequest):
     
 
     if format == "fli_ear":
+        print("writing")
         write_to_excel_flipkart(excel_results, filename=static_file_path, target_fields=target_fields_earrings, fixed_values=fixed_values_earrings)
+        print("finished")
     elif format == "ama_ear":
         write_to_excel_amz_xl(excel_results, filename=static_file_path, target_fields=target_fields_earrings_amz, fixed_values=fixed_values_earrings_amz)
     elif format == "mee_ear":
@@ -959,70 +963,80 @@ def update_zip_on_s3(zip_url: str, new_image_bytes: bytes, new_filename: str):
     # Return same public URL
     return f"https://{S3_BUCKET}.s3.amazonaws.com/{zip_key}"
 
-@app.post("/regenerate-image")
-async def regenerate_image(
-    original_image_url: str = Form(...),
-    old_generated_url: str = Form(...),
-    old_zip_url: str = Form(...),
-    product_type: str = Form(...),
-    prompt_index: int = Form(...)
-):
-    
-    # 1. Validate product_type and prompt_index
+@app.post("/generate-images")
+async def generate_images(request: ImageRequest):
+
     prompt_map = {
         "ear": [white_bgd_prompt, multicolor_1_prompt, multicolor_2_prompt, props_img_prompt, hand_prompt],
         "bra": [white_bgd_bracelet_prompt, multicolor_1_bracelet_prompt, multicolor_2_bracelet_prompt, props_img_bracelet_prompt, hand_bracelet_prompt],
         "nec": [white_bgd_necklace_prompt, multicolor_1_necklace_prompt, multicolor_2_necklace_prompt, props_img_necklace_prompt, hand_necklace_prompt, neck_necklace_prompt]
     }
 
-    prompts = prompt_map.get(product_type[0:3].lower())
-    if not prompts or not (0 <= prompt_index < len(prompts)):
-        raise HTTPException(400, "Invalid product_type or prompt_index")
+    url_list = [(url.strip()) for url in request.s3_urls.split(",")]
 
-    # 2. Download original image from S3 URL
-    try:
+    product_type = request.product_type[0:3]
+
+    prompt_list = prompt_map.get(product_type.lower())
+    if not prompt_list:
+        return JSONResponse(status_code=400, content={"error": "Invalid product_type"})
+
+    all_results = []
+
+    for url in url_list:
+            
+        results = {}
         async with httpx.AsyncClient() as client:
-            response = await client.get(original_image_url)
-            response.raise_for_status()
-            image = Image.open(io.BytesIO(response.content))
-    except Exception as e:
-        raise HTTPException(400, f"Failed to download original image: {e}")
+                try:
+                    response = await client.get(url)
+                    response.raise_for_status()
+                except httpx.HTTPError as e:
+                    return JSONResponse(status_code=400, content={"error": f"Failed to fetch image from URL: {url}", "details": str(e)})
 
-    # 3. Delete old image from S3
-    try:
-        parsed = urlparse(old_generated_url)
-        old_key = parsed.path.lstrip("/")
-        s3.delete_object(Bucket=S3_BUCKET, Key=old_key)
-    except Exception as e:
-        raise HTTPException(500, f"Failed to delete old image: {e}")
+                try:
+                    image = Image.open(io.BytesIO(response.content))
+                except Exception as e:
+                    return JSONResponse(status_code=400, content={"error": f"Failed to decode image from URL: {url}", "details": str(e)})
 
-    # 4. Generate new image
-    new_response = gen_image_responses("analyse the image", image, [prompts[prompt_index]])[0]
-    img_bytes = new_response["images"][0]
-    gen_image = Image.open(io.BytesIO(img_bytes))
-    gen_image = resize_img(gen_image)
+                responses = gen_image_responses("analyse the image", image, prompt_list)
+                image_urls = []
+                parsed = urlparse(url)
+                filename_base = os.path.basename(parsed.path) 
+                name_no_ext = os.path.splitext(filename_base)[0]
 
-    img_buffer = io.BytesIO()
-    gen_image.save(img_buffer, format="PNG")
-    resized_img_bytes = img_buffer.getvalue()
+                for i, item in enumerate(responses):
+                    img_bytes = item["images"][0]
 
-    filename = os.path.basename(parsed.path)
+                    gen_image = Image.open(io.BytesIO(img_bytes))
+                    gen_image = resize_img(gen_image)
 
-    updated_zip_url = update_zip_on_s3(old_zip_url, resized_img_bytes, filename)
+                    img_buffer = io.BytesIO()
+                    gen_image.save(img_buffer, format="PNG")
+                    resized_img_bytes = img_buffer.getvalue()
 
-    # 5. Upload new image to same S3 path
-    try:
-        s3.put_object(
-            Bucket=S3_BUCKET,
-            Key=old_key,
-            Body=resized_img_bytes,
-            ContentType="image/png",
-        )
-    except Exception as e:
-        raise HTTPException(500, f"Failed to upload new image: {e}")
+                    filename = f"{name_no_ext}_prompt{i}.png"
+                    key = f"{GENERATED_FOLDER}{filename}"
 
-    # 6. Return same S3 URL
-    return {"image_url": old_generated_url, "zip_url": updated_zip_url}
+                    # Upload to S3
+                    s3.put_object(Bucket=S3_BUCKET, Key=key, Body=resized_img_bytes, ContentType="image/png")
+
+                    image_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{key}"
+                    image_urls.append({
+                        "prompt_index": i,
+                        "image_url": image_url
+                    })
+                
+                urls = [img['image_url'] for img in image_urls]
+                zip_url = create_zip_from_s3_urls(urls, f"{name_no_ext}.zip")
+                results["zip_url"] = zip_url
+
+                results["original_image_url"] = url
+                results["gen_images"] = image_urls
+        
+        all_results.append(results)
+        time.sleep(60)
+        
+
+    return all_results
 
 
 
