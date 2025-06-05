@@ -155,8 +155,8 @@ def write_to_excel_meesho(results,filename,target_fields,fixed_values):
 
     wb.save(filename)
 
-
 def write_to_excel_flipkart(results,filename,target_fields,fixed_values):
+
     if os.path.exists(filename):
         #print("started loading")
         #print()
@@ -170,6 +170,7 @@ def write_to_excel_flipkart(results,filename,target_fields,fixed_values):
         #print(headers)
         #print()
     else:
+        print("not found")
         wb = Workbook()
         ws = wb.active  
 
@@ -200,6 +201,7 @@ def write_to_excel_flipkart(results,filename,target_fields,fixed_values):
         row_idx += 1
     #print(row_idx)  
     for image_name, response , description in results:
+        print(response)
         field_values = response
 
         # Write values only in the specified fields
