@@ -158,8 +158,8 @@ def write_to_excel_meesho(results,filename,target_fields,fixed_values):
 def write_to_excel_flipkart(results,filename,target_fields,fixed_values):
 
     if os.path.exists(filename):
-        #print("started loading")
-        #print()
+        print("started loading")
+        print()
         wb = openpyxl.load_workbook(filename)
         #print("finished")
         #print()
@@ -167,7 +167,7 @@ def write_to_excel_flipkart(results,filename,target_fields,fixed_values):
 
         # Read headers dynamically from row 1
         headers = {cell.value: cell.column for cell in ws[1] if cell.value}
-        #print(headers)
+        print(headers)
         #print()
     else:
         print("not found")
