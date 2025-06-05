@@ -857,13 +857,14 @@ def create_zip_from_s3_urls(image_urls, zip_filename):
 
 @app.post("/generate-images")
 async def generate_images(request: ImageRequest):
+
     prompt_map = {
-        "earrings": [white_bgd_prompt, multicolor_1_prompt, multicolor_2_prompt, props_img_prompt, hand_prompt],
-        "bracelet": [white_bgd_bracelet_prompt, multicolor_1_bracelet_prompt, multicolor_2_bracelet_prompt, props_img_bracelet_prompt, hand_bracelet_prompt],
-        "necklace": [white_bgd_necklace_prompt, multicolor_1_necklace_prompt, multicolor_2_necklace_prompt, props_img_necklace_prompt, hand_necklace_prompt, neck_necklace_prompt]
+        "ear": [white_bgd_prompt, multicolor_1_prompt, multicolor_2_prompt, props_img_prompt, hand_prompt],
+        "bra": [white_bgd_bracelet_prompt, multicolor_1_bracelet_prompt, multicolor_2_bracelet_prompt, props_img_bracelet_prompt, hand_bracelet_prompt],
+        "nec": [white_bgd_necklace_prompt, multicolor_1_necklace_prompt, multicolor_2_necklace_prompt, props_img_necklace_prompt, hand_necklace_prompt, neck_necklace_prompt]
     }
 
-    product_type = request.product_type
+    product_type = request.product_type[0:3]
 
     prompt_list = prompt_map.get(product_type.lower())
     if not prompt_list:
@@ -960,14 +961,15 @@ async def regenerate_image(
     product_type: str = Form(...),
     prompt_index: int = Form(...)
 ):
+    
     # 1. Validate product_type and prompt_index
     prompt_map = {
-        "earrings": [white_bgd_prompt, multicolor_1_prompt, multicolor_2_prompt, props_img_prompt, hand_prompt],
-        "bracelets": [white_bgd_bracelet_prompt, multicolor_1_bracelet_prompt, multicolor_2_bracelet_prompt, props_img_bracelet_prompt, hand_bracelet_prompt],
-        "necklaces": [white_bgd_necklace_prompt, multicolor_1_necklace_prompt, multicolor_2_necklace_prompt, props_img_necklace_prompt, hand_necklace_prompt, neck_necklace_prompt]
+        "ear": [white_bgd_prompt, multicolor_1_prompt, multicolor_2_prompt, props_img_prompt, hand_prompt],
+        "bra": [white_bgd_bracelet_prompt, multicolor_1_bracelet_prompt, multicolor_2_bracelet_prompt, props_img_bracelet_prompt, hand_bracelet_prompt],
+        "nec": [white_bgd_necklace_prompt, multicolor_1_necklace_prompt, multicolor_2_necklace_prompt, props_img_necklace_prompt, hand_necklace_prompt, neck_necklace_prompt]
     }
 
-    prompts = prompt_map.get(product_type.lower())
+    prompts = prompt_map.get(product_type[0:3].lower())
     if not prompts or not (0 <= prompt_index < len(prompts)):
         raise HTTPException(400, "Invalid product_type or prompt_index")
 
