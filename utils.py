@@ -155,68 +155,206 @@ def write_to_excel_meesho(results,filename,target_fields,fixed_values):
 
     wb.save(filename)
 
-def write_to_excel_flipkart(results,filename,target_fields,fixed_values):
 
+def write_to_excel_flipkart(results, filename, target_fields, fixed_values):
+    abs_path = os.path.abspath(filename)
+    print(f"[DEBUG] write_to_excel_flipkart: absolute path = {abs_path}")
+
+    # 1) Load or create
     if os.path.exists(filename):
-        print("started loading")
-        print()
-        wb = openpyxl.load_workbook(filename)
-        #print("finished")
-        #print()
-        ws = wb.worksheets[2]
+        print("[DEBUG] File exists → loading workbook.")
+        try:
+            wb = openpyxl.load_workbook(filename)
+        except Exception as e:
+            print(f"[ERROR] Could not load workbook: {e}")
+            raise
 
-        # Read headers dynamically from row 1
+        # 2) Show all sheet names
+        print(f"[DEBUG] Workbook sheets: {wb.sheetnames!r}")
+
+        # 3) Pick the correct Flipkart sheet
+        if "earring" in wb.sheetnames:
+            ws = wb["earring"]
+            print("[DEBUG] Selected sheet by name: 'earring'.")
+        else:
+            # If you still have code that falls back to wb.active, print that
+            ws = wb.active
+            print(f"[DEBUG] 'earring' not found. Using active sheet: '{ws.title}'.")
+
+        # 4) Read the header row (row 1)
         headers = {cell.value: cell.column for cell in ws[1] if cell.value}
-        print(headers)
-        #print()
+        print(f"[DEBUG] Read headers from row 1: {list(headers.keys())}\n")
+
     else:
-        print("not found")
+        print("[DEBUG] File does NOT exist → creating brand-new workbook.")
         wb = Workbook()
-        ws = wb.active  
+        ws = wb.active
+        ws.title = "earring"
+        print("[DEBUG] Created new sheet and renamed to 'earring'.")
 
-        # Define default headers
         default_headers = [
-            "Image Name", "Type", "Color", "Gemstone", "Pearl Type",
-            "Collection", "Occasion", "Piercing Required", "Number of Gemstones",
-            "Earring Back Type", "Finish", "Design", "Metal Color", "Diamond Type",
-            "Pearl Shape", "Pearl Color", "Search Keywords", "Key Features", "Trend",
-            "Closure Type", "Sub Type", "Shape", "Ear Chain", "Earring Set Type",
-            "Ornamentation Type", "Trend"
+            "Flipkart Serial Number", "Seller SKU ID", "Listing Status",
+            "MRP (INR)", "Your selling price (INR)", "Fullfilment by",
+            "Procurement type", "Procurement SLA (DAY)", "Stock",
+            "Shipping provider", "Local delivery charge (INR)",
+            "Zonal delivery charge (INR)", "National delivery charge (INR)",
+            "Height (CM)", "Weight (KG)", "Breadth (CM)", "Length (CM)",
+            "HSN", "Luxury Cess", "Country Of Origin", "Manufacturer Details",
+            "Packer Details", "Importer Details", "Tax Code",
+            "Minimum Order Quantity (MinOQ)", "Brand", "Model Number",
+            "Type", "Color", "Ideal For", "Model Name", "Base Material",
+            "Gemstone", "Diamond Color Grade", "Diamond Clarity",
+            "Pearl Type", "Certification", "Collection", "Plating",
+            "Silver Weight (g)", "Diamond Shape", "Diamond Weight (carat)",
+            "Main Image URL", "Other Image URL 1", "Other Image URL 2",
+            "Other Image URL 3", "Other Image URL 4", "Group ID",
+            "Occasion", "EAN/UPC", "EAN/UPC - Measuring Unit",
+            "Piercing Required", "Number of Pairs", "Number of Gemstones",
+            "Earring Back Type", "Finish", "Setting", "Design",
+            "Silver Purity", "Silver Color", "Metal Purity", "Metal Color",
+            "Metal Weight", "Natural/Synthetic Diamond",
+            "Diamond Width (mm)", "Diamond Height (mm)", "Natural/Synthetic Ruby",
+            "Ruby Shape", "Ruby Clarity", "Ruby Color", "Ruby Width (mm)",
+            "Ruby Height (mm)", "Ruby Weight (carat)",
+            "Natural/Synthetic Emerald", "Emerald Shape", "Emerald Clarity",
+            "Emerald Color", "Emerald Width (mm)", "Emerald Height (mm)",
+            "Emerald Weight (carat)", "Natural/Synthetic Sapphire",
+            "Sapphire Shape", "Sapphire Clarity", "Sapphire Color",
+            "Sapphire Width (mm)", "Sapphire Height (mm)",
+            "Sapphire Weight (carat)", "Natural/Synthetic Amethyst",
+            "Amethyst Shape", "Amethyst Clarity", "Amethyst Color",
+            "Amethyst Width (mm)", "Amethyst Height (mm)", "Amethyst Weight (carat)",
+            "Artificial Pearl Material", "Pearl Shape", "Pearl Grade",
+            "Pearl Color", "Pearl Length (mm)", "Pearl Diameter (mm)",
+            "Natural/Synthetic Semi-precious Stone", "Semi-precious Stone Type",
+            "Semi-precious Stone Shape", "Width (mm)", "Height (mm)",
+            "Diameter (mm)", "Weight (g)", "Other Dimensions", "Other Features",
+            "Sales Package", "Description", "Search Keywords", "Key Features",
+            "Video URL", "Domestic Warranty", "Domestic Warranty - Measuring Unit",
+            "International Warranty", "International Warranty - Measuring Unit",
+            "External Identifier", "Trend", "Warranty Summary",
+            "Warranty Service Type", "Covered in Warranty", "Not Covered in Warranty",
+            "Closure Type", "Sub Type", "Earring Shape", "With Ear Chain",
+            "Earring Set Type", "Ornamentation Type", "Trend AW 16",
+            "Net Quantity", "Brand Color", "Supplier Image"
         ]
-        
-        headers = {name: idx + 1 for idx, name in enumerate(default_headers)}
-        ws.append(default_headers)  # Write headers in row 1 if creating a new file
+        for idx, h in enumerate(default_headers, start=1):
+            ws.cell(row=1, column=idx, value=h)
+        headers = {name: i for i, name in enumerate(default_headers, start=1)}
+        print(f"[DEBUG] Wrote default headers in new workbook: {list(headers.keys())}\n")
 
-    #print()
-    # Combine target fields and fixed value fields
-    all_fields = set(target_fields).union(fixed_values.keys())
+    # 5) Print out exactly what target_fields and fixed_values contain
+    print(f"[DEBUG] target_fields passed in: {target_fields}\n")
+    print(f"[DEBUG] fixed_values passed in: {list(fixed_values.keys())}\n")
 
-    # Get column indices for all relevant fields
-    target_columns = {field: headers[field] for field in all_fields if field in headers}
-    # print(target_columns)
+    # 6) Build “all_fields” and see which actually exist in headers
+    all_fields = set(target_fields) | set(fixed_values.keys())
+    actual_columns = {f: headers[f] for f in all_fields if f in headers}
+    missing_columns = [f for f in all_fields if f not in headers]
 
-    # **Write output from row 6 onwards**
-    row_idx = 1
-    while ws.cell(row=row_idx, column=7).value:  # Assuming column 1 is "Image Name" or always filled
+    print(f"[DEBUG] target_columns (field → column#) = {actual_columns}\n")
+    print(f"[DEBUG] missing_fields = {missing_columns}\n")
+
+    # 7) Find first empty row by checking “Seller SKU ID” (column 7):
+    if "Seller SKU ID" not in headers:
+        raise RuntimeError("Column 'Seller SKU ID' not found in header.")
+    sku_col = headers["Seller SKU ID"]
+    row_idx = 2
+    while True:
+        val = ws.cell(row=row_idx, column=sku_col).value
+        if val is None or str(val).strip() == "":
+            print(f"[DEBUG] First empty row for writing = {row_idx}\n")
+            break
         row_idx += 1
-    #print(row_idx)  
-    for image_name, response , description in results:
-        print(response)
-        field_values = response
 
-        # Write values only in the specified fields
-        for key, val in fixed_values.items():
-            field_values[key] = val
-
+    # 8) Write each result
+    for image_name, response, description in results:
+        field_values = dict(response)
+        for k, v in fixed_values.items():
+            field_values[k] = v
         field_values["Description"] = description
         field_values["Seller SKU ID"] = os.path.splitext(image_name)[0]
 
-        for field, col_idx in target_columns.items():
+        for field, col_idx in actual_columns.items():
             ws.cell(row=row_idx, column=col_idx, value=field_values.get(field, ""))
 
-        row_idx += 1  # Move to the next row
+        print(f"[DEBUG] Wrote row {row_idx}: "
+              f"{ {f: field_values.get(f) for f in actual_columns} }")
+        row_idx += 1
 
-    wb.save(filename)
+    # 9) Save and report
+    try:
+        wb.save(filename)
+        print(f"[DEBUG] Saved workbook successfully to '{abs_path}'\n")
+    except PermissionError:
+        print(f"[ERROR] Permission denied when saving '{abs_path}'")
+        raise
+    except Exception as e:
+        print(f"[ERROR] Unexpected save error: {e}")
+        raise
+
+# def write_to_excel_flipkart(results,filename,target_fields,fixed_values):
+
+#     if os.path.exists(filename):
+#         print("started loading")
+#         print()
+#         wb = openpyxl.load_workbook(filename)
+#         #print("finished")
+#         #print()
+#         ws = wb.worksheets[2]
+
+#         # Read headers dynamically from row 1
+#         headers = {cell.value: cell.column for cell in ws[1] if cell.value}
+#         print(headers)
+#         #print()
+#     else:
+#         print("not found")
+#         wb = Workbook()
+#         ws = wb.active  
+
+#         # Define default headers
+#         default_headers = [
+#             "Image Name", "Type", "Color", "Gemstone", "Pearl Type",
+#             "Collection", "Occasion", "Piercing Required", "Number of Gemstones",
+#             "Earring Back Type", "Finish", "Design", "Metal Color", "Diamond Type",
+#             "Pearl Shape", "Pearl Color", "Search Keywords", "Key Features", "Trend",
+#             "Closure Type", "Sub Type", "Shape", "Ear Chain", "Earring Set Type",
+#             "Ornamentation Type", "Trend"
+#         ]
+        
+#         headers = {name: idx + 1 for idx, name in enumerate(default_headers)}
+#         ws.append(default_headers)  # Write headers in row 1 if creating a new file
+
+#     #print()
+#     # Combine target fields and fixed value fields
+#     all_fields = set(target_fields).union(fixed_values.keys())
+
+#     # Get column indices for all relevant fields
+#     target_columns = {field: headers[field] for field in all_fields if field in headers}
+#     # print(target_columns)
+
+#     # **Write output from row 6 onwards**
+#     row_idx = 1
+#     while ws.cell(row=row_idx, column=7).value:  # Assuming column 1 is "Image Name" or always filled
+#         row_idx += 1
+#     #print(row_idx)  
+#     for image_name, response , description in results:
+#         print(response)
+#         field_values = response
+
+#         # Write values only in the specified fields
+#         for key, val in fixed_values.items():
+#             field_values[key] = val
+
+#         field_values["Description"] = description
+#         field_values["Seller SKU ID"] = os.path.splitext(image_name)[0]
+
+#         for field, col_idx in target_columns.items():
+#             ws.cell(row=row_idx, column=col_idx, value=field_values.get(field, ""))
+
+#         row_idx += 1  # Move to the next row
+
+#     wb.save(filename)
 
 
 def write_to_excel_amz_xl(results,filename,target_fields,fixed_values):
