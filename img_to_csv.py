@@ -1029,8 +1029,6 @@ async def regenerate_image(
     return {"image_url": old_generated_url, "zip_url": updated_zip_url}
         
 
-    return all_results
-
 
 
 
