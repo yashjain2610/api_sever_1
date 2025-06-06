@@ -33,21 +33,24 @@ def get_gemini_responses(input, image, prompts):
     return all_responses
 
 def get_gemini_dims_responses(input, image, prompts):
-    model = genai.GenerativeModel('gemini-1.5-flash',
+    model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20',
                                   generation_config=genai.types.GenerationConfig(
-                                      temperature=0.5,
+                                      temperature= 1.0,
                                       top_p=0.9,
                                       top_k=40,
-                                      max_output_tokens=512
+                                      max_output_tokens=5096*2
                                   ))
     all_responses = []
     for prompt in prompts:
+        #print("hello")
         response = model.generate_content([input, image[0], prompt])
-        # print(response)
+        #print()
+        #print("h2")
+        #print(response)
         for part in response.parts:
             if part.text:
                 all_responses.append(part.text)
-    # print(all_responses)
+    #print(all_responses)
     return all_responses[0]
 
 # def input_image_setup(uploaded_file):
@@ -158,11 +161,11 @@ def write_to_excel_meesho(results,filename,target_fields,fixed_values):
 
 def write_to_excel_flipkart(results, filename, target_fields, fixed_values):
     abs_path = os.path.abspath(filename)
-    print(f"[DEBUG] write_to_excel_flipkart: absolute path = {abs_path}")
+    #print(f"[DEBUG] write_to_excel_flipkart: absolute path = {abs_path}")
 
     # 1) Load or create
     if os.path.exists(filename):
-        print("[DEBUG] File exists → loading workbook.")
+        #print("[DEBUG] File exists → loading workbook.")
         try:
             wb = openpyxl.load_workbook(filename)
         except Exception as e:
@@ -170,20 +173,20 @@ def write_to_excel_flipkart(results, filename, target_fields, fixed_values):
             raise
 
         # 2) Show all sheet names
-        print(f"[DEBUG] Workbook sheets: {wb.sheetnames!r}")
+        #print(f"[DEBUG] Workbook sheets: {wb.sheetnames!r}")
 
         # 3) Pick the correct Flipkart sheet
         if "earring" in wb.sheetnames:
             ws = wb["earring"]
-            print("[DEBUG] Selected sheet by name: 'earring'.")
+            #print("[DEBUG] Selected sheet by name: 'earring'.")
         else:
             # If you still have code that falls back to wb.active, print that
             ws = wb.active
-            print(f"[DEBUG] 'earring' not found. Using active sheet: '{ws.title}'.")
+            #print(f"[DEBUG] 'earring' not found. Using active sheet: '{ws.title}'.")
 
         # 4) Read the header row (row 1)
         headers = {cell.value: cell.column for cell in ws[1] if cell.value}
-        print(f"[DEBUG] Read headers from row 1: {list(headers.keys())}\n")
+        #print(f"[DEBUG] Read headers from row 1: {list(headers.keys())}\n")
 
     else:
         print("[DEBUG] File does NOT exist → creating brand-new workbook.")
@@ -244,16 +247,16 @@ def write_to_excel_flipkart(results, filename, target_fields, fixed_values):
         print(f"[DEBUG] Wrote default headers in new workbook: {list(headers.keys())}\n")
 
     # 5) Print out exactly what target_fields and fixed_values contain
-    print(f"[DEBUG] target_fields passed in: {target_fields}\n")
-    print(f"[DEBUG] fixed_values passed in: {list(fixed_values.keys())}\n")
+    #print(f"[DEBUG] target_fields passed in: {target_fields}\n")
+    #print(f"[DEBUG] fixed_values passed in: {list(fixed_values.keys())}\n")
 
     # 6) Build “all_fields” and see which actually exist in headers
     all_fields = set(target_fields) | set(fixed_values.keys())
     actual_columns = {f: headers[f] for f in all_fields if f in headers}
     missing_columns = [f for f in all_fields if f not in headers]
 
-    print(f"[DEBUG] target_columns (field → column#) = {actual_columns}\n")
-    print(f"[DEBUG] missing_fields = {missing_columns}\n")
+    #print(f"[DEBUG] target_columns (field → column#) = {actual_columns}\n")
+    #print(f"[DEBUG] missing_fields = {missing_columns}\n")
 
     # 7) Find first empty row by checking “Seller SKU ID” (column 7):
     if "Seller SKU ID" not in headers:
@@ -263,7 +266,7 @@ def write_to_excel_flipkart(results, filename, target_fields, fixed_values):
     while True:
         val = ws.cell(row=row_idx, column=sku_col).value
         if val is None or str(val).strip() == "":
-            print(f"[DEBUG] First empty row for writing = {row_idx}\n")
+            #print(f"[DEBUG] First empty row for writing = {row_idx}\n")
             break
         row_idx += 1
 
@@ -278,19 +281,19 @@ def write_to_excel_flipkart(results, filename, target_fields, fixed_values):
         for field, col_idx in actual_columns.items():
             ws.cell(row=row_idx, column=col_idx, value=field_values.get(field, ""))
 
-        print(f"[DEBUG] Wrote row {row_idx}: "
-              f"{ {f: field_values.get(f) for f in actual_columns} }")
+        #print(f"[DEBUG] Wrote row {row_idx}: "
+              #f"{ {f: field_values.get(f) for f in actual_columns} }")
         row_idx += 1
 
     # 9) Save and report
     try:
         wb.save(filename)
-        print(f"[DEBUG] Saved workbook successfully to '{abs_path}'\n")
+        #print(f"[DEBUG] Saved workbook successfully to '{abs_path}'\n")
     except PermissionError:
-        print(f"[ERROR] Permission denied when saving '{abs_path}'")
+        #print(f"[ERROR] Permission denied when saving '{abs_path}'")
         raise
     except Exception as e:
-        print(f"[ERROR] Unexpected save error: {e}")
+        #print(f"[ERROR] Unexpected save error: {e}")
         raise
 
 # def write_to_excel_flipkart(results,filename,target_fields,fixed_values):
