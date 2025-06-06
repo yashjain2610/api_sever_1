@@ -43,7 +43,7 @@ target_fields_earrings = [
             "Occasion", "Piercing Required", "Number of Gemstones", "Earring Back Type",
             "Finish", "Design", "Metal Color", "Natural/Synthetic Diamond", "Pearl Shape", "Pearl Grade", "Pearl Color",
             "Other Features", "Search Keywords", "Key Features", "Trend", "Closure Type", "Sub Type",
-            "Earring Shape", "With Ear Chain", "Earring Set Type", "Ornamentation Type","Trend AW 16", "Description","Pearl Length (mm)","Pearl Diameter (mm)",
+            "Earring Shape", "With Ear Chain", "Earring Set Type", "Ornamentation Type","Trend AW 16", "Description",
             "Width (mm)","Height (mm)","Diameter (mm)"
         ]
 

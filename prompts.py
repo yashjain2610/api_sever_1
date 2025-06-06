@@ -146,15 +146,32 @@ prompt_description_earrings_flipkart = """
 
 
 prompt_dimensions_earrings_flipkart = """
-    You are given an image containing a pair of earrings (front and back view) placed next to a metric scale (calibrated in centimeters). Using the scale as a visual reference, identify the markings of the scale, the full scale in length (vertically) is 21 cm and horizontally is 15 cm, carefully identify and measure the following dimensions of one of the earrings (specifically, the one that appears most clearly in the front view):
+    You are given an image containing a single earring placed next to a metric ruler. The full visible vertical length of the ruler is 21 cm, and the full visible horizontal length of the ruler is 15 cm. Using the ruler as a scale reference, perform the following measurements on the earring that appears most clearly in the front view:
 
-    Pearl Length (mm): Identify the pearl component of the earring and measure its longest dimension in centimeters (cm), then convert this measurement to millimeters (mm).
-    Pearl Diameter (mm): Identify the pearl component of the earring and measure its approximate diameter (widest point across) in centimeters (cm), then convert this measurement to millimeters (mm).
-    Width (mm): Measure the maximum horizontal extent (breadth, broadness, or wideness) of the entire earring in the front view, from its leftmost to its rightmost point, in centimeters (cm), then convert this measurement to millimeters (mm).
-    Height (mm): Measure the maximum vertical extent of the entire earring in the front view, from its topmost to its bottommost point, in centimeters (cm), then convert this measurement to millimeters (mm).
-    Diameter (mm): Diameter refers to a straight line passing from side to side through the center of a body or figure, especially a circle or sphere. Please ensure that the values entered are in Millimeters. Possible values are 5, 14.5, etc.
+Width (mm): Determine the maximum horizontal distance from the leftmost edge of the earring to its rightmost edge. Measure that span against the ruler in centimeters, then convert to millimeters (multiply by 10).
 
-    Output Format:  give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+Height (mm): Determine the maximum vertical distance from the topmost point of the earring to its bottommost point. Measure that span against the ruler in centimeters, then convert to millimeters (multiply by 10).
+
+Diameter (mm): Identify any circular component of the earring (for example the central stone or circular frame). Measure its diameter in centimeters using the ruler, then convert to millimeters (multiply by 10).
+
+Output Requirements:
+
+Provide only a JSON object with the following keys:
+
+"width (mm)"
+
+"height (mm)"
+
+"diameter (mm)"
+
+All values must be numbers (integers or decimals) in millimeters.
+
+Do not include any additional text, explanations, or units.
+
+For example, a valid response should look like:
+{"width (mm)": 35.0, "height (mm)": 50.5, "diameter (mm)": 14.5}
+
+Begin your analysis of the image and return only the raw JSON with measured values.
 """
 
 
