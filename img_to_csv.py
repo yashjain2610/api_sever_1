@@ -684,23 +684,10 @@ async def catalog_ai(req: CatalogRequest):
             }
             
             final_response = {**dict ,**response_json, **fixed_values}
+            # static_file_path = os.path.join("static", static_file_name)
 
-            filename_map = {
-                "fli_ear": "earrings_flipkart.xlsx",
-                "ama_ear": "earrings_amz.xlsx",
-                "mee_ear": "earrings_meesho.xlsx",
-                "fli_nec": "necklace_flipkart.xlsx",
-                "ama_nec": "necklace_amz.xlsx",
-                "mee_nec": "necklace_meesho.xlsx",
-                "fli_bra": "bracelet_flipkart.xlsx",
-                "mee_bra": "bracelet_meesho.xlsx"
-            }
-
-            static_file_name = filename_map.get(format)
-            static_file_path = os.path.join("static", static_file_name)
-
-            print(static_file_path)
-            static_url = f"http://15.206.26.88:8000/static/{static_file_name}"  
+            # print(static_file_path)
+            # static_url = f"http://15.206.26.88:8000/static/{static_file_name}"  
 
             excel_results.append((skuid,response_json,description))
 
@@ -711,28 +698,62 @@ async def catalog_ai(req: CatalogRequest):
             if count%5 == 0:
                 time.sleep(30)
     
+    filename_map = {
+        "fli_ear": "earrings_flipkart.xlsx",
+        "ama_ear": "earrings_amz.xlsx",
+        "mee_ear": "earrings_meesho.xlsx",
+        "fli_nec": "necklace_flipkart.xlsx",
+        "ama_nec": "necklace_amz.xlsx",
+        "mee_nec": "necklace_meesho.xlsx",
+        "fli_bra": "bracelet_flipkart.xlsx",
+        "mee_bra": "bracelet_meesho.xlsx"
+    }
+
+
+    static_file_name = filename_map.get(format)
+    s3_url = f"https://alyaimg.s3.amazonaws.com/excel_files/{static_file_name}"
+
+    s3_key = f"excel_files/{static_file_name}"
+
+# Download the file using httpx
+    response = httpx.get(s3_url)
+    response.raise_for_status()
+
+# Save to a temp file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp_file:
+        tmp_file.write(response.content)
+        tmp_path = tmp_file.name
+
 
     if format == "fli_ear":
-        print("writing")
-        write_to_excel_flipkart(excel_results, filename=static_file_path, target_fields=target_fields_earrings, fixed_values=fixed_values_earrings)
-        print("finished")
+        write_to_excel_flipkart(excel_results, filename=tmp_path, target_fields=target_fields_earrings, fixed_values=fixed_values_earrings)
     elif format == "ama_ear":
-        write_to_excel_amz_xl(excel_results, filename=static_file_path, target_fields=target_fields_earrings_amz, fixed_values=fixed_values_earrings_amz)
+        write_to_excel_amz_xl(excel_results, filename=tmp_path, target_fields=target_fields_earrings_amz, fixed_values=fixed_values_earrings_amz)
     elif format == "mee_ear":
-        write_to_excel_meesho(excel_results, filename=static_file_path, target_fields=target_fields_earrings_meesho, fixed_values=fixed_values_earrings_meesho)
+        write_to_excel_meesho(excel_results, filename=tmp_path, target_fields=target_fields_earrings_meesho, fixed_values=fixed_values_earrings_meesho)
     elif format == "fli_nec":
-        write_to_excel_flipkart(excel_results, filename=static_file_path, target_fields=target_fields_necklace_flipkart, fixed_values=fixed_values_necklace_flipkart)
+        write_to_excel_flipkart(excel_results, filename=tmp_path, target_fields=target_fields_necklace_flipkart, fixed_values=fixed_values_necklace_flipkart)
     elif format == "ama_nec":
-        write_to_excel_amz_xl(excel_results, filename=static_file_path, target_fields=target_fields_necklace_amz, fixed_values=fixed_values_necklace_amz)
+        write_to_excel_amz_xl(excel_results, filename=tmp_path, target_fields=target_fields_necklace_amz, fixed_values=fixed_values_necklace_amz)
     elif format == "mee_nec":
-        write_to_excel_meesho(excel_results, filename=static_file_path, target_fields=target_fields_necklace_meesho, fixed_values=fixed_values_necklace_meesho)
+        write_to_excel_meesho(excel_results, filename=tmp_path, target_fields=target_fields_necklace_meesho, fixed_values=fixed_values_necklace_meesho)
     elif format == "fli_bra":
-        write_to_excel_flipkart(excel_results, filename=static_file_path, target_fields=target_fields_bracelet_flipkart, fixed_values=fixed_values_bracelet_flipkart)
+        write_to_excel_flipkart(excel_results, filename=tmp_path, target_fields=target_fields_bracelet_flipkart, fixed_values=fixed_values_bracelet_flipkart)
     elif format == "mee_bra":   
-        write_to_excel_meesho(excel_results, filename=static_file_path, target_fields=target_fields_bracelet_meesho, fixed_values=fixed_values_bracelet_meesho)
+        write_to_excel_meesho(excel_results, filename=tmp_path, target_fields=target_fields_bracelet_meesho, fixed_values=fixed_values_bracelet_meesho)
+
+    # Upload the modified file back to S3 (same key)
+    s3.upload_file(
+        Filename=tmp_path,
+        Bucket=S3_BUCKET,
+        Key=s3_key,
+        ExtraArgs={'ContentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
+    )
+
+    os.remove(tmp_path)
 
 
-    return {"results": results , "excel_file": static_url}
+    return {"results": results , "excel_file": s3_url}
 
 
 @app.post("/clear-excel/")

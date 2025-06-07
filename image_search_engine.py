@@ -56,7 +56,7 @@ def get_image_paths_from_s3(bucket_name: str, prefix: str = ""):
     for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
         for obj in page.get("Contents", []):
             key = obj["Key"]
-            if key.startswith("gen_images/"):
+            if key.startswith("gen_images/") or key.startswith("excel_files/"):
                 continue
             if key.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
                 image_paths.append(key)
