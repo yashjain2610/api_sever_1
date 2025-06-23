@@ -199,7 +199,7 @@ async def scrape_amazon_product_detail(page,product_partial: dict,detail_url = N
 
     try:
         await page.goto(detail_url, timeout=45000)
-        await page.wait_for_timeout(2000)
+        await page.wait_for_timeout(10000)
 
         title = "N/A"
         title_el = await page.query_selector("#productTitle")
@@ -265,7 +265,7 @@ async def scrape_amazon_product_detail(page,product_partial: dict,detail_url = N
         video_thumbs = await page.query_selector_all("li.videoThumbnail img")
         num_videos = len(video_thumbs)
 
-        brand_store = "brand sotre not available"
+        brand_store = "brand store not available"
         if await page.query_selector("div#titleBlockLeftSection"):
             brand_store = "brand store is available"
         
@@ -434,8 +434,9 @@ async def scrape_all_product_details(asins: list) -> list:
             url = f"https://www.amazon.in/dp/{asin}"
             product_dict = {"asin": asin, "link": url}
             full_product = await scrape_amazon_product_detail(page, product_dict, url)
+            full_product["asin"] = asin
             updated_products.append(full_product)
-            await asyncio.sleep(random.uniform(10,15))  #reduce requests
+            await asyncio.sleep(random.uniform(35,50))  #reduce requests
 
         await browser.close()
 
