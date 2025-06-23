@@ -1114,3 +1114,20 @@ Format the output like this:
   "sku_ids": ...
 }
 """
+
+variations_prompt = """
+        You are given multiple product images that all represent the same jewelry item design but in different colors. These variations are intended to be listed under a common product group on an e-commerce catalog.
+
+    Your task is to analyze the images and generate the following:
+
+    1. field name: item_sku
+    A concise, style-oriented identifier for this jewelry design that can be used to group all its color variants together. This name should be free of specific colors and usable as a parent style name (e.g., "Leaf-Shaped Stud Earrings" or "Floral Drop Dangle").
+
+    2. field name: item_name 
+    A complete, customer-facing title for **one** of the images (you may pick any one). Include style, color, and appeal details. This name should follow marketplace best practices (e.g., "Elegant Gold Tone Leaf-Shaped Stud Earrings for Women, Lightweight, Statement Jewelry for Gifting and Parties").
+
+Use the visual information from the images to infer material tone, motif, and overall design cues.
+
+Output in the following format: give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+
+"""

@@ -32,6 +32,7 @@ from prompts2 import *
 from utils2 import get_gemini_responses as gen_image_responses
 from utils2 import resize_img,resize_img2
 from urllib.parse import urlparse
+from scraper import *
 import zipfile
 import time
 
@@ -590,6 +591,7 @@ class CatalogRequest(BaseModel):
     skuids: str
 
 
+
 @app.post("/catalog-ai")
 async def catalog_ai(req: CatalogRequest):
 
@@ -755,8 +757,322 @@ async def catalog_ai(req: CatalogRequest):
 
     return {"results": results , "excel_file": s3_url}
 
+class CatalogRequestVariation(BaseModel):
+    number_of_grps: str
+    group_sizes: str
+    image_urls: str
+    variations_category: str
+    size_available: str
+    type: str
+    marketplace: str
+    skuids: str
 
-@app.post("/clear-excel/")
+
+@app.post("/catalog_ai_variations")
+async def catalog_ai_variations(req: CatalogRequestVariation):
+    format = req.marketplace.lower()[:3] + "_" + req.type.lower()[:3]
+
+
+    input_prompt_map = {
+        "fli_ear": ([prompt_description_earrings_flipkart, prompt_questions_earrings_flipkart], fixed_values_earrings),
+        "ama_ear": ([prompt_description_earrings_amz, prompt_questions_earrings_amz], fixed_values_earrings_amz),
+        "mee_ear": ([prompt_description_earrings_meesho, prompt_questions_earrings_meesho], fixed_values_earrings_meesho),
+        "fli_nec": ([prompt_description_necklace_flipkart, prompt_questions_necklace_flipkart], fixed_values_necklace_flipkart),
+        "ama_nec": ([prompt_description_necklace_amz, prompt_questions_necklace_amz], fixed_values_necklace_amz),
+        "mee_nec": ([prompt_description_necklace_meesho, prompt_questions_necklace_meesho], fixed_values_necklace_meesho),
+        "fli_bra": ([prompt_description_bracelet_flipkart, prompt_questions_bracelet_flipkart], fixed_values_bracelet_flipkart),
+        "mee_bra": ([prompt_description_bracelet_meesho, prompt_questions_bracelet_meesho], fixed_values_bracelet_meesho),
+    }
+
+    dims_prompt_map = {
+        "fli_ear": [prompt_dimensions_earrings_flipkart],
+        "ama_ear": [prompt_dimensions_earrings_amz],
+        "fli_nec": [prompt_dimensions_necklace_flipkart],
+        "fli_bra": [prompt_dimensions_bracelet_flipkart],
+    }
+
+    input_prompts , fixed_values = input_prompt_map.get(format)
+    dims_prompts = dims_prompt_map.get(format, [])
+
+    if not input_prompts:
+        return JSONResponse(status_code=400, content={"error": "Invalid format"})
+    
+    results = []
+
+    # print(req.image_urls)
+    # print()
+    # print(req.skuids)
+
+    group_sizes_list = list(map(int, req.group_sizes.split(",")))
+    url_list = [(url.strip()) for url in req.image_urls.split(",")]
+    skuid_list = [(sku.strip()) for sku in req.skuids.split(",")]
+    category_list = [(cat.strip()) for cat in req.variations_category.split(",")]
+    size_available_list = [(size.strip()) for size in req.size_available.split(",")]
+    print(size_available_list)
+    print()
+    count = 1
+
+    image_data_list = []
+    image_data_list_2 = []
+
+    #get image data list
+    async with httpx.AsyncClient() as client:
+        for url, skuid in zip(url_list, skuid_list):
+            r = await client.get(url)
+            if r.status_code != 200:
+                raise HTTPException(400, f"Failed to fetch {url}")
+            image_bytes = r.content
+            # image=file
+            # image_name = image.filename
+
+            # save_path = f"./{image_name}"
+            
+            # # Save the uploaded image directly to the disk
+            # with open(save_path, "wb") as f:
+            #     f.write(image_bytes)  # Write the image data to the file
+
+            image_data = input_image_setup(io.BytesIO(image_bytes), "image/jpeg")
+            image_data_list.append(image_data[0])
+            image_data_list_2.append(image_data)
+    
+    print("loaded images")
+
+    # get excel file 
+    filename_map = {
+        "fli_ear": "earrings_flipkart.xlsx",
+        "ama_ear": "earrings_amazon_variations.xlsx",
+        "mee_ear": "earrings_meesho.xlsx",
+        "fli_nec": "necklace_flipkart.xlsx",
+        "ama_nec": "necklace_amz.xlsx",
+        "mee_nec": "necklace_meesho.xlsx",
+        "fli_bra": "bracelet_flipkart.xlsx",
+        "mee_bra": "bracelet_meesho.xlsx"
+    }
+
+    static_file_name = filename_map.get(format)
+    s3_url = f"https://alyaimg.s3.amazonaws.com/excel_files/{static_file_name}"
+
+    s3_key = f"excel_files/{static_file_name}"
+
+# Download the file using httpx
+    response = httpx.get(s3_url)
+    response.raise_for_status()
+
+# Save to a temp file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp_file:
+        tmp_file.write(response.content)
+        tmp_path = tmp_file.name
+
+    print("saved files")
+
+    index = 0
+    ci = 0
+    url_num = 0
+    for group_index, group_size in enumerate(group_sizes_list):
+        category = category_list[ci]
+        if(category == "size"):
+            group_images = [image_data_list_2[i][0] for i in range(index, index + 1)]
+            group_image_data_2 = image_data_list_2[index:index + 1]
+        elif(category == "colorsize"):
+            group_images = [image_data_list_2[i][0] for i in range(index, index + (group_size//len(size_available_list)))]
+            group_image_data_2 = image_data_list_2[index:index + (group_size//len(size_available_list))]
+        else:
+            group_images = [image_data_list_2[i][0] for i in range(index, index + group_size)]
+            group_image_data_2 = image_data_list_2[index:index + group_size]
+        group_skuids = skuid_list[index:index + group_size]
+
+        print(category)
+        print()
+
+        image_name = ""
+        ## write variations row for various variaiton categories
+        if(category == "color"):
+            variations_prompt_list = [variations_prompt]
+            variations_row = get_gemini_responses_multi_image("analyse the images carefully", group_images, variations_prompt_list)
+            print(f"done\n")
+            cleaned = re.sub(r"```(?:json)?\s*([\s\S]*?)\s*```", r"\1", variations_row[0].strip(), flags=re.IGNORECASE)
+            variation_row_dict = json.loads(cleaned)
+            image_name = variation_row_dict["item_sku"]
+            variation_row_dict.pop("item_sku")
+            results_dict = {**variation_row_dict,**fixed_values_variation_amz}
+            results.append(results_dict)
+            write_to_excel_amz_xl([(image_name,variation_row_dict,"")], tmp_path,target_values_variations_amz,fixed_values_variation_amz)
+        elif(category == "size"):
+            fixed_values_variation_amz["variation_theme"] = "SizeName"
+            variations_prompt_list = [variations_prompt]
+            variations_row = get_gemini_responses_multi_image("analyse the images carefully", group_images, variations_prompt_list)
+            print(f"done\n")
+            cleaned = re.sub(r"```(?:json)?\s*([\s\S]*?)\s*```", r"\1", variations_row[0].strip(), flags=re.IGNORECASE)
+            variation_row_dict = json.loads(cleaned)
+            image_name = variation_row_dict["item_sku"]
+            variation_row_dict.pop("item_sku")
+            results_dict = {**variation_row_dict,**fixed_values_variation_amz}
+            results.append(results_dict)  
+            write_to_excel_amz_xl([(image_name,variation_row_dict,"")], tmp_path,target_values_variations_amz,fixed_values_variation_amz)
+        elif(category == "colorsize"):
+            fixed_values_variation_amz["variation_theme"] = "colorSize"
+            variations_prompt_list = [variations_prompt]
+            variations_row = get_gemini_responses_multi_image("analyse the images carefully", group_images, variations_prompt_list)
+            print(f"done\n")
+            cleaned = re.sub(r"```(?:json)?\s*([\s\S]*?)\s*```", r"\1", variations_row[0].strip(), flags=re.IGNORECASE)
+            variation_row_dict = json.loads(cleaned)
+            image_name = variation_row_dict["item_sku"]
+            variation_row_dict.pop("item_sku")
+            results_dict = {**variation_row_dict,**fixed_values_variation_amz}
+            results.append(results_dict)
+            write_to_excel_amz_xl([(image_name,variation_row_dict,"")], tmp_path,target_values_variations_amz,fixed_values_variation_amz)
+
+
+        fixed_values_variations_child["parent_sku"] = image_name
+        fixed_values.update(fixed_values_variations_child)
+        ## process images for other data fields
+        excel_results = []
+        for image_data , skuid in zip(group_image_data_2, group_skuids):
+                response_list = get_gemini_responses("Analyze this image carefully.", image_data, input_prompts)
+
+                description = response_list[0] if len(response_list) > 0 else "No description"
+                response_json = {}
+
+                if len(response_list) > 1:
+                    try:
+                        cleaned = response_list[1].strip().replace("```json", "").replace("```", "").strip()
+                        response_json = json.loads(cleaned)
+                    except Exception as e:
+                        response_json = {"error": f"Failed to parse JSON: {str(e)}"}
+
+                if dims_prompts:
+                    dims_response = get_gemini_dims_responses("Analyze this image carefully.", image_data, dims_prompts)
+                    try:
+                        cleaned_dims = dims_response.strip().replace("```json", "").replace("```", "").strip()
+                        dims_json = json.loads(cleaned_dims)
+                        response_json.update(dims_json)
+                    except Exception as e:
+                        response_json["dimensions_error"] = f"Failed to parse dimensions: {str(e)}"
+
+                dict = {
+                    "filename": url_list[url_num],
+                    "description": description,
+                    "skuid": skuid
+                }
+                
+                final_response = {**dict ,**response_json, **fixed_values }
+                # static_file_path = os.path.join("static", static_file_name)
+
+                # print(static_file_path)
+                # static_url = f"http://15.206.26.88:8000/static/{static_file_name}"  
+
+                excel_results.append((skuid,response_json,description))
+
+                results.append({
+                    "attributes": final_response,
+                })
+                url_num += 1
+                count += 1
+                if count%5 == 0:
+                    time.sleep(30)
+        
+        if category == "size":
+            skuid , response_json , description = excel_results[0]
+            excel_results = []
+            temp_result = results[len(results)-1]["attributes"]
+            results.pop()
+            for size , skuid in zip(size_available_list, group_skuids):
+                print(size)
+                print() 
+                new_json = response_json.copy()
+                new_json["size_name"] = size
+                copy_results = temp_result.copy()
+                copy_results["size_name"] = size
+                copy_results["skuid"] = skuid
+                results.append({
+                    "attributes": copy_results,
+                })
+                excel_results.append((skuid, new_json, description))
+        elif category == "colorsize":
+            new_excel_results = []
+            sku_index = 0
+            temp_results = []
+            for i in range(group_size//len(size_available_list)):
+                temp_results.append(results.pop()["attributes"])
+            for skuid , response_json , description in excel_results:
+                skuids = group_skuids[sku_index: sku_index + len(size_available_list)]
+                sku_index += len(size_available_list)
+                temp_result = temp_results.pop()
+                for size , skuid in zip(size_available_list, skuids):
+                    print(size)
+                    print() 
+                    new_json = response_json.copy()
+                    new_json["size_name"] = size
+                    copy_results = temp_result.copy()
+                    copy_results["size_name"] = size
+                    copy_results["skuid"] = skuid
+                    results.append({
+                        "attributes": copy_results,
+                    })
+                    new_excel_results.append((skuid, new_json, description))
+
+            excel_results = new_excel_results
+
+
+        index += group_size
+        ci += 1
+
+        print(f"group {group_index} done\n")
+        print()
+        print(excel_results)
+        #write to excel other data
+        if format == "fli_ear":
+            write_to_excel_flipkart(excel_results, filename=tmp_path, target_fields=target_fields_earrings, fixed_values=fixed_values_earrings)
+        elif format == "ama_ear":
+            fixed_values_variations_child["parent_sku"] = image_name
+            #fixed_values_earrings_amz.update(fixed_values_variations_child)
+            if(category == "size" or category == "colorsize"):
+                fixed_values_earrings_amz.pop("size_name")
+                target_fields_earrings_amz.append("size_name")
+                if category == "size":
+                    fixed_values_variations_child["variation_theme"] = "SizeName"
+                else:
+                    fixed_values_variations_child["variation_theme"] = "colorSize"
+            fixed_values_earrings_amz.update(fixed_values_variations_child)
+            write_to_excel_amz_xl(excel_results, filename=tmp_path, target_fields=target_fields_earrings_amz, fixed_values=fixed_values_earrings_amz)
+        elif format == "mee_ear":
+            write_to_excel_meesho(excel_results, filename=tmp_path, target_fields=target_fields_earrings_meesho, fixed_values=fixed_values_earrings_meesho)
+        elif format == "fli_nec":
+            write_to_excel_flipkart(excel_results, filename=tmp_path, target_fields=target_fields_necklace_flipkart, fixed_values=fixed_values_necklace_flipkart)
+        elif format == "ama_nec":
+            fixed_values_variations_child["parent_sku"] = image_name
+            #fixed_values_earrings_amz.update(fixed_values_variations_child)
+            if(category == "size" or category == "colorsize"):
+                fixed_values_necklace_amz.pop("size_name")
+                target_fields_necklace_amz.append("size_name")
+                if category == "size":
+                    fixed_values_variations_child["variation_theme"] = "SizeName"
+                else:
+                    fixed_values_variations_child["variation_theme"] = "colorSize"
+            fixed_values_necklace_amz.update(fixed_values_variations_child)
+            #write_to_excel_amz_xl(excel_results, filename=tmp_path, target_fields=target_fields_earrings_amz, fixed_values=fixed_values_earrings_amz)
+            write_to_excel_amz_xl(excel_results, filename=tmp_path, target_fields=target_fields_necklace_amz, fixed_values=fixed_values_necklace_amz)
+        elif format == "mee_nec":
+            write_to_excel_meesho(excel_results, filename=tmp_path, target_fields=target_fields_necklace_meesho, fixed_values=fixed_values_necklace_meesho)
+        elif format == "fli_bra":
+            write_to_excel_flipkart(excel_results, filename=tmp_path, target_fields=target_fields_bracelet_flipkart, fixed_values=fixed_values_bracelet_flipkart)
+        elif format == "mee_bra":   
+            write_to_excel_meesho(excel_results, filename=tmp_path, target_fields=target_fields_bracelet_meesho, fixed_values=fixed_values_bracelet_meesho)
+
+
+    s3.upload_file(
+        Filename=tmp_path,
+        Bucket=S3_BUCKET,
+        Key=s3_key,
+        ExtraArgs={'ContentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
+    )
+
+    os.remove(tmp_path)
+
+
+    return {"results": results , "excel_file": s3_url}
+
+@app.post("/clear-excel")
 def clear_excel_file(filename: str = Form(...)):
     static_dir = "static"
     base_dir = os.path.dirname(__file__)
@@ -1048,10 +1364,112 @@ async def regenerate_image(
 
     # 6. Return same S3 URL
     return {"image_url": old_generated_url, "zip_url": updated_zip_url}
+
+
+class rankRequest(BaseModel):
+    asin: str
+    search_query: str
+    marketplace: str
+
+
+@app.post("/get_rank_product")
+async def get_rank_product(rankRequest: rankRequest):
+    asins = rankRequest.asin
+    search_query = rankRequest.search_query
+
+    asin_list = [asin.strip() for asin in asins.split(",") if asin.strip()]
+
+    search_query_list = [search.strip() for search in search_query.split(",") if search.strip()]
+    marketplace = rankRequest.marketplace
+    if marketplace.lower() == "amazon":
+        final_results = []
+        for asin in asin_list:
+            results = []
+            try:
+                for search in search_query_list:
+                    result = await get_product_rank(asin, search)
+                    result["search_query"] = search
+                    results.append(result)
+                final_results.append({"asin": asin, "results": results})
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+    else:
+        raise HTTPException(status_code=400, detail="Marketplace not supported")
+
+    return final_results
         
 
+class CompetitorRequest(BaseModel):
+    asins: str  # Comma-separated ASINs
+    marketplace: str
 
 
+@app.post("/competitor_analysis")
+async def competitor_analysis(competitor_request: CompetitorRequest):
+    try:
+        # Convert comma-separated ASINs into a list
+        asin_list = [asin.strip() for asin in competitor_request.asins.split(",") if asin.strip()]
+        
+        if not asin_list:
+            raise ValueError("No valid ASINs provided.")
+        
+        # Optionally process marketplace
+        marketplace = competitor_request.marketplace.lower()
+        response = {}
+        if(marketplace.lower() == "amazon"):
+            results = await scrape_all_product_details(asin_list)
+            local_file = "amazon_products.xlsx"
+
+            generate_excel_from_products(results, local_file)
+
+            key = "excel_files/amazon_products.xlsx"
+
+            s3.upload_file(
+                Filename=local_file,
+                Bucket=S3_BUCKET,
+                Key=key,
+                ExtraArgs={'ContentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
+            )
+            response["result"] = results
+
+        # Placeholder response (you can replace with actual analysis logic)
+        response["url"] = f"https://alyaimg.s3.amazonaws.com/excel_files/{local_file}"
+        return response
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@app.post("/get_number_of_offers")
+async def get_number_of_offers(competitor_request: CompetitorRequest):
+    marketplace = competitor_request.marketplace
+    asins = competitor_request.asins
+    response = {}
+    if marketplace.lower() == "amazon":
+        try:
+            asin_list = [asin.strip() for asin in asins.split(",") if asin.strip()]
+            result = await get_offer_counts(asin_list)
+            response["result"] = result
+
+            local_file = "amazon_offers.xlsx"
+
+            write_offers_to_excel(result, local_file)
+
+            key = "excel_files/amazon_offers.xlsx"
+
+            s3.upload_file(
+                Filename=local_file,
+                Bucket=S3_BUCKET,
+                Key=key,
+                ExtraArgs={'ContentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+        
+        response["url"] = f"https://alyaimg.s3.amazonaws.com/excel_files/{local_file}"
+        return response
+    else:
+        raise HTTPException(status_code=400, detail="Marketplace not supported")
+    
 
 
 if __name__ == "__main__":

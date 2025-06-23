@@ -16,7 +16,7 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 
 def get_gemini_responses(input, image, prompts):
-    model = genai.GenerativeModel('gemini-1.5-flash',
+    model = genai.GenerativeModel('gemini-2.0-flash',
                                   generation_config=genai.types.GenerationConfig(
                                       temperature=0.5,
                                       top_p=0.9,
@@ -60,6 +60,53 @@ def get_gemini_dims_responses(input, image, prompts):
 #         return image_parts
 #     else:
 #         raise FileNotFoundError("No file uploaded")
+
+def get_gemini_responses_multi_image(text_input, image_list, prompts):
+    """
+    Sends a request to the Gemini 1.5 Flash model with text, multiple images, 
+    and a series of prompts.
+
+    Args:
+        text_input (str): The common text input to be included in all prompts.
+        image_list (list): A list of image objects (e.g., from PIL.Image.open()).
+        prompts (list): A list of string prompts to be sent to the model.
+
+    Returns:
+        list: A list of text responses from the model for each prompt.
+    """
+    # Configure the generative model with your desired settings
+    model = genai.GenerativeModel('gemini-2.0-flash',
+                                  generation_config=genai.types.GenerationConfig(
+                                      temperature=0.5,
+                                      top_p=0.9,
+                                      top_k=40,
+                                      max_output_tokens=1024
+                                  ))
+    
+    all_responses = []
+    
+    # Iterate through each prompt provided
+    for prompt in prompts:
+        # The key change is here: we construct the content list by combining
+        # the initial text, all images from the image_list, and the current prompt.
+        # The model can accept multiple images in the input list.
+        content_parts = [text_input] + image_list + [prompt]
+        
+        try:
+            # Generate content using the combined list of parts
+            response = model.generate_content(content_parts)
+            
+            # Extract text from the response parts
+            for part in response.parts:
+                if part.text:
+                    all_responses.append(part.text)
+        except Exception as e:
+            print(f"An error occurred while processing a prompt: {e}")
+            all_responses.append(f"Error: {e}")
+            
+    return all_responses
+
+
     
 def input_image_setup(file_bytes_io, mime_type):
     if file_bytes_io is not None:

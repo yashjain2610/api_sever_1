@@ -229,13 +229,13 @@ target_fields_necklace_amz = [
 #fixed_values_earrings_amz , target_fields_earrings_amz = get_fixed_values_dict("Logic_of_earrings_amz.xlsx")
 
 fixed_values_earrings_amz = {
-    'item_type_name': 'earring',
+    'feed_product_type': 'earring',
     'update_delete': 'Update',
     'brand_name': 'Alya Jewels',
     'recommended_browse_nodes': '2152555031',
     'target_gender': 'Women',
     'packer_contact_information': 'Alya Jewels',
-    'metals_metal_stamp': 'No Metal Stamo',
+    'metals_metal_stamp': 'No Metal Stamp',
     'size_name': 'Free',
     'item_width_unit_of_measure': 'Cm',
     'item_height_unit_of_measure': 'Cm',
@@ -396,3 +396,23 @@ target_fields_bracelet_meesho =  [
     'Type',
     'Product Description'
 ]
+
+
+fixed_values_variation_amz = {
+    "feed_product_type":"earrings",
+    "update_delete": "update",
+    "brand_name": "Alya jewels",
+    "variation_theme":"ColorName",
+    "parent_child":"parent",
+    'recommended_browse_nodes': '2152555031'
+}
+
+target_values_variations_amz = [
+    "item_sku","item_name"
+]
+
+fixed_values_variations_child = {
+    "variation_theme":"ColorName",
+    "parent_child":"child",
+    "relationship_type":"variation",
+}
