@@ -419,24 +419,43 @@ async def scrape_all_product_details(asins: list) -> list:
             {"width": 1366, "height": 768},
         ]
 
-        selected_user_agent = random.choice(user_agents)
-        selected_viewport = random.choice(viewport_sizes)
+        # selected_user_agent = random.choice(user_agents)
+        # selected_viewport = random.choice(viewport_sizes)
 
         browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(
-            user_agent=selected_user_agent,
-            viewport=selected_viewport
-        )
-        page = await context.new_page()
+        # context = await browser.new_context(
+        #     user_agent=selected_user_agent,
+        #     viewport=selected_viewport
+        # )
+        # page = await context.new_page()
 
         for idx, asin in enumerate(asins, start=1):
             print(f"Scraping details [{idx}/{len(asins)}] for ASIN: {asin}")
+
+            selected_user_agent = random.choice(user_agents)
+            selected_viewport = random.choice(viewport_sizes)
+
+            context = await browser.new_context(
+                user_agent=selected_user_agent,
+                viewport=selected_viewport
+            )
+            page = await context.new_page()
+
+
             url = f"https://www.amazon.in/dp/{asin}"
             product_dict = {"asin": asin, "link": url}
-            full_product = await scrape_amazon_product_detail(page, product_dict, url)
-            full_product["asin"] = asin
-            updated_products.append(full_product)
-            await asyncio.sleep(random.uniform(35,50))  #reduce requests
+            try:
+                full_product = await scrape_amazon_product_detail(page, product_dict, url)
+                full_product["asin"] = asin
+                updated_products.append(full_product)
+            except Exception as e:
+                print(f"Failed to scrape {asin}: {e}")
+            finally:
+                await context.close()
+            # full_product = await scrape_amazon_product_detail(page, product_dict, url)
+            # full_product["asin"] = asin
+            # updated_products.append(full_product)
+            await asyncio.sleep(random.uniform(20,60))  #reduce requests
 
         await browser.close()
 
