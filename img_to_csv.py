@@ -1416,21 +1416,42 @@ async def competitor_analysis(competitor_request: CompetitorRequest):
         # Optionally process marketplace
         marketplace = competitor_request.marketplace.lower()
         response = {}
+        response_list = []
         if(marketplace.lower() == "amazon"):
-            results = await scrape_all_product_details(asin_list)
+            excel_results = []
+            for asin in asin_list:
+                new_asin_list = await get_new_asin_list(asin)
+                new_asin_list = new_asin_list[:5]
+                results = await scrape_all_product_details(new_asin_list)
+
+                s_dict = {
+                    "asin": asin
+                }
+
+                result_dict = {
+                    "asin" : asin,
+                    "result" : results
+                }
+
+                response_list.append(result_dict)
+
+                excel_results.extend([s_dict])
+                excel_results.extend(results)
+
+            #print(excel_results)
             local_file = "amazon_products.xlsx"
 
-            generate_excel_from_products(results, local_file)
+            generate_excel_from_products(excel_results, local_file)
 
             key = "excel_files/amazon_products.xlsx"
 
             s3.upload_file(
-                Filename=local_file,
-                Bucket=S3_BUCKET,
-                Key=key,
-                ExtraArgs={'ContentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
-            )
-            response["result"] = results
+                    Filename=local_file,
+                    Bucket=S3_BUCKET,
+                    Key=key,
+                    ExtraArgs={'ContentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
+                )
+            response["results"] = response_list
 
         # Placeholder response (you can replace with actual analysis logic)
         response["url"] = f"https://alyaimg.s3.amazonaws.com/excel_files/{local_file}"

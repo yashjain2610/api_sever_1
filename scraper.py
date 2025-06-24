@@ -6,7 +6,7 @@ import sys
 import re
 import pandas as pd
 import urllib.parse
-
+import json
 
 if sys.platform.startswith('win'):
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
@@ -455,12 +455,81 @@ async def scrape_all_product_details(asins: list) -> list:
             # full_product = await scrape_amazon_product_detail(page, product_dict, url)
             # full_product["asin"] = asin
             # updated_products.append(full_product)
-            await asyncio.sleep(random.uniform(20,60))  #reduce requests
+            await asyncio.sleep(random.uniform(20,30))  #reduce requests
 
         await browser.close()
 
     return updated_products
 
+
+async def get_new_asin_list(asin):
+    new_asin_list = []
+    """
+    Given a single ASIN, scrape the "Related products" carousel on its Amazon.in product page,
+    extract the ASINs of all the related /dp/ links, and return them as a list.
+    """
+    # defaults if none provided
+    user_agents = [
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)...",
+        ]
+    viewport_sizes = [
+            {"width": 1920, "height": 1080},
+            {"width": 1366, "height": 768},
+        ]
+
+    related_asins = set()
+    url = f"https://www.amazon.in/dp/{asin}"
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+
+        # choose UA and viewport at random
+        ua = random.choice(user_agents)
+        vp = random.choice(viewport_sizes)
+        context = await browser.new_context(user_agent=ua, viewport=vp)
+        page = await context.new_page()
+
+        await page.goto(url, wait_until="domcontentloaded")
+
+        # wait for the related-products carousel container to appear
+        # adjust selector if Amazon changes its DOM
+        carousel_sel = "#sp_detail_thematic-prime_theme_for_non_prime_members"
+
+        try:
+            # wait for the container to appear
+            el = await page.wait_for_selector(carousel_sel, timeout=30000)
+        except Exception:
+            print("not loaded")
+            await context.close()
+            await browser.close()
+            return []
+
+        # pull out the JSON in its data attribute
+        raw = await el.get_attribute("data-a-carousel-options")
+        if not raw:
+            # if Amazon changed the attr-name, you could try other attrs here
+            print("here")
+            await context.close()
+            await browser.close()
+            return []
+
+        try:
+            cfg = json.loads(raw)
+        except json.JSONDecodeError:
+            print("here2")
+            cfg = {}
+
+        # collect any ASIN arrays we find
+        for key in ("initialSeenAsins", "filteredItems"):
+            vals = cfg.get(key)
+            if isinstance(vals, list):
+                related_asins.update(vals)
+
+        await context.close()
+        await browser.close()
+
+    return list(related_asins)
 
 async def get_offer_counts(asins):
     """
@@ -596,7 +665,7 @@ def write_offers_to_excel(data, output_file_path):
 #     # print(rank)
 
 if __name__ == "__main__":
-    asins = ["B0F8R4MSV5", "B0F3XRY495"]
-    products = asyncio.run(scrape_all_product_details(asins))
+    asins = "B0F8R4MSV5"
+    products = asyncio.run(get_new_asin_list(asins))
     print(products)
     
