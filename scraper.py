@@ -490,15 +490,16 @@ async def get_new_asin_list(asin):
         context = await browser.new_context(user_agent=ua, viewport=vp)
         page = await context.new_page()
 
-        await page.goto(url, wait_until="domcontentloaded",timeout=30000)
-
+        await page.goto(url,timeout=45000)
+        await page.wait_for_timeout(10000)
+        
         # wait for the related-products carousel container to appear
         # adjust selector if Amazon changes its DOM
         carousel_sel = "#sp_detail_thematic-prime_theme_for_non_prime_members"
 
         try:
             # wait for the container to appear
-            el = await page.wait_for_selector(carousel_sel, timeout=30000)
+            el = await page.wait_for_selector(carousel_sel, timeout=40000)
         except Exception:
             print("not loaded")
             await context.close()
