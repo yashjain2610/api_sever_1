@@ -482,7 +482,7 @@ async def get_new_asin_list(asin):
     url = f"https://www.amazon.in/dp/{asin}"
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch(headless=True)
 
         # choose UA and viewport at random
         ua = random.choice(user_agents)
@@ -493,14 +493,11 @@ async def get_new_asin_list(asin):
         await page.goto(url,timeout=45000)
         await page.wait_for_timeout(10000)
 
-        await page.screenshot(path="out.png", full_page=True)
-        html_dump = await page.content()
-        open("page.html", "w").write(html_dump)
-
         # wait for the related-products carousel container to appear
         # adjust selector if Amazon changes its DOM
         # carousel_sel = "#sp_detail_thematic-prime_theme_for_non_prime_members"
         carousel_selectors = [
+            "#sp_detail",
             "#sp_detail_thematic-prime_theme_for_non_prime_members",
             "#sp_detail2",
             "sp_detail_thematic-prime_theme_for_prime_members"
