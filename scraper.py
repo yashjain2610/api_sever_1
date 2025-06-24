@@ -492,19 +492,39 @@ async def get_new_asin_list(asin):
 
         await page.goto(url,timeout=45000)
         await page.wait_for_timeout(10000)
-        
+
         # wait for the related-products carousel container to appear
         # adjust selector if Amazon changes its DOM
-        carousel_sel = "#sp_detail_thematic-prime_theme_for_non_prime_members"
+        # carousel_sel = "#sp_detail_thematic-prime_theme_for_non_prime_members"
+        carousel_selectors = [
+            "#sp_detail_thematic-prime_theme_for_non_prime_members",
+            "#sp_detail2",
+            "sp_detail_thematic-prime_theme_for_prime_members"
+        ]
 
-        try:
-            # wait for the container to appear
-            el = await page.wait_for_selector(carousel_sel, timeout=40000)
-        except Exception:
+        el = None
+        for sel in carousel_selectors:
+            try:
+                el = await page.wait_for_selector(sel, timeout=10000)
+                print(f"Found carousel via selector: {sel}")
+                break
+            except Exception:
+                continue
+
+        if not el:
             print("not loaded")
             await context.close()
             await browser.close()
             return []
+
+        # try:
+        #     # wait for the container to appear
+        #     el = await page.wait_for_selector(carousel_sel, timeout=60000)
+        # except Exception:
+        #     print("not loaded")
+        #     await context.close()
+        #     await browser.close()
+        #     return []
 
         # pull out the JSON in its data attribute
         raw = await el.get_attribute("data-a-carousel-options")
