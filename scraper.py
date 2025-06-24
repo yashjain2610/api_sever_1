@@ -461,6 +461,27 @@ async def scrape_all_product_details(asins: list) -> list:
 
     return updated_products
 
+async def extract_asins_from_cardsclient(page):
+    html = await page.content()
+
+    m = re.search(r"<!--CardsClient-->(.*?)</div>", html, re.S)
+    if not m:
+        return []
+
+    block = m.group(1)
+    # find JSON in data-a-carousel-options
+    j = re.search(r'data-a-carousel-options="([^"]+)"', block)
+    if not j:
+        return []
+
+    raw = j.group(1).encode('utf-8').decode('unicode_escape')
+    cfg = json.loads(raw)
+
+    # Amazon often lists ASINs under cfg["ajax"]["id_list"]
+    asins = cfg.get("ajax", {}).get("id_list", [])
+    return list(asins)
+
+
 
 async def get_new_asin_list(asin):
     new_asin_list = []
@@ -493,70 +514,74 @@ async def get_new_asin_list(asin):
         await page.goto(url,wait_until="networkidle",timeout=45000)
         await page.wait_for_timeout(10000)
 
-        html = await page.content()  # ← here's your HTML snapshot
-
-        with open("ec2_page.html", "w", encoding="utf-8") as f:
-            f.write(html)
-
-        # wait for the related-products carousel container to appear
-        # adjust selector if Amazon changes its DOM
-        # carousel_sel = "#sp_detail_thematic-prime_theme_for_non_prime_members"
-        carousel_selectors = [
-            "#sp_detail",
-            "#sp_detail_thematic-prime_theme_for_non_prime_members",
-            "#sp_detail2",
-            "sp_detail_thematic-prime_theme_for_prime_members"
-        ]
-
-        el = None
-        for sel in carousel_selectors:
-            try:
-                el = await page.wait_for_selector(sel, timeout=10000)
-                print(f"Found carousel via selector: {sel}")
-                break
-            except Exception:
-                continue
-
-        if not el:
-            print("not loaded")
-            await context.close()
-            await browser.close()
-            return []
-
-        # try:
-        #     # wait for the container to appear
-        #     el = await page.wait_for_selector(carousel_sel, timeout=60000)
-        # except Exception:
-        #     print("not loaded")
-        #     await context.close()
-        #     await browser.close()
-        #     return []
-
-        # pull out the JSON in its data attribute
-        raw = await el.get_attribute("data-a-carousel-options")
-        if not raw:
-            # if Amazon changed the attr-name, you could try other attrs here
-            print("here")
-            await context.close()
-            await browser.close()
-            return []
-
-        try:
-            cfg = json.loads(raw)
-        except json.JSONDecodeError:
-            print("here2")
-            cfg = {}
-
-        # collect any ASIN arrays we find
-        for key in ("initialSeenAsins", "filteredItems"):
-            vals = cfg.get(key)
-            if isinstance(vals, list):
-                related_asins.update(vals)
-
+        ans = await extract_asins_from_cardsclient(page)
         await context.close()
-        await browser.close()
+        return ans
 
-    return list(related_asins)
+    #     html = await page.content()  # ← here's your HTML snapshot
+
+    #     with open("ec2_page.html", "w", encoding="utf-8") as f:
+    #         f.write(html)
+
+    #     # wait for the related-products carousel container to appear
+    #     # adjust selector if Amazon changes its DOM
+    #     # carousel_sel = "#sp_detail_thematic-prime_theme_for_non_prime_members"
+    #     carousel_selectors = [
+    #         "#sp_detail",
+    #         "#sp_detail_thematic-prime_theme_for_non_prime_members",
+    #         "#sp_detail2",
+    #         "sp_detail_thematic-prime_theme_for_prime_members"
+    #     ]
+
+    #     el = None
+    #     for sel in carousel_selectors:
+    #         try:
+    #             el = await page.wait_for_selector(sel, timeout=10000)
+    #             print(f"Found carousel via selector: {sel}")
+    #             break
+    #         except Exception:
+    #             continue
+
+    #     if not el:
+    #         print("not loaded")
+    #         await context.close()
+    #         await browser.close()
+    #         return []
+
+    #     # try:
+    #     #     # wait for the container to appear
+    #     #     el = await page.wait_for_selector(carousel_sel, timeout=60000)
+    #     # except Exception:
+    #     #     print("not loaded")
+    #     #     await context.close()
+    #     #     await browser.close()
+    #     #     return []
+
+    #     # pull out the JSON in its data attribute
+    #     raw = await el.get_attribute("data-a-carousel-options")
+    #     if not raw:
+    #         # if Amazon changed the attr-name, you could try other attrs here
+    #         print("here")
+    #         await context.close()
+    #         await browser.close()
+    #         return []
+
+    #     try:
+    #         cfg = json.loads(raw)
+    #     except json.JSONDecodeError:
+    #         print("here2")
+    #         cfg = {}
+
+    #     # collect any ASIN arrays we find
+    #     for key in ("initialSeenAsins", "filteredItems"):
+    #         vals = cfg.get(key)
+    #         if isinstance(vals, list):
+    #             related_asins.update(vals)
+
+    #     await context.close()
+    #     await browser.close()
+
+    # return list(related_asins)
 
 async def get_offer_counts(asins):
     """
