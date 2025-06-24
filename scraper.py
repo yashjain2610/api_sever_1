@@ -490,7 +490,7 @@ async def get_new_asin_list(asin):
         context = await browser.new_context(user_agent=ua, viewport=vp)
         page = await context.new_page()
 
-        await page.goto(url, wait_until="domcontentloaded")
+        await page.goto(url, wait_until="domcontentloaded",timeout=30000)
 
         # wait for the related-products carousel container to appear
         # adjust selector if Amazon changes its DOM
