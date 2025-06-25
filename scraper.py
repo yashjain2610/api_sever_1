@@ -419,30 +419,30 @@ async def scrape_all_product_details(asins: list) -> list:
             # Windows Chrome (latest-ish)
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
             "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-            # Windows Firefox
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
-            # macOS Safari & Chrome
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-            # Linux Chrome
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-            # Mobile Chrome (Android) & Safari (iPhone)
-            "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36",
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/605.1.15",
+            # # Windows Firefox
+            # "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
+            # # macOS Safari & Chrome
+            # "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15",
+            # "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+            # # Linux Chrome
+            # "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+            # # Mobile Chrome (Android) & Safari (iPhone)
+            # "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36",
+            # "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/605.1.15",
         ]
-        viewport_sizes = [
-            {"width": 1920, "height": 1080},  # Full HD desktop
-            {"width": 2560, "height": 1440},  # 2K desktop
-            {"width": 3840, "height": 2160},  # 4K desktop
-            {"width": 1366, "height": 768},   # Entry-level laptop
-            {"width": 1536, "height": 864},   # Mid-range laptop
-            {"width": 1440, "height": 900},   # MacBook handles
-            {"width": 1280, "height": 720},   # Lower-end widescreens
-            {"width": 360, "height": 800},    # Android phone
-            {"width": 390, "height": 844},    # Larger iPhones
-            {"width": 768, "height": 1024},   # iPads/tablets portrait
-            {"width": 800, "height": 1280},   # Android tablets portrait
-        ]
+        # viewport_sizes = [
+        #     {"width": 1920, "height": 1080},  # Full HD desktop
+        #     {"width": 2560, "height": 1440},  # 2K desktop
+        #     {"width": 3840, "height": 2160},  # 4K desktop
+        #     {"width": 1366, "height": 768},   # Entry-level laptop
+        #     {"width": 1536, "height": 864},   # Mid-range laptop
+        #     {"width": 1440, "height": 900},   # MacBook handles
+        #     {"width": 1280, "height": 720},   # Lower-end widescreens
+        #     {"width": 360, "height": 800},    # Android phone
+        #     {"width": 390, "height": 844},    # Larger iPhones
+        #     {"width": 768, "height": 1024},   # iPads/tablets portrait
+        #     {"width": 800, "height": 1280},   # Android tablets portrait
+        # ]
 
         # selected_user_agent = random.choice(user_agents)
         # selected_viewport = random.choice(viewport_sizes)
@@ -458,11 +458,10 @@ async def scrape_all_product_details(asins: list) -> list:
             print(f"Scraping details [{idx}/{len(asins)}] for ASIN: {asin}")
 
             selected_user_agent = random.choice(user_agents)
-            selected_viewport = random.choice(viewport_sizes)
+            # selected_viewport = random.choice(viewport_sizes)
 
             context = await browser.new_context(
                 user_agent=selected_user_agent,
-                viewport=selected_viewport
             )
             page = await context.new_page()
 
@@ -677,18 +676,18 @@ async def get_product_rank(target_asin, search_query,max_pages = 4):
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)...",
         ]
-        viewport_sizes = [
-            {"width": 1920, "height": 1080},
-            {"width": 1366, "height": 768},
-        ]
+        # viewport_sizes = [
+        #     {"width": 1920, "height": 1080},
+        #     {"width": 1366, "height": 768},
+        # ]
 
         selected_user_agent = random.choice(user_agents)
-        selected_viewport = random.choice(viewport_sizes)
+        #selected_viewport = random.choice(viewport_sizes)
 
         browser = await p.chromium.launch(headless=True , args=["--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage"])
         context = await browser.new_context(
-            user_agent=selected_user_agent,
-            viewport=selected_viewport
+            user_agent=selected_user_agent
+            #viewport=selected_viewport
         )
         browser = await p.chromium.launch(headless=True)
         page = await context.new_page()
