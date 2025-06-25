@@ -201,6 +201,11 @@ async def scrape_amazon_product_detail(page,product_partial: dict,detail_url = N
         await page.goto(detail_url, timeout=45000)
         await page.wait_for_timeout(20000)
 
+        html = await page.content()  # ← here's your HTML snapshot
+
+        with open("ec2_asin.html", "w", encoding="utf-8") as f:
+            f.write(html)
+
         title = "N/A"
         title_el = await page.query_selector("#productTitle")
         if title_el:
