@@ -460,11 +460,11 @@ async def scrape_all_product_details(asins: list) -> list:
             selected_user_agent = random.choice(user_agents)
             selected_viewport = random.choice(viewport_sizes)
 
-            # context = await browser.new_context(
-            #     user_agent=selected_user_agent,
-            #     viewport=selected_viewport
-            # )
-            page = await browser.new_page()
+            context = await browser.new_context(
+                user_agent=selected_user_agent,
+                viewport=selected_viewport
+            )
+            page = await context.new_page()
 
 
             url = f"https://www.amazon.in/dp/{asin}"
@@ -685,13 +685,13 @@ async def get_product_rank(target_asin, search_query,max_pages = 4):
         selected_user_agent = random.choice(user_agents)
         selected_viewport = random.choice(viewport_sizes)
 
-        #browser = await p.chromium.launch(headless=True , args=["--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage"])
-        # context = await browser.new_context(
-        #     user_agent=selected_user_agent,
-        #     viewport=selected_viewport
-        # )
+        browser = await p.chromium.launch(headless=True , args=["--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage"])
+        context = await browser.new_context(
+            user_agent=selected_user_agent,
+            viewport=selected_viewport
+        )
         browser = await p.chromium.launch(headless=True)
-        page = await browser.new_page()
+        page = await context.new_page()
 
         for page_num in range(1, max_pages + 1):
             url = start_url + f"&page={page_num}"
