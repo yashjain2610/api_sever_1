@@ -663,7 +663,7 @@ async def get_offer_counts(asins):
     return results
 
 
-async def get_product_rank(target_asin, search_query,max_pages = 7):
+async def get_product_rank(target_asin, search_query,max_pages = 4):
     """
     Given an ASIN and a search query, scrape the product rank on Amazon.in
     and return the rank as an integer.
@@ -698,7 +698,7 @@ async def get_product_rank(target_asin, search_query,max_pages = 7):
             await page.goto(url, timeout=60000)
 
             try:
-                await page.wait_for_selector("div[data-asin]", timeout=15000)
+                await page.wait_for_selector("div[data-asin]", timeout=20000)
             except Exception as e:
                 print(f"Timeout waiting for product list: {e}")
                 continue 
@@ -713,7 +713,10 @@ async def get_product_rank(target_asin, search_query,max_pages = 7):
                     }
 
         await browser.close()
-        return None
+        return {
+            "page": "not found",
+            "position_on_page": "not found"
+        }
 
 
 def write_offers_to_excel(data, output_file_path):
