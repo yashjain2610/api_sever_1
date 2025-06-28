@@ -607,6 +607,7 @@ async def catalog_ai(req: CatalogRequest):
         "mee_nec": ([prompt_description_necklace_meesho, prompt_questions_necklace_meesho], fixed_values_necklace_meesho),
         "fli_bra": ([prompt_description_bracelet_flipkart, prompt_questions_bracelet_flipkart], fixed_values_bracelet_flipkart),
         "mee_bra": ([prompt_description_bracelet_meesho, prompt_questions_bracelet_meesho], fixed_values_bracelet_meesho),
+        "ama_bra": ([prompt_description_bracelet_amz, prompt_questions_bracelet_amz], fixed_values_bracelet_amz),
     }
 
     dims_prompt_map = {
@@ -614,6 +615,7 @@ async def catalog_ai(req: CatalogRequest):
         "ama_ear": [prompt_dimensions_earrings_amz],
         "fli_nec": [prompt_dimensions_necklace_flipkart],
         "fli_bra": [prompt_dimensions_bracelet_flipkart],
+        "ama_bra": [prompt_dimensions_bracelet_amz],
     }
 
     input_prompts , fixed_values = input_prompt_map.get(format)
@@ -708,7 +710,8 @@ async def catalog_ai(req: CatalogRequest):
         "ama_nec": "necklace_amz.xlsx",
         "mee_nec": "necklace_meesho.xlsx",
         "fli_bra": "bracelet_flipkart.xlsx",
-        "mee_bra": "bracelet_meesho.xlsx"
+        "mee_bra": "bracelet_meesho.xlsx",
+        "ama_bra": "bracelet_amz.xlsx",
     }
 
 
@@ -737,6 +740,8 @@ async def catalog_ai(req: CatalogRequest):
         write_to_excel_flipkart(excel_results, filename=tmp_path, target_fields=target_fields_necklace_flipkart, fixed_values=fixed_values_necklace_flipkart)
     elif format == "ama_nec":
         write_to_excel_amz_xl(excel_results, filename=tmp_path, target_fields=target_fields_necklace_amz, fixed_values=fixed_values_necklace_amz)
+    elif format == "ama_bra":
+        write_to_excel_amz_xl(excel_results, filename=tmp_path, target_fields=target_fields_bracelet_amz, fixed_values=fixed_values_bracelet_amz)
     elif format == "mee_nec":
         write_to_excel_meesho(excel_results, filename=tmp_path, target_fields=target_fields_necklace_meesho, fixed_values=fixed_values_necklace_meesho)
     elif format == "fli_bra":
@@ -1390,6 +1395,7 @@ async def get_rank_product(rankRequest: rankRequest):
                     result = await get_product_rank(asin, search)
                     result["search_query"] = search
                     results.append(result)
+                    #time.sleep(50)
                 final_results.append({"asin": asin, "results": results})
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))

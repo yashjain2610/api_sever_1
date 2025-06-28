@@ -865,6 +865,188 @@ Questions {
 }
 """
 
+prompt_description_bracelet_amz = """
+        you are jewellery expert,you will be given an image of a bracelet.
+        for the jewellery item Create an amazon friendly description with top ranking keywords as per marketplace trends with 2k max characters
+        in the description include all the key features of the item. it should be in one paragraph.
+        give only description dont add any headers or footerst
+"""
+
+prompt_questions_bracelet_amz = """
+you are a jewellery expert and an e-commerce catalog manager for amazon. you will be given an image of a bracelet.
+answer the given questions. If options are provided for a question, choose the correct answer based on the image.
+if no options are given, respond based on your expert analysis using one or two words. do not write "not applicable".
+
+Questions {
+    {
+        field name: item_name
+        question: What is the item name (title) of the jewellery? in max 200 characters, example title 
+    }
+    {
+        field name: stone_color
+        question: What is the stone colour used in the jewellery?
+        options: F-G, H-I, Cream, J-K, Black, Champagne, Green Blue, L-M, Orange, Other Color, N-O, Violet Blue, P-Q, Beige, Blue Violet, R-S, T-U, V-W, Gold, Gray, Violet, X-Y, Yellow Orange, Orange Yellow, Multiple Colors, Silver, Pink, Metallic, Yellow, Violet Red, Color Changing, E-F, Brown, G-H, D, E, F, G, I-J, H, I, J, K, K-L, L, M, Green Yellow, M-N, Clear, Red Violet, O-P, Q-R, Orange Red, S-T, Red Orange, U-V, W-X, Blue, Y-Z, Yellow Green, White, Blue Green, D-E, Green
+    }
+    {
+        field name: style_name
+        question: What is the style of the jewellery?
+        options: Art Deco, Cape Cod, Bohemian, Contemporary, Casual, Tropical, Victorian, Classic, Asian, Moroccan, Retro, Modern, Mediterranean, Cottage, Scandinavian, Fine, Old World, Southwestern, Baroque
+    }
+    {
+        field name: stones_color
+        question: What is the stone colour used in the item?
+        options:
+    }
+    {
+        field name: item_type_name
+        question: What is the item type name?
+        options: Tennis Bracelets, Choker Necklaces, Strand Bracelets, Cuff Bracelets, Pearl Strands, Italian Style Charm Starter Bracelets, Wrap Bracelets, Bangle Bracelets, Strand Necklaces, Charm Bracelets, Link Bracelets, Necklaces, Stretch Bracelets, Bracelets, Chain Necklaces, Identification Bracelets, Anklets, Pendant Enhancers, Locket Necklaces, Link Charm Bracelets, Snake Charm Bracelets, Pendant Necklaces
+    }
+    {
+        field name: occasion_type1
+        question: What is the primary occasion the jewellery is suited for?
+        options: Festive, Engagement, Promise, Wedding, Anniversary, Christening, Eternity, Birth
+    }
+    {
+        field: occasion_type2,
+        question: give any other occasion the jewellery is suited for?
+        options: Easter, Christmas, Graduation, Prom, Anniversary, Birthday, Cocktail Party, Thanksgiving, Womens Day, Bridal Shower, Engagement, New Year, Wedding, Communion, Halloween, Valentines Day	
+    }
+    {
+        field: occasion_type3,
+        question: give any other occasion the jewellery is suited for?
+        options: Easter, Christmas, Graduation, Prom, Anniversary, Birthday, Cocktail Party, Thanksgiving, Womens Day, Bridal Shower, Engagement, New Year, Wedding, Communion, Halloween, Valentines Day	
+    }
+    {
+        field: occasion_type4,
+        question: give any other occasion the jewellery is suited for?
+        options: Easter, Christmas, Graduation, Prom, Anniversary, Birthday, Cocktail Party, Thanksgiving, Womens Day, Bridal Shower, Engagement, New Year, Wedding, Communion, Halloween, Valentines Day	
+    }
+    {
+        field: occasion_type5,
+        question: give any other occasion the jewellery is suited for?
+        options: Easter, Christmas, Graduation, Prom, Anniversary, Birthday, Cocktail Party, Thanksgiving, Womens Day, Bridal Shower, Engagement, New Year, Wedding, Communion, Halloween, Valentines Day	
+    }
+    {
+        field name: clasp_type
+        question: What is the clasp type of the item?
+        options: Ball, S-Hook, Slide Lock, Barrel, Box, Buckle, Snap, Hook and Eye, Fishhook, Lobster, Magnetic, Fold Over, Spring Ring, Push Button, Toggle, Swivel, Pinch Clip, Bolt Ring
+    }
+    {
+        field name: color_map
+        question: What is the color map of the jewellery?
+        options: Brown, Gold, Blue, Multi-Colour, Black, Orange, Clear, Red, Silver, Pink, White, Metallic, Beige, Purple, Yellow, Off-White, Green, Grey
+    }
+    {
+        field name: collection_name
+        question: What collection does this jewellery belong to?
+        options: Ethnic, Contemporary
+    }
+    {
+        field name: material_type
+        question: What is the material type?
+        options: Gemstone, Brass, Sterling Silver, Glass, Leather, Plastic, Metal, Stone, Cubic Zirconia, Pewter, Platinum, Stainless Steel, Resin, White Gold, Rhinestone, Copper, Gold, Faux Leather, Wood, Rose Gold, Diamond, Cowrie, Yellow Gold, Zinc, Pearl, Acrylic, Crystal
+    }
+    {
+        field name: stones_type
+        question: What type of stones are used in the jewellery?
+    }
+    {
+        field name: number_of_stones
+        question: How many stones are there in the jewellery?
+    }
+    {
+        field name: setting_type
+        question: What is the setting type?
+        options: Wrap, Gypsy, Pave, Channel, Cluster, Illusion, Band, Micro Pave, Bezel, Bar, Bead, Prong, Tension, Invisible, Halo
+    }
+    {
+        field name: bullet_point1
+        question: Write Bullet Point 1 (250 characters) highlighting the **style, appeal, or use case** of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions.
+    }
+    {
+        field name: bullet_point2
+        question: Write Bullet Point 2 (250 characters) focusing on the **material, craftsmanship, or design details**. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish).
+    }
+    {
+        field name: bullet_point3
+        question: Write Bullet Point 3 (250 characters) describing the **stone or embellishments used**, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.
+    }
+    {
+        field name: bullet_point4
+        question: Write Bullet Point 4 (250 characters) related to the **comfort, closure type, or ease of wearing**. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring).
+    }
+    {
+        field name: bullet_point5
+        question: Write Bullet Point 5 (250 characters) presenting the **gifting potential or occasion versatility** of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear.
+    }
+    {
+        field name: color_name
+        question: What is the overall color of the item?
+        options: Red, Brown, Pink, White, Blue, Purple, Yellow, Black, Orange, Green, Grey
+    }
+    {
+        field name: stone_shape
+        question: What is the shape of the stone used?
+        options: Heart, Bullet, Pear, Hexagonal, Square, Rectangular, Star, Triangular, Oval, Irregular, Round, Octagonal
+    }
+    {
+        field name: chain_length_unit
+        question: What is the length unit of the chain?
+        options: Inches, Centimeters, Millimeters
+    }
+    {
+        field name: theme
+        question: What is the theme of the jewellery?
+        options: Alphabet, Princess, Bird, Botanical, Geometric Shape, Cartoon, Weapon, Prison, Reptile, Sport, King, Rainbow, Currency, Snowflake, Coastal, Fish, Insect, Comic, Space, Zodiac, Fruit, Nautical, Queen, Religion, City, Animal, Love, Music, Dance, Fantasy, Scary, Skull, Sign
+    }
+    {
+        field name: stone_cut
+        question: What is the cut of the stone?
+    }
+    {
+        field name: chain_type
+        question: What is the chain type?
+        options: Ball, Cable, Cobra, Herringbone, Tennis, Curb, Franco, Railroad, Singapore, Snake, Rolo, Byzantine, Box, Popcorn, Mariner, Omega, Figaro, French Rope, Bar, Crisscross, Wheat, Cord, Boston
+    }
+    {
+        field name: lifecycle_supply_type
+        question: What is the lifecycle supply type?
+        options: Perennial, Year Round Replenishable, Seasonal Basic, Fashion
+    }
+    {
+        field name: gem_type
+        question: What type of gemstone is used?
+        options: Created Alexandrite, Lava Stone, Abalone, Alexandrite, Amber, Larimar, Chrysoprase, Amazonite, Amethyst, Created Sapphire, Zircon, Aquamarine, Beryl, Andesine, No Gemstone, Ammolite, Created Pearl, Hematite, Tigers Eye, Sodalite, Obsidian, Serpentine, Labradorite, Created Emerald, Moonstone, Pearl, Selenite, Howlite, Bloodstone, Tanzanite, Jade, Morganite, Rhodonite, Tourmaline, Moldavite, Sunstone, Agate, Opal, Shungite, Created Diamond, Garnet, Cubic Zirconia, Sapphire, Emerald, Citrine, Rhinestone, Ruby, Turquoise, Sandstone, Aventurine, Diamond, Created Opal, Quartz, Carnelian, Lapis Lazuli, Cats Eye, Jasper, Kundan, Created Turquoise, Moissanite, Coral, Jet, Created Ruby, Onyx, Created Topaz, Topaz, Peridot
+    }
+    {
+        field name: pearl_type
+        question: What type of pearl is used (if any)?
+        options: Saltwater Pearl, South Sea Cultured Pearl, Akoya Cultured Pearl, Conch Pearl, Blister Pearl, Fireballs Pearl, Scallop Pearl, Coin Pearl, Freshwater Cultured Pearl, Blue Mussel Pearl, Biwa Pearl, Seed Pearl, Keshi Cultured Pearl, Basra Pearl, Tahitian Cultured Pearl, Simulated Pearl, Tahitian Pearl, Melo Pearl, Shell Pearl, Abalone Pearl
+    }
+    {
+        field name: pearl_minimum_color
+        question: What is the minimum color of the pearl?
+    }
+    {
+        field name: number_of_pearls
+        question: How many pearls are there?
+    }
+
+    output format: give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+}
+"""
+
+prompt_dimensions_bracelet_amz = """
+    You are given an image containing a bracelet placed next to a metric scale (calibrated in centimeters). Using the scale as a visual reference, identify the markings of the scale, the full scale in length (vertically) is 21 cm and horizontally is 15 cm, carefully identify and measure the following dimensions of one of the earrings (specifically, the one that appears most clearly in the front view):
+
+    item_width: Measure the maximum horizontal extent (breadth, broadness, or wideness) of the entire earring in the front view, from its leftmost to its rightmost point, in centimeters (cm).
+    item_height: Measure the maximum vertical extent of the entire earring in the front view, from its topmost to its bottommost point, in centimeters (cm).
+    item_length: Measure the depth or thickness of the earring — i.e., the front-to-back extent that would be visible if the earring were viewed from the side. This is typically the least prominent dimension in a front-facing image, so use visible shadows, curves, or hooks as reference to estimate it. Provide this value in centimeters (cm).
+
+    Output Format:  give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+"""
+
 prompt_description_earrings_meesho = """
         you are jewellery expert,you will be given an image of a jewellery item.
         for the jewellery item Create a meesho friendly description with top ranking keywords as per marketplace trends with 10k max characters

@@ -75,6 +75,71 @@ fixed_values_earrings = {
     'Diamond Clarity': 'NA'
 }
 
+fixed_values_bracelet_amz = {
+    'feed_product_type': 'bracelet',
+    "update_delete": "update",
+    'brand_name': 'Alya Jewels',
+    'recommended_browse_nodes': '2152555031',
+    'manufacturer': 'Alya Jewels',
+    'target_gender': 'Female',
+    'packer_contact_information': 'Alya Jewels',
+    'manufacturer_contact_information': 'Alya Jewels',
+    'gender': 'Women',
+    'size_name': 'Free',
+    'unit_count': '1',
+    'supplier_declared_dg_hz_regulation1': 'Not Applicable',
+    'country_of_origin': 'India',
+    'external_product_information': '71171900',
+    'metals_metal_stamp': 'No Metal Stamp',
+    'currency': 'INR',
+    'number_of_items': '1',
+    'fulfillment_latency': '1',
+    'offering_can_be_giftwrapped': 'No',
+    'product_tax_code': 'A_GEN_JEWELLERY',
+    'condition_type': 'New'
+}
+
+
+target_fields_bracelet_amz = [
+    'item_sku',
+    'item_name',
+    'stone_color',
+    'style_name',
+    'stones_color',
+    'item_type_name',
+    'occasion_type1',
+    'occasion_type2',
+    'occasion_type3',
+    'occasion_type4',
+    'occasion_type5',
+    'clasp_type',
+    'color_map',
+    'collection_name',
+    'material_type',
+    'stones_type',
+    'number_of_stones',
+    'setting_type',
+    'bullet_point1',
+    'bullet_point2',
+    'bullet_point3',
+    'bullet_point4',
+    'bullet_point5',
+    'color_name',
+    'stone_shape',
+    'chain_length_unit',
+    'theme',
+    'stone_cut',
+    'chain_type',
+    'lifecycle_supply_type',
+    'gem_type',
+    'pearl_type',
+    'pearl_minimum_color',
+    'number_of_pearls',
+    'product_description'
+]
+
+
+
 fixed_values_bracelet_flipkart = {
     "Listing Status": "Active",
     "Fullfilment by": "Seller",
