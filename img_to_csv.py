@@ -33,6 +33,7 @@ from utils2 import get_gemini_responses as gen_image_responses
 from utils2 import resize_img,resize_img2
 from urllib.parse import urlparse
 from scraper import *
+from flp_scraper import *
 import zipfile
 import time
 
@@ -1399,6 +1400,19 @@ async def get_rank_product(rankRequest: rankRequest):
                 final_results.append({"asin": asin, "results": results})
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
+    elif marketplace.lower() == "flipkart":
+        final_results = []
+        for asin in asin_list:
+            results = []
+            try:
+                for search in search_query_list:
+                    result = await get_flipkart_rank(asin, search)
+                    result["search_query"] = search
+                    results.append(result)
+                    #time.sleep(50)
+                final_results.append({"itmid": asin, "results": results})
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
     else:
         raise HTTPException(status_code=400, detail="Marketplace not supported")
 
@@ -1429,6 +1443,21 @@ async def competitor_analysis(competitor_request: CompetitorRequest):
             generate_excel_from_products(results, local_file)
 
             key = "excel_files/amazon_products.xlsx"
+
+            s3.upload_file(
+                Filename=local_file,
+                Bucket=S3_BUCKET,
+                Key=key,
+                ExtraArgs={'ContentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
+            )
+            response["result"] = results
+        elif(marketplace.lower() == "flipkart"):
+            results = await scrape_flipkart_items(asin_list)
+            local_file = "flipkart_products.xlsx"
+
+            generate_excel_from_products_flipkart(results, local_file)
+
+            key = "excel_files/flipkart_products.xlsx"
 
             s3.upload_file(
                 Filename=local_file,
