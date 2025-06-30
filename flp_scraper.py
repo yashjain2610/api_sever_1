@@ -60,7 +60,7 @@ async def scrape_flipkart_items(itm_ids: list[str]) -> list[dict]:
             try:
                 await page.goto(url, timeout=30000)
                 # wait for the main h1 to appear
-                await page.wait_for_selector("h1._6EBuvT", timeout=20000)
+                await page.wait_for_selector("h1._6EBuvT", timeout=30000)
 
                 # brand is in the first span inside the H1
                 brand = (await page.locator("h1._6EBuvT span.mEh187").inner_text()).strip()
