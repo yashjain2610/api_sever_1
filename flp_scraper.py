@@ -27,7 +27,7 @@ def generate_excel_from_products_flipkart(product_list, filename="flipkart_produ
     
     # Define the preferred column order (optional)
     column_order = [
-        'itm_id','brand','title','price','description','rating','num_of_reviews','url'
+        'itm_id','brand','title','price','description','num_of_imgs','num_of_videos','rating','num_of_reviews','img_url','url'
     ]
     
     # Create a DataFrame
@@ -60,7 +60,7 @@ async def scrape_flipkart_items(itm_ids: list[str]) -> list[dict]:
             try:
                 await page.goto(url, timeout=30000)
                 # wait for the main h1 to appear
-                await page.wait_for_selector("h1._6EBuvT", timeout=15000)
+                await page.wait_for_selector("h1._6EBuvT", timeout=20000)
 
                 # brand is in the first span inside the H1
                 brand = (await page.locator("h1._6EBuvT span.mEh187").inner_text()).strip()
@@ -76,9 +76,36 @@ async def scrape_flipkart_items(itm_ids: list[str]) -> list[dict]:
                     .inner_text()
                 ).strip()
 
-                description = (
-                    await page.locator("div._4aGEkW").inner_text()
-                ).strip()
+                ul_selector = "ul.ZqtVYK"
+                li_selector = f"{ul_selector} > li"
+
+                await page.wait_for_selector(ul_selector, timeout=10000)
+
+                # Count the <li> elements inside it
+                imgs_and_videos = await page.locator(li_selector).count()
+
+                li_with_target_div_selector = "ul.ZqtVYK li:has(div._0SrIM5)"
+
+                num_of_videos = await page.locator(li_with_target_div_selector).count()
+                num_of_imgs = imgs_and_videos - num_of_videos
+
+                first_li = page.locator("ul.ZqtVYK li").first
+
+                # Now find the image inside this <li>
+                img = first_li.locator("img")
+
+                # Extract the 'src' attribute of the image
+                if await img.count() > 0:
+                    img_url = await img.get_attribute("src")
+                else:
+                    img_url = "No image found"
+
+                try:
+                    description = (
+                        await page.locator("div._4aGEkW").inner_text()
+                    ).strip()
+                except Exception:
+                    description = "no description"
                 try:
                     rating = (
                         await page
@@ -104,8 +131,11 @@ async def scrape_flipkart_items(itm_ids: list[str]) -> list[dict]:
                     "title": title,
                     "price": price,
                     "description": description,
+                    "num_of_imgs": num_of_imgs,
+                    "num_of_videos": num_of_videos,
                     "rating": rating,       
                     "num_of_reviews": num_of_reviews,
+                    "img_url": img_url,
                     "url": url
                 })
 
