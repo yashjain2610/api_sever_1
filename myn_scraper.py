@@ -65,10 +65,10 @@ async def scrape_myntra_items(product_ids: list[str]) -> list[dict]:
                 except Exception as e:
                     print(f"Warning: navigate timeout: {e}")
 
-                # html = await page.content()  # ← here's your HTML snapshot
+                html = await page.content()  # ← here's your HTML snapshot
 
-                # with open("ec2_mynid.html", "w", encoding="utf-8") as f:
-                #     f.write(html)
+                with open("ec2_mynid.html", "w", encoding="utf-8") as f:
+                    f.write(html)
                 # wait for the brand header
                 await page.wait_for_selector("h1.pdp-title", timeout=15_000)
 
