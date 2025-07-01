@@ -34,6 +34,7 @@ from utils2 import resize_img,resize_img2
 from urllib.parse import urlparse
 from scraper import *
 from flp_scraper import *
+from myn_scraper import *
 import zipfile
 import time
 
@@ -1458,6 +1459,21 @@ async def competitor_analysis(competitor_request: CompetitorRequest):
             generate_excel_from_products_flipkart(results, local_file)
 
             key = "excel_files/flipkart_products.xlsx"
+
+            s3.upload_file(
+                Filename=local_file,
+                Bucket=S3_BUCKET,
+                Key=key,
+                ExtraArgs={'ContentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
+            )
+            response["result"] = results
+        elif(marketplace.lower() == "myntra"):
+            results = await scrape_myntra_items(asin_list)
+            local_file = "myntra_products.xlsx"
+
+            generate_excel_from_products_myntra(results, local_file)
+
+            key = "excel_files/myntra_products.xlsx"
 
             s3.upload_file(
                 Filename=local_file,
