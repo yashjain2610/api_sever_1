@@ -641,6 +641,7 @@ async def catalog_ai(req: CatalogRequest):
     :param req: A CatalogRequest object containing the image URLs and SKUs.
     :return: A JSON object containing the list of attributes and the URL to the Excel file.
     """
+    clear_excel_file(req.type,req.marketplace)
     format = req.marketplace.lower()[:3] + "_" + req.type.lower()[:3]
 
 
@@ -689,7 +690,7 @@ async def catalog_ai(req: CatalogRequest):
     #https://alyaimg.s3.amazonaws.com/SKU-113.jpg
 
     count = 1
-
+    #print(skuid_list)
     async with httpx.AsyncClient() as client:
         for url, skuid in zip(url_list, skuid_list):
             r = await client.get(url)
@@ -1138,7 +1139,7 @@ async def catalog_ai_variations(req: CatalogRequestVariation):
 
     return {"results": results , "excel_file": s3_url}
 
-@app.post("/clear-excel")
+#@app.post("/clear-excel")
 def clear_excel_file(type: str = Form(...) , marketplace: str = Form(...)):
     static_dir = "static"
     format = marketplace.lower()[:3] + "_" + type.lower()[:3]
@@ -1161,6 +1162,7 @@ def clear_excel_file(type: str = Form(...) , marketplace: str = Form(...)):
     s3_key = f"excel_files/{filename}"
 
 # Download the file using httpx
+    print(s3_url)
     response = httpx.get(s3_url)
     response.raise_for_status()
 

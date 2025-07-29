@@ -147,7 +147,7 @@ prompt_description_earrings_flipkart = """
 
 prompt_dimensions_earrings_flipkart = """
     You are given an image containing a single earring placed next to a metric ruler. The full visible vertical length of the ruler is 21 cm, and the full visible horizontal length of the ruler is 15 cm. Using the ruler as a scale reference, perform the following measurements on the earring that appears most clearly in the front view:
-
+    if no scale is present guess the dimensions to the best of your thinking.
 Width (mm): Determine the maximum horizontal distance from the leftmost edge of the earring to its rightmost edge. Measure that span against the ruler in centimeters, then convert to millimeters (multiply by 10).
 
 Height (mm): Determine the maximum vertical distance from the topmost point of the earring to its bottommost point. Measure that span against the ruler in centimeters, then convert to millimeters (multiply by 10).
@@ -355,7 +355,7 @@ For output format = give output in json format with field name and answer as key
 
 prompt_dimensions_necklace_flipkart = """
     You are given an image containing a pair of earrings (front and back view) placed next to a metric scale (calibrated in centimeters). Using the scale as a visual reference, identify the markings of the scale, the full scale in length (vertically) is 21 cm and horizontally is 15 cm, carefully identify and measure the following dimensions of one of the earrings (specifically, the one that appears most clearly in the front view):
-
+    if no scale is present guess the dimensions to the best of your thinking.
     Chain/Necklace Thickness (mm): Chain/Necklace Thickness refers to the thickness of the chain or necklace. Please ensure that the values entered are in Millimeters. Possible values are 1.5, 5, etc. 
     Chain/Necklace Length (inch): Chain/Necklace Length refers to the length of the chain or necklace. Please ensure that the values entered are in Inches. Possible values are 30.5, 32, etc.
     Width (mm): Measure the maximum horizontal extent (breadth, broadness, or wideness) of the entire earring in the front view, from its leftmost to its rightmost point, in centimeters (cm), then convert this measurement to millimeters (mm).
@@ -376,7 +376,7 @@ prompt_description_bracelet_flipkart = """
 
 prompt_dimensions_bracelet_flipkart = """
     You are given an image containing a pair of earrings (front and back view) placed next to a metric scale (calibrated in centimeters). Using the scale as a visual reference, identify the markings of the scale, the full scale in length (vertically) is 21 cm and horizontally is 15 cm, carefully identify and measure the following dimensions of one of the earrings (specifically, the one that appears most clearly in the front view):
-
+    if no scale is present guess the dimensions to the best of your thinking.
     Pearl Length (mm): Identify the pearl component of the earring and measure its longest dimension in centimeters (cm), then convert this measurement to millimeters (mm).
     Pearl Diameter (mm): Identify the pearl component of the earring and measure its approximate diameter (widest point across) in centimeters (cm), then convert this measurement to millimeters (mm).
     Width (mm): Measure the maximum horizontal extent (breadth, broadness, or wideness) of the entire earring in the front view, from its leftmost to its rightmost point, in centimeters (cm), then convert this measurement to millimeters (mm).
@@ -522,7 +522,7 @@ output format: give output in json format with field name and answer as key valu
 prompt_description_earrings_amz = """
         you are jewellery expert,you will be given an image of a jewellery item.
         for the jewellery item Create an amazon friendly description with top ranking keywords as per marketplace trends with 2k max characters
-        in the description include all the key features of the item. it should be in one paragraph.
+        in the description include all the key features of the item. it should be in between 475 and 500 characters.
         give only description dont add any headers or footers
 """
 
@@ -632,43 +632,23 @@ Questions {
     }
     {
         field: bullet_point1,
-        question: Write Bullet Point 1 (250 characters) highlighting the **style, appeal, or use case** of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions.
+        question: Write Bullet Point 1 (150 characters) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
     }
     {
         field: bullet_point2,
-        question: Write Bullet Point 2 (250 characters) focusing on the **material, craftsmanship, or design details**. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish).
+        question: Write Bullet Point 2 (150 characters) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
     }
     {
         field: bullet_point3,
-        question: Write Bullet Point 3 (250 characters) describing the **stone or embellishments used**, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.
+        question: Write Bullet Point 3 (150 characters) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
     }
     {
         field: bullet_point4,
-        question: Write Bullet Point 4 (250 characters) related to the **comfort, closure type, or ease of wearing**. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring).
+        question: Write Bullet Point 4 (150 characters) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
     }
     {
         field: bullet_point5,
-        question: Write Bullet Point 5 (250 characters) presenting the **gifting potential or occasion versatility** of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear.
-    }
-    {
-        field: bullet_point6,
-        question: Mention any bullet point 6 about the jewellery
-    }
-    {
-        field: bullet_point7,
-        question: Mention any bullet point 7 about the jewellery 
-    }
-    {
-        field: bullet_point8,
-        question: Mention any bullet point 8 about the jewellery
-    }
-    {
-        field: bullet_point9,
-        question: Mention any bullet point 9 about the jewellery
-    }
-    {
-        field: bullet_point10,
-        question: Mention any bullet point 10 about the jewellery 
+        question: Write Bullet Point 5 (150 characters) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
     }
     {
         field: color_name,
@@ -701,7 +681,7 @@ Questions {
 
 prompt_dimensions_earrings_amz = """
     You are given an image containing a pair of earrings placed next to a metric scale (calibrated in centimeters). Using the scale as a visual reference, identify the markings of the scale, the full scale in length (vertically) is 21 cm and horizontally is 15 cm, carefully identify and measure the following dimensions of one of the earrings (specifically, the one that appears most clearly in the front view):
-
+    if no scale is present guess the dimensions to the best of your thinking.
     item_width: Measure the maximum horizontal extent (breadth, broadness, or wideness) of the entire earring in the front view, from its leftmost to its rightmost point, in centimeters (cm).
     item_height: Measure the maximum vertical extent of the entire earring in the front view, from its topmost to its bottommost point, in centimeters (cm).
     item_length: Measure the depth or thickness of the earring — i.e., the front-to-back extent that would be visible if the earring were viewed from the side. This is typically the least prominent dimension in a front-facing image, so use visible shadows, curves, or hooks as reference to estimate it. Provide this value in centimeters (cm).
@@ -789,24 +769,24 @@ Questions {
         options: Wrap, Gypsy, Pave, Channel, Cluster, Illusion, Band, Micro Pave, Bezel, Bar, Bead, Prong, Tension, Invisible, Halo
     }
     {
-        field name: bullet_point1
-        question: Write Bullet Point 1 (250 characters) highlighting the **style, appeal, or use case** of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions.
+        field: bullet_point1,
+        question: Write Bullet Point 1 (150 characters) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
     }
     {
-        field name: bullet_point2
-        question: Write Bullet Point 2 (250 characters) focusing on the **material, craftsmanship, or design details**. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish).
+        field: bullet_point2,
+        question: Write Bullet Point 2 (150 characters) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
     }
     {
-        field name: bullet_point3
-        question: Write Bullet Point 3 (250 characters) describing the **stone or embellishments used**, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.
+        field: bullet_point3,
+        question: Write Bullet Point 3 (150 characters) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
     }
     {
-        field name: bullet_point4
-        question: Write Bullet Point 4 (250 characters) related to the **comfort, closure type, or ease of wearing**. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring).
+        field: bullet_point4,
+        question: Write Bullet Point 4 (150 characters) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
     }
     {
-        field name: bullet_point5
-        question: Write Bullet Point 5 (250 characters) presenting the **gifting potential or occasion versatility** of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear.
+        field: bullet_point5,
+        question: Write Bullet Point 5 (150 characters) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
     }
     {
         field name: color_name
@@ -961,24 +941,24 @@ Questions {
         options: Wrap, Gypsy, Pave, Channel, Cluster, Illusion, Band, Micro Pave, Bezel, Bar, Bead, Prong, Tension, Invisible, Halo
     }
     {
-        field name: bullet_point1
-        question: Write Bullet Point 1 (250 characters) highlighting the **style, appeal, or use case** of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions.
+        field: bullet_point1,
+        question: Write Bullet Point 1 (150 characters) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
     }
     {
-        field name: bullet_point2
-        question: Write Bullet Point 2 (250 characters) focusing on the **material, craftsmanship, or design details**. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish).
+        field: bullet_point2,
+        question: Write Bullet Point 2 (150 characters) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
     }
     {
-        field name: bullet_point3
-        question: Write Bullet Point 3 (250 characters) describing the **stone or embellishments used**, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.
+        field: bullet_point3,
+        question: Write Bullet Point 3 (150 characters) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
     }
     {
-        field name: bullet_point4
-        question: Write Bullet Point 4 (250 characters) related to the **comfort, closure type, or ease of wearing**. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring).
+        field: bullet_point4,
+        question: Write Bullet Point 4 (150 characters) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
     }
     {
-        field name: bullet_point5
-        question: Write Bullet Point 5 (250 characters) presenting the **gifting potential or occasion versatility** of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear.
+        field: bullet_point5,
+        question: Write Bullet Point 5 (150 characters) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
     }
     {
         field name: color_name

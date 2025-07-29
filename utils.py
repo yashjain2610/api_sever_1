@@ -14,6 +14,24 @@ load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 
+def get_gemini_responses_high_temp(input, image, prompts):
+    model = genai.GenerativeModel('gemini-2.0-flash',
+                                  generation_config=genai.types.GenerationConfig(
+                                      temperature=1.5,
+                                      top_p=0.9,
+                                      top_k=40,
+                                      max_output_tokens=1024
+                                  ))
+    all_responses = []
+    for prompt in prompts:
+        response = model.generate_content([input, image[0], prompt])
+        for part in response.parts:
+            if part.text:
+                all_responses.append(part.text)
+    #print(all_responses)
+    return all_responses
+
+
 
 def get_gemini_responses(input, image, prompts):
     model = genai.GenerativeModel('gemini-2.0-flash',
@@ -33,7 +51,7 @@ def get_gemini_responses(input, image, prompts):
     return all_responses
 
 def get_gemini_dims_responses(input, image, prompts):
-    model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20',
+    model = genai.GenerativeModel('gemini-2.5-flash',
                                   generation_config=genai.types.GenerationConfig(
                                       temperature= 1.0,
                                       top_p=0.9,
@@ -107,7 +125,15 @@ def get_gemini_responses_multi_image(text_input, image_list, prompts):
     return all_responses
 
 
+def input_image_setup_st(uploaded_file):
+    if uploaded_file is not None:
+        bytes_data = uploaded_file.getvalue()
+        image_parts = [{"mime_type": uploaded_file.type, "data": bytes_data}]
+        return image_parts
+    else:
+        raise FileNotFoundError("No file uploaded")
     
+
 def input_image_setup(file_bytes_io, mime_type):
     if file_bytes_io is not None:
         bytes_data = file_bytes_io.getvalue()
@@ -473,6 +499,7 @@ def write_to_excel_amz_xl(results,filename,target_fields,fixed_values):
 
         field_values["product_description"] = description
         field_values["item_sku"] = os.path.splitext(image_name)[0]
+        field_values["part_number"] = os.path.splitext(image_name)[0]
 
         for field, col_idx in target_columns.items():
             ws.cell(row=row_idx, column=col_idx, value=field_values.get(field, ""))

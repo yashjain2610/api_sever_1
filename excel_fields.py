@@ -37,7 +37,7 @@
 #     return result, target_fields
 
 
-
+#flipkart
 target_fields_earrings = [
             "Seller SKU ID", "Type", "Color", "Base Material", "Gemstone", "Pearl Type", "Collection",
             "Occasion", "Piercing Required", "Number of Gemstones", "Earring Back Type",
@@ -46,7 +46,7 @@ target_fields_earrings = [
             "Earring Shape", "With Ear Chain", "Earring Set Type", "Ornamentation Type","Trend AW 16", "Description",
             "Width (mm)","Height (mm)","Diameter (mm)"
         ]
-
+#flipkart
 fixed_values_earrings = {
     'Listing Status': 'Active',
     'Fullfilment by': 'Seller',
@@ -103,6 +103,7 @@ fixed_values_bracelet_amz = {
 target_fields_bracelet_amz = [
     'item_sku',
     'item_name',
+    'part_number',
     'stone_color',
     'style_name',
     'stones_color',
@@ -257,6 +258,7 @@ fixed_values_necklace_amz = {
 target_fields_necklace_amz = [
     'item_sku',
     'item_name',
+    'part_number',
     'stone_color',
     'style_name',
     'stones_color',
@@ -294,11 +296,14 @@ target_fields_necklace_amz = [
 #fixed_values_earrings_amz , target_fields_earrings_amz = get_fixed_values_dict("Logic_of_earrings_amz.xlsx")
 
 fixed_values_earrings_amz = {
-    'feed_product_type': 'earring',
+    'feed_product_type': 'Earring',
     'update_delete': 'Update',
+    'manufacturer': 'Alya Jewels',
     'brand_name': 'Alya Jewels',
+    'quantity': '1',
+    'Unit Count': '1',
     'recommended_browse_nodes': '2152555031',
-    'target_gender': 'Women',
+    'target_gender': 'Female',
     'packer_contact_information': 'Alya Jewels',
     'metals_metal_stamp': 'No Metal Stamp',
     'size_name': 'Free',
@@ -333,6 +338,7 @@ fixed_values_earrings_amz = {
 
 target_fields_earrings_amz =  [
     'item_sku',
+    'part_number',
     'item_name',
     'stone_color',
     'style_name',
