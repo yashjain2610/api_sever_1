@@ -612,11 +612,6 @@ Questions {
         options: Ethnic, Contemporary
     }
     {
-        field: metal_type,
-        question: What is the metal type?
-        options: Bronze, Brass, Sterling Silver, No Metal Type, Rose Gold, Aluminium, Yellow Gold, Silver, Platinum, Pewter, Stainless Steel, Tungsten, Titanium, White Gold, Nickel, Copper
-    }
-    {
         field: material_type,
         question: What is the material type?
         options: Amber, Rattan, Sterling Silver, Metal, Stone, Zircon, Stainless Steel, Resin, Titanium, White Gold, Copper, Polyvinyl Chloride, Bronze, Created Pearl, Faux Fur, Polyester, Silicone, Rose Gold, Aluminium, Yellow Gold, Pearl, Silver, Alloy Steel, Acrylic, Crystal, Gemstone, Brass, Glass, Leather, Opal, Iron, Plastic, Cotton, Shell, Silk, Cubic Zirconia, Platinum, Rayon, Rhinestone, Rubber, Turquoise, Faux Leather, Wood, Diamond, Created Opal, Zinc, Coral, Agarwood, Ceramic, Paper
