@@ -733,7 +733,18 @@ async def catalog_ai(req: CatalogRequest):
                 "description": description,
                 "skuid": skuid
             }
-            
+
+            if format == "ama_ear":
+                temp_dict = {
+                    "stones_id": "1",
+                    "stones_type" : "No Gemstone",
+                    "stones_treatment_method": "Not Treated",
+                    "stones_creation_method" : "unknown"
+                }
+
+                if response_json["stones_number_of_stones"] == 0:
+                    response_json.update(temp_dict)
+                
             final_response = {**dict ,**response_json, **fixed_values}
             # static_file_path = os.path.join("static", static_file_name)
 

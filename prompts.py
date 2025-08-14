@@ -617,8 +617,8 @@ Questions {
         options: Amber, Rattan, Sterling Silver, Metal, Stone, Zircon, Stainless Steel, Resin, Titanium, White Gold, Copper, Polyvinyl Chloride, Bronze, Created Pearl, Faux Fur, Polyester, Silicone, Rose Gold, Aluminium, Yellow Gold, Pearl, Silver, Alloy Steel, Acrylic, Crystal, Gemstone, Brass, Glass, Leather, Opal, Iron, Plastic, Cotton, Shell, Silk, Cubic Zirconia, Platinum, Rayon, Rhinestone, Rubber, Turquoise, Faux Leather, Wood, Diamond, Created Opal, Zinc, Coral, Agarwood, Ceramic, Paper
     }
     {
-        field: number_of_stones,
-        question: How many stones are there in the jewellery?
+        field: stones_number_of_stones,
+        question: How many stones are there in the jewellery? if no stones are there then answer 0.
     }
     {
         field: setting_type,
