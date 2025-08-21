@@ -722,8 +722,8 @@ if no options are given, respond based on your expert analysis using one or two 
 
 Questions {
     {
-        field name: item_name
-        question: What is the item name (title) of the jewellery? in max 200 characters, example title 
+        field: item_name,
+        question: What is the item name (title) of the jewellery give a title like the following example? give in max 200 characters example title - "Alya Jewels Vintage-Style Flower necklace, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1" give title according to design of necklace and this example
     }
     {
         field name: stone_color
@@ -836,11 +836,6 @@ Questions {
         field name: lifecycle_supply_type
         question: What is the lifecycle supply type?
         options: Perennial, Year Round Replenishable, Seasonal Basic, Fashion
-    }
-    {
-        field name: gem_type
-        question: What type of gemstone is used?
-        options: Created Alexandrite, Lava Stone, Abalone, Alexandrite, Amber, Larimar, Chrysoprase, Amazonite, Amethyst, Created Sapphire, Zircon, Aquamarine, Beryl, Andesine, No Gemstone, Ammolite, Created Pearl, Hematite, Tigers Eye, Sodalite, Obsidian, Serpentine, Labradorite, Created Emerald, Moonstone, Pearl, Selenite, Howlite, Bloodstone, Tanzanite, Jade, Morganite, Rhodonite, Tourmaline, Moldavite, Sunstone, Agate, Opal, Shungite, Created Diamond, Garnet, Cubic Zirconia, Sapphire, Emerald, Citrine, Rhinestone, Ruby, Turquoise, Sandstone, Aventurine, Diamond, Created Opal, Quartz, Carnelian, Lapis Lazuli, Cats Eye, Jasper, Kundan, Created Turquoise, Moissanite, Coral, Jet, Created Ruby, Onyx, Created Topaz, Topaz, Peridot
     }
     {
         field name: pearl_type
