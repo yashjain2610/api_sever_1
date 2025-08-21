@@ -302,7 +302,7 @@ target_fields_necklace_amz = [
 #fixed_values_earrings_amz , target_fields_earrings_amz = get_fixed_values_dict("Logic_of_earrings_amz.xlsx")
 
 fixed_values_earrings_amz = {
-    'feed_product_type': 'Earring',
+    'feed_product_type': 'earrings',
     'update_delete': 'Update',
     'manufacturer': 'Alya Jewels',
     'brand_name': 'Alya Jewels',
@@ -310,7 +310,9 @@ fixed_values_earrings_amz = {
     'unit_count': '1',
     'metal_type':'Alloy',
     'recommended_browse_nodes': '2152555031',
-    'target_gender': 'Women',
+    'target_gender': 'Female',
+    'department_name': 'Women',
+    'supplier_declared_material_regulation1': 'Not Applicable',
     'packer_contact_information': 'Alya Jewels',
     'metals_metal_stamp': 'No Metal Stamp',
     'size_name': 'Free',

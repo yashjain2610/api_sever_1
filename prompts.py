@@ -133,6 +133,11 @@ Questions {
         question: What is the Trend 2 of the jewellery? Trend AW 16 refers to the name of the trend for Autumn Winter 2016. Select from the options.
         options: Abstract Geometric Danglers, Asymmetric Earring, Chain Links, Chandbali, Chandelier Earrings, Charm Studs, Double Side Earrings, Ear Jacket Double Side Earrings, Ear cuffs, Fine Hoop Earrings, Gold Metal Jhumkas, Jhumka with Long Chain, Long Chain Drop Earrings, Minimal Gold Tone Jewelry, Offbeat Danglers, Silver Metal Jhumkas, Spike Earrings, Statement Jewelry, Tassel, Tribal, Unpaired Earring, Upside Down Asymmetric Earrings
     }
+    {
+        field: is_scale,
+        question: Is there a scale in the image besides the jwellery item? 
+        options: Yes, No
+    }
 }
 For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
 """
@@ -347,6 +352,11 @@ Questions {
         question: What is the necklace color?,
         options: Bronze, Copper, Gold, Gold Oxidised, Multicolor, Silver, Silver Oxidised, Wooden, Zinc
     }
+    {
+        field: is_scale,
+        question: Is there a scale in the image besides the jwellery item? 
+        options: Yes, No
+    }
 }
 
 For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
@@ -513,6 +523,11 @@ Questions {
         field_name: Brand Color,
         questions: What is the brand color of the bracelet?
     }
+    {
+        field: is_scale,
+        question: Is there a scale in the image besides the jwellery item? 
+        options: Yes, No
+    }
 }
 
 output format: give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
@@ -668,6 +683,11 @@ Questions {
         field: gem_type,
         question: What type of gemstone is used?
         options: Created Alexandrite, Created Cubic Zirconia, Abalone, Alexandrite, Amber, Larimar, Kyanite, Marcasite, Ametrine, Amethyst, Created Sapphire, Zircon, Mystic Topaz, Prasiolite, Aquamarine, Cinnabar, Composite Opal, Andesine, No Gemstone, Ammolite, Created Pearl, Hematite, Tigers Eye, Danburite, Obsidian, Labradorite, Created Emerald, Moonstone, Pearl, Howlite, Apatite, Tanzanite, Jade, Morganite, Rhodonite, Tourmaline, Created Zircon, Moldavite, Tsavorite, Agate, Opal, Chalcedony, Created Diamond, Garnet, Cubic Zirconia, Sapphire, Emerald, Madeira Citrine, Citrine, Gabbro, Nacre, Rhinestone, Ruby, Turquoise, Sandstone, Aventurine, Kunzite, Diamond, Created Opal, Quartz, Carnelian, Created Quartz, Lapis Lazuli, Cats Eye, Jasper, Moissanite, Spinel, Coral, Pietersite, Chrysoberyl, Created Ruby, Onyx, Topaz, Peridot, Created Moissanite
+    }
+    {
+        field: is_scale,
+        question: Is there a scale in the image besides the jwellery item? 
+        options: Yes, No
     }
 
     output format: give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
@@ -834,6 +854,11 @@ Questions {
     {
         field name: number_of_pearls
         question: How many pearls are there?
+    }
+    { 
+        field: is_scale,
+        question: Is there a scale in the image besides the jwellery item? 
+        options: Yes, No
     }
 
     output format: give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
@@ -1006,6 +1031,11 @@ Questions {
     {
         field name: number_of_pearls
         question: How many pearls are there?
+    }
+    {
+        field: is_scale,
+        question: Is there a scale in the image besides the jwellery item? 
+        options: Yes, No
     }
 
     output format: give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.

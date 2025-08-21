@@ -719,7 +719,7 @@ async def catalog_ai(req: CatalogRequest):
                 except Exception as e:
                     response_json = {"error": f"Failed to parse JSON: {str(e)}"}
 
-            if dims_prompts:
+            if dims_prompts and response_json.get("is_scale") == "Yes":
                 dims_response = get_gemini_dims_responses("Analyze this image carefully.", image_data, dims_prompts)
                 try:
                     cleaned_dims = dims_response.strip().replace("```json", "").replace("```", "").strip()
