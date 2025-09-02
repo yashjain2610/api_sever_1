@@ -319,6 +319,7 @@ fixed_values_earrings_amz = {
     'stones_type': '1',
     'unit_count': '1',
     'metal_type':'Alloy',
+    'metals_metal_type': '1',
     'recommended_browse_nodes': '2152555031',
     'target_gender': 'Female',
     'department_name': 'Women',
