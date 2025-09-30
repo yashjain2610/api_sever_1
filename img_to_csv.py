@@ -411,6 +411,8 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
 
         If the image is not a duplicate, the output will not contain the "duplicate" key.
         """
+        start = time.time()
+
         if not file:
             return {"error": "No files received"}
         
@@ -476,6 +478,10 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
                 s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{image_name}"
             except Exception as e:
                 return JSONResponse(status_code=500, content={"error": f"Failed to upload to S3: {str(e)}"})
+            
+        end = time.time()
+        print(end - start)
+        print()
 
 
         # Now you can use `save_path` to upload the file to Gemini or process further
@@ -528,6 +534,8 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
         js["s3_url"] = s3_url
         os.remove(save_path)
 
+        end2 = time.time()
+        print(end2 - end)
         
         if duplicate:
             return {
