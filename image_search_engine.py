@@ -20,6 +20,7 @@ from pymilvus import (
 from dotenv import load_dotenv
 import boto3
 from io import BytesIO
+import time
 
 load_dotenv()
 
@@ -38,8 +39,11 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 INDEX_FILE = "indexed_hashes.json"
 INT_HASH_MAP_FILE = "int_hash_to_path.json"
 
-URI   = os.getenv("ZILLIZ_URL")
+URL   = os.getenv("ZILLIZ_URL")
 TOKEN = os.getenv("ZILLIZ_TOKEN")
+
+# IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".webp")
+# EXCLUDED_TOP_LEVEL = {"gen_images/", "excel_files/"} 
 
 s3 = boto3.client(
     "s3",
@@ -62,6 +66,78 @@ def get_image_paths_from_s3(bucket_name: str, prefix: str = ""):
                 image_paths.append(key)
     #print(image_paths)
     return sorted(image_paths)
+
+# def list_images_under_prefix(bucket_name: str, prefix: str):
+#     keys = []
+#     paginator = s3.get_paginator("list_objects_v2")
+#     try:
+#         for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
+#             for obj in page.get("Contents", []):
+#                 k = obj["Key"]
+#                 if k.lower().endswith(IMAGE_EXTS):
+#                     keys.append(k)
+#     except ClientError as e:
+#         # optional: log or handle errors (throttling/network)
+#         print(f"Error listing {prefix}: {e}")
+#     return keys
+
+# def get_image_paths_from_s3_parallel(bucket_name: str, root_prefix: str = "", max_workers: int = 4):
+#     paginator = s3.get_paginator("list_objects_v2")
+#     allowed_prefixes = []
+#     image_paths = []
+
+#     # get top-level prefixes using Delimiter to avoid excluded folders
+#     for page in paginator.paginate(Bucket=bucket_name, Prefix=root_prefix, Delimiter="/"):
+#         for obj in page.get("Contents", []):
+#             key = obj["Key"]
+#             if any(key.startswith(excl) for excl in EXCLUDED_TOP_LEVEL):
+#                 continue
+#             if key.lower().endswith(IMAGE_EXTS):
+#                 image_paths.append(key)
+#         for cp in page.get("CommonPrefixes", []):
+#             prefix = cp["Prefix"]
+#             if prefix in EXCLUDED_TOP_LEVEL:
+#                 continue
+#             allowed_prefixes.append(prefix)
+
+#     # parallelize listing of allowed prefixes
+#     with ThreadPoolExecutor(max_workers=max_workers) as ex:
+#         futures = {ex.submit(list_images_under_prefix, bucket_name, p): p for p in allowed_prefixes}
+#         for fut in as_completed(futures):
+#             image_paths.extend(fut.result())
+
+#     return sorted(image_paths)
+
+
+
+
+def delete_images_from_s3(bucket_name: str, keys, verbose: bool = True):
+    """
+    Delete the specified object keys from the given S3 bucket.
+
+    Args:
+        bucket_name: name of the S3 bucket (e.g. "alyaimg").
+        keys: list of object keys to delete (e.g. ["SKU-107.jpg", "a.jpg", ...]).
+        verbose: if True, prints progress and errors.
+    """
+    # S3 delete_objects can handle up to 1000 keys per call
+    BATCH_SIZE = 1000
+    total = len(keys)
+    for i in range(0, total, BATCH_SIZE):
+        batch = keys[i : i + BATCH_SIZE]
+        delete_payload = {"Objects": [{"Key": k} for k in batch]}
+        try:
+            response = s3.delete_objects(Bucket=bucket_name, Delete=delete_payload)
+            deleted = response.get("Deleted", [])
+            errors = response.get("Errors", [])
+            if verbose:
+                print(f"Batch {i//BATCH_SIZE + 1}: requested {len(batch)} deletions, succeeded {len(deleted)}.")
+                if errors:
+                    print("Errors:")
+                    for err in errors:
+                        print(f"  - {err['Key']}: {err['Message']}")
+        except Exception as e:
+            print(f"Failed to delete batch starting at index {i}: {e}")
 
 def hash_image_from_s3(bucket: str, key: str):
     obj = s3.get_object(Bucket=bucket, Key=key)
@@ -96,15 +172,14 @@ def index_images_from_s3(
     for key in tqdm(image_keys, desc="Indexing S3 images"):
         try:
             h = hash_image_from_s3(S3_BUCKET, key)
+            if h in indexed:
+                continue
             int_h = hash_to_int64(h)
             current_hashes[h] = key
 
             encoded_key = urllib.parse.quote(key)
             s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{encoded_key}"
             int_hash_to_path[str(int_h)] = s3_url
-
-            if h in indexed:
-                continue
 
             img = load_image_from_s3(S3_BUCKET, key)
             emb = embed_image(img, model, processor, device)
@@ -202,7 +277,7 @@ def init_milvus(host: str, port: str, collection_name: str, dim: int = 512):
     #connections.connect("default", host=host, port=port)
     connections.connect(
     alias="default",
-    uri=URI,
+    uri=URL,
     token=TOKEN,
     db_name="default"      # or your custom database
     )
@@ -322,18 +397,29 @@ def search_similar(collection, query_emb, top_k: int = 5):
     return [(int(hit.id), float(hit.distance)) for hit in results[0]]
 
 
+# def main_index():
+#     image_dir = os.getenv("LOCAL_IMAGE_DIR", "./images")
+#     host = os.getenv("MILVUS_HOST", "localhost")
+#     port = os.getenv("MILVUS_PORT", "19530")
+#     coll_name = os.getenv("COLLECTION_NAME", "image_embeddings")
+#     batch_size = int(os.getenv("BATCH_SIZE", "128"))
+#     model, processor, device = init_clip()
+#     collection = init_milvus(host, port, coll_name)
+#     print("hello")
+#     paths = get_image_paths_from_s3(bucket_name=S3_BUCKET)
+#     print(paths)
+#     index_images_from_s3(collection, paths, model, processor, device, batch_size)
+
 def main_index():
-    image_dir = os.getenv("LOCAL_IMAGE_DIR", "./images")
-    host = os.getenv("MILVUS_HOST", "localhost")
-    port = os.getenv("MILVUS_PORT", "19530")
-    coll_name = os.getenv("COLLECTION_NAME", "image_embeddings")
-    batch_size = int(os.getenv("BATCH_SIZE", "128"))
-    model, processor, device = init_clip()
-    collection = init_milvus(host, port, coll_name)
-    print("hello")
+    # paths = get_image_paths_from_s3(bucket_name=S3_BUCKET)
+    # print(paths)
+    # paths = ['A40.jpg']
+    # delete_images_from_s3(S3_BUCKET, paths)
+    start = time.time()
     paths = get_image_paths_from_s3(bucket_name=S3_BUCKET)
+    end = time.time()
+    print(end - start)
     print(paths)
-    index_images_from_s3(collection, paths, model, processor, device, batch_size)
 
 if __name__ == "__main__":
     main_index()

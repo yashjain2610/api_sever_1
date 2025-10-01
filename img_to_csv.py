@@ -417,7 +417,13 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
             return {"error": "No files received"}
         
         paths = get_image_paths_from_s3(S3_BUCKET)
+
+        t1 = time.time()
         index_images_from_s3(collection_db, paths, clipmodel, processor, device)
+        t2 = time.time()
+        print("Indexing time:", t2 - t1)
+
+        # Step 1: Get query image
 
         image_bytes = await file.read()
         
