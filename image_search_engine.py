@@ -172,14 +172,15 @@ def index_images_from_s3(
     for key in tqdm(image_keys, desc="Indexing S3 images"):
         try:
             h = hash_image_from_s3(S3_BUCKET, key)
-            if h in indexed:
-                continue
             int_h = hash_to_int64(h)
             current_hashes[h] = key
 
             encoded_key = urllib.parse.quote(key)
             s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{encoded_key}"
             int_hash_to_path[str(int_h)] = s3_url
+
+            if h in indexed:
+                continue
 
             img = load_image_from_s3(S3_BUCKET, key)
             emb = embed_image(img, model, processor, device)
