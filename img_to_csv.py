@@ -418,10 +418,10 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
         
         paths = get_image_paths_from_s3(S3_BUCKET)
 
-        t1 = time.time()
-        index_images_from_s3(collection_db, paths, clipmodel, processor, device)
-        t2 = time.time()
-        print("Indexing time:", t2 - t1)
+        # t1 = time.time()
+        # index_images_from_s3(collection_db, paths, clipmodel, processor, device)
+        # t2 = time.time()
+        # print("Indexing time:", t2 - t1)
 
         # Step 1: Get query image
 
@@ -481,6 +481,7 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
                     Key=image_name,
                     ExtraArgs={"ContentType": "image/jpeg"}
                 )
+                index_single_image_from_s3(collection_db, image_name, clipmodel, processor, device)
                 s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{image_name}"
             except Exception as e:
                 return JSONResponse(status_code=500, content={"error": f"Failed to upload to S3: {str(e)}"})

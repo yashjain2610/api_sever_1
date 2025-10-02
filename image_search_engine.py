@@ -241,6 +241,72 @@ def index_images_from_s3(
     print(f"✅ Indexed {len(current_hashes)} S3 images into Milvus.")
 
 
+def index_single_image_from_s3(
+    collection,
+    image_key,
+    model,
+    processor,
+    device,
+    index_file=INDEX_FILE,
+    int_hash_file=INT_HASH_MAP_FILE,
+    s3_bucket=S3_BUCKET
+):
+    # Load existing indexes
+    if os.path.exists(index_file):
+        with open(index_file, "r") as f:
+            indexed = json.load(f)
+    else:
+        indexed = {}
+
+    if os.path.exists(int_hash_file):
+        with open(int_hash_file, "r") as f:
+            int_hash_to_path = json.load(f)
+    else:
+        int_hash_to_path = {}
+
+    try:
+        # Hash image
+        h = hash_image_from_s3(s3_bucket, image_key)
+        int_h = hash_to_int64(h)
+
+        # If already indexed → skip
+        if h in indexed:
+            print(f"ℹ️ {image_key} already indexed, skipping.")
+            return False
+
+        # Build S3 URL
+        encoded_key = urllib.parse.quote(image_key)
+        s3_url = f"https://{s3_bucket}.s3.amazonaws.com/{encoded_key}"
+
+        # Load + embed
+        img = load_image_from_s3(s3_bucket, image_key)
+        emb = embed_image(img, model, processor, device)
+
+        # Insert into Milvus
+        entity = {"id": int_h, "embedding": emb.tolist()}
+        collection.insert([entity])
+
+        # Update dicts
+        indexed[h] = image_key
+        int_hash_to_path[str(int_h)] = s3_url
+
+        # Save back to JSON
+        with open(index_file, "w") as f:
+            json.dump(indexed, f)
+
+        with open(int_hash_file, "w") as f:
+            json.dump(int_hash_to_path, f)
+
+        # Flush + load Milvus
+        collection.flush()
+        collection.load()
+
+        print(f"✅ Indexed single image: {image_key}")
+        return True
+
+    except Exception as e:
+        print(f"❌ Failed to index {image_key}: {e}")
+        return False
 
 def get_image_paths(image_dir: str):
     paths = []
