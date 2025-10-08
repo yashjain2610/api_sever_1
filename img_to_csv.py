@@ -316,7 +316,45 @@ async def further_req(request:RequestModel):
 @app.post("/process-image-and-prompt/")
 async def process_image_and_prompt(image: UploadFile = File(...)):
     global gl
-    prompt = "Return the table containing product bills in a list of JSONs where each product details will be combined in one JSON. The columns will be the keys of the JSON. The rows should contain the details of products only. Don't repeat the rows if it is not repeated in the image. \n Keep the other details like transaction details, buyer, payer, total costs, etc. in the last JSON of the list. This JSON will have key-value pairs, each key and value must be valid entities (no empty strings, whitespace string or null value). There should be strictly one last JSON for the other details! Last json will be empty if no extra information \n Strictly Combine all the JSONs in a single list! Strictly Return a single list. Don't remove prefix or postfix from values. example :- 00001, $100, etc. should be displayed as it is. Enclose every value in double quotes.\nNo preambles or postambles i.e. the response should start with '[' and end with ']'\n"
+    prompt = """
+    You are given an image of a bill or invoice. Extract all the product entries and any additional transaction details from it.
+
+Output Format Instructions:
+1. Return a single valid JSON array (i.e., response must start with '[' and end with ']').
+2. Each product should be represented as one JSON object inside this list. The keys should be the column headers (e.g., "QTY", "DESCRIPTION", "UNIT PRICE", "DISCOUNT (%)", "TOTAL").
+3. Each row in the table corresponds to one JSON object. Do not duplicate or infer rows that do not exist in the image.
+4. All values must be strings enclosed in double quotes — even for numeric or currency values (e.g., "00001", "$100", "10").
+5. Preserve all prefixes, postfixes, and symbols exactly as they appear (do not modify "$", "%", commas, etc.).
+6. After all product JSONs, add exactly one final JSON object containing other invoice-related details (like buyer name, transaction ID, total amount, date, etc.).  
+   - This JSON should only include non-empty, meaningful key-value pairs.  
+   - If there are no such details, include an empty JSON `{}` as the last element.
+7. The entire output must be a single JSON list — no explanations, extra text, or formatting outside the list.
+
+Example structure (not actual values):
+[
+  {
+    "QTY": "2",
+    "DESCRIPTION": "Modern Ergonomic Office Chair",
+    "UNIT PRICE": "$250.00",
+    "DISCOUNT (%)": "10",
+    "TOTAL": "$450.00"
+  },
+  {
+    "QTY": "5",
+    "DESCRIPTION": "Minimalist Wooden Desk",
+    "UNIT PRICE": "$400.00",
+    "DISCOUNT (%)": "5",
+    "TOTAL": "$1900.00"
+  },
+  {
+    "Invoice Number": "INV-0001",
+    "Buyer Name": "John Doe",
+    "Total Amount": "$2350.00",
+    "Date": "2025-10-09"
+  }
+]
+
+"""
     # Save the uploaded image to a file
     image_content = await image.read()
     image_name = f"{uuid.uuid4()}_{image.filename}"
