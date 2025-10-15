@@ -530,8 +530,8 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
 
 
         # Now you can use `save_path` to upload the file to Gemini or process further
-        sample_file = genai.upload_file(path=save_path, display_name=image_name)
-        #ADD PREV PROMPT STYLES OF USER
+        # sample_file = genai.upload_file(path=save_path, display_name=image_name)
+        # #ADD PREV PROMPT STYLES OF USER
         pp=f"""please generate a short description for the given jwellery : {type}. STRICTLY MAKE SURE THE JWELLERY IS {type}. Focus only on the jwellery features and not on the background. The description should be one or more of the following types :- 
                                             "Elegance": "Jewelry that embodies sophistication, adding a refined touch suitable for formal settings.",
                                             "Charm": "Pieces that convey a sense of warmth and appeal, making them endearing and delightful.",
@@ -556,12 +556,16 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
                                               JSON with keys -> quality : (A/B/C), name : unique jwellery name ,description : generated description, attributes: jwellery physical features, color: color of the jwellery, final_caption: one-line caption of jwellery for e-commerce listing.
                                               No preambles or postambles. Keep strings in double quotes , dont give options give only one output""" 
 
-        response0 = model.generate_content([sample_file, pp], safety_settings={
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-        }).text
+        image_data = input_image_setup(io.BytesIO(image_bytes), "image/jpeg")
+        response_list = get_gemini_responses("Analyze this image carefully.", image_data, [pp])
+        response0 = response_list[0]
+
+        # response0 = model.generate_content([sample_file, pp], safety_settings={
+        #     HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+        #     HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+        #     HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+        #     HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+        # }).text
 
         if response0[0] == "`":
             response0 = response0[7:-4]
