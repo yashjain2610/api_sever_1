@@ -362,18 +362,22 @@ Example structure (not actual values):
     with open(save_path, "wb") as f:
         f.write(image_content)
     # Send the image and prompt to the Gemini API
-    sample_file = genai.upload_file(path=save_path,
-                            display_name=image_name)
+    # sample_file = genai.upload_file(path=save_path,
+    #                         display_name=image_name)
     
 
-    # Prompt the model with text and the previously uploaded image.
-    response = model.generate_content([sample_file, prompt],safety_settings={
-        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+    # # Prompt the model with text and the previously uploaded image.
+    # response = model.generate_content([sample_file, prompt],safety_settings={
+    #     HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+    #     HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+    #     HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+    #     HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
 
-    })
+    # })
+
+    image_data = input_image_setup(io.BytesIO(image_content), "image/jpeg")
+    response_list = get_gemini_responses("Analyze this image carefully.", image_data, [prompt])
+    response = response_list[0]
 
     print(response.text)
     # Get the response idata from Gemini
