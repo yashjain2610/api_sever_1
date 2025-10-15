@@ -379,9 +379,9 @@ Example structure (not actual values):
     response_list = get_gemini_responses("Analyze this image carefully.", image_data, [prompt])
     response = response_list[0]
 
-    print(response.text)
+    print(response)
     # Get the response idata from Gemini
-    gemini_response = response.text
+    gemini_response = response
     if gemini_response[0]=="`":
         gemini_response=gemini_response[7:-3]
     print(gemini_response)
