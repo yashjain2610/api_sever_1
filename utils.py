@@ -350,6 +350,8 @@ def write_to_excel_flipkart(results, filename, target_fields, fixed_values):
             field_values[k] = v
         field_values["Description"] = description
         field_values["Seller SKU ID"] = os.path.splitext(image_name)[0]
+        field_values["Model Number"] = os.path.splitext(image_name)[0]
+        field_values["Model Name"] = os.path.splitext(image_name)[0]
 
         for field, col_idx in actual_columns.items():
             ws.cell(row=row_idx, column=col_idx, value=field_values.get(field, ""))

@@ -39,7 +39,7 @@
 
 #flipkart
 target_fields_earrings = [
-            "Seller SKU ID", "Type", "Color", "Base Material", "Gemstone", "Pearl Type", "Collection",
+            "Seller SKU ID", "Model Number" , "Model Name","Type", "Color", "Base Material", "Gemstone", "Pearl Type", "Collection",
             "Occasion", "Piercing Required", "Number of Gemstones", "Earring Back Type",
             "Finish", "Design", "Metal Color", "Natural/Synthetic Diamond", "Pearl Shape", "Pearl Grade", "Pearl Color",
             "Other Features", "Search Keywords", "Key Features", "Trend", "Closure Type", "Sub Type",
@@ -49,17 +49,23 @@ target_fields_earrings = [
 #flipkart
 fixed_values_earrings = {
     'Listing Status': 'Active',
+    'MRP (INR)': '599',
+    'Stock' : '5',
+    'Length (CM)': '18',
+    'Breadth (CM)': '16.4',
+    'Height (CM)': '2',
     'Fullfilment by': 'Seller',
+    'Diamond Color Grade': 'NA',
+    'Certification': 'NA',
+    'Silver Weight (g)': 'NA',
+    'Number of Pairs': '1',
     'Procurement type': 'express',
     'Procurement SLA (DAY)': '1',
     'Shipping provider': 'Flipkart',
     'Local delivery charge (INR)': '0',
     'Zonal delivery charge (INR)': '0',
     'National delivery charge (INR)': '16',
-    'Weight (KG)': '0.3',
-    'Height (CM)': '1.7',
-    'Length (CM)': '2.4',
-    'Breadth (CM)': '2.4',
+    'Weight (KG)': '0.5',
     'HSN': '71171900',
     'Country Of Origin': 'India',
     'Manufacturer Details': 'Alya Jewels',
