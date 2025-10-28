@@ -242,7 +242,7 @@ def write_to_excel_flipkart(results, filename, target_fields, fixed_values):
         try:
             wb = openpyxl.load_workbook(filename)
         except Exception as e:
-            print(f"[ERROR] Could not load workbook: {e}")
+            #print(f"[ERROR] Could not load workbook: {e}")
             raise
 
         # 2) Show all sheet names
@@ -252,6 +252,10 @@ def write_to_excel_flipkart(results, filename, target_fields, fixed_values):
         if "earring" in wb.sheetnames:
             ws = wb["earring"]
             #print("[DEBUG] Selected sheet by name: 'earring'.")
+        elif "necklace_chain" in wb.sheetnames:
+            ws = wb["necklace_chain"]
+        elif "bangle_bracelet_armlet" in wb.sheetnames:
+            ws = wb["bangle_bracelet_armlet"]
         else:
             # If you still have code that falls back to wb.active, print that
             ws = wb.active
