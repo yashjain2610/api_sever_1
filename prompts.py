@@ -537,7 +537,7 @@ output format: give output in json format with field name and answer as key valu
 prompt_description_earrings_amz = """
         you are jewellery expert,you will be given an image of a jewellery item.
         for the jewellery item Create an amazon friendly description with top ranking keywords as per marketplace trends with 2k max characters
-        in the description include all the key features of the item. it should be in between 475 and 500 characters.
+        in the description include all the key features and specifications of the item. it should be around 2000 characters.
         give only description dont add any headers or footers
 """
 
@@ -549,7 +549,16 @@ prompt_questions_earrings_amz = """
 Questions {
     {
         field: item_name,
-        question: What is the item name (title) of the jewellery give a title like the following example? give in max 200 characters example title - "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1" give title according to design of earrings and this example
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
+                    Follow the style of this example:
+                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
+                    Avoid repeating phrases or patterns across titles.
+                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
+                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
+                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    Keep it natural and human-like, not keyword-stuffed.
+                    Do not start all titles with the same brand name—vary phrasing naturally.
     }
     {
         field: stone_color,
@@ -642,23 +651,23 @@ Questions {
     }
     {
         field: bullet_point1,
-        question: Write Bullet Point 1 (150 characters) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
+        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
     }
     {
         field: bullet_point2,
-        question: Write Bullet Point 2 (150 characters) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
+        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
     }
     {
         field: bullet_point3,
-        question: Write Bullet Point 3 (150 characters) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
+        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
     }
     {
         field: bullet_point4,
-        question: Write Bullet Point 4 (150 characters) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
+        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
     }
     {
         field: bullet_point5,
-        question: Write Bullet Point 5 (150 characters) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
+        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
     }
     {
         field: color_name,
@@ -710,8 +719,8 @@ prompt_dimensions_earrings_amz = """
 
 prompt_description_necklace_amz = """
         you are jewellery expert,you will be given an image of a necklace.
-        for the jewellery item Create an amazon friendly description with top ranking keywords as per marketplace trends with 2k max characters
-        in the description include all the key features of the item. it should be in one paragraph.
+        for the jewellery item Create an amazon friendly description with top ranking keywords as per marketplace trends with 2000 max characters
+        in the description include all the key features and specifications of the item. it should be in one paragraph. use at max 2000 characters.
         give only description dont add any headers or footerst
 """
 
@@ -723,7 +732,16 @@ if no options are given, respond based on your expert analysis using one or two 
 Questions {
     {
         field: item_name,
-        question: What is the item name (title) of the jewellery give a title like the following example? give in max 200 characters example title - "Alya Jewels Vintage-Style Flower necklace, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1" give title according to design of necklace and this example
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
+                    Follow the style of this example:
+                    "Alya Jewels Vintage-Style Flower necklace, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
+                    Avoid repeating phrases or patterns across titles.
+                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
+                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
+                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    Keep it natural and human-like, not keyword-stuffed.
+                    Do not start all titles with the same brand name—vary phrasing naturally.
     }
     {
         field name: stone_color
@@ -785,23 +803,23 @@ Questions {
     }
     {
         field: bullet_point1,
-        question: Write Bullet Point 1 (150 characters) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
+        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
     }
     {
         field: bullet_point2,
-        question: Write Bullet Point 2 (150 characters) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
+        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
     }
     {
         field: bullet_point3,
-        question: Write Bullet Point 3 (150 characters) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
+        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
     }
     {
         field: bullet_point4,
-        question: Write Bullet Point 4 (150 characters) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
+        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
     }
     {
         field: bullet_point5,
-        question: Write Bullet Point 5 (150 characters) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
+        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
     }
     {
         field name: color_name
@@ -862,8 +880,8 @@ Questions {
 
 prompt_description_bracelet_amz = """
         you are jewellery expert,you will be given an image of a bracelet.
-        for the jewellery item Create an amazon friendly description with top ranking keywords as per marketplace trends with 2k max characters
-        in the description include all the key features of the item. it should be in one paragraph.
+        for the jewellery item Create an amazon friendly description with top ranking keywords as per marketplace trends with 2000 max characters
+        in the description include all the key features and specifications of the item. it should be in one paragraph. use at max 2000 characters
         give only description dont add any headers or footerst
 """
 
@@ -875,7 +893,16 @@ if no options are given, respond based on your expert analysis using one or two 
 Questions {
     {
         field name: item_name
-        question: What is the item name (title) of the jewellery? in max 200 characters, example title 
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
+                    Follow the style of this example:
+                    "Alya Jewels Vintage-Style Flower bracelet, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
+                    Avoid repeating phrases or patterns across titles.
+                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
+                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
+                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    Keep it natural and human-like, not keyword-stuffed.
+                    Do not start all titles with the same brand name—vary phrasing naturally. 
     }
     {
         field name: stone_color
@@ -957,23 +984,23 @@ Questions {
     }
     {
         field: bullet_point1,
-        question: Write Bullet Point 1 (150 characters) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
+        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
     }
     {
         field: bullet_point2,
-        question: Write Bullet Point 2 (150 characters) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
+        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
     }
     {
         field: bullet_point3,
-        question: Write Bullet Point 3 (150 characters) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
+        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
     }
     {
         field: bullet_point4,
-        question: Write Bullet Point 4 (150 characters) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
+        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
     }
     {
         field: bullet_point5,
-        question: Write Bullet Point 5 (150 characters) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
+        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
     }
     {
         field name: color_name
