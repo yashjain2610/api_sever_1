@@ -16,7 +16,7 @@ import uuid
 from pydantic import BaseModel
 import chromadb
 from chromadb.config import Settings
-from datetime import date
+from datetime import date,datetime,timezone
 import uvicorn
 from PIL import Image
 from io import BytesIO
@@ -517,14 +517,18 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
 
         if not duplicate:
             try:
+                timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")
+                unique_id = uuid.uuid4().hex[:8]
+                unique_name = f"{timestamp}_{unique_id}_{image_name}"
+                
                 s3.upload_file(
                     Filename=save_path,
                     Bucket=S3_BUCKET,
-                    Key=image_name,
+                    Key=unique_name,
                     ExtraArgs={"ContentType": "image/jpeg"}
                 )
                 index_single_image_from_s3(collection_db, image_name, clipmodel, processor, device)
-                s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{image_name}"
+                s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{unique_name}"
             except Exception as e:
                 return JSONResponse(status_code=500, content={"error": f"Failed to upload to S3: {str(e)}"})
             
