@@ -34,7 +34,7 @@ def get_gemini_responses_high_temp(input, image, prompts):
 
 
 def get_gemini_responses(input, image, prompts):
-    model = genai.GenerativeModel('gemini-2.0-flash',
+    model = genai.GenerativeModel('gemini-2.5-flash',
                                   generation_config=genai.types.GenerationConfig(
                                       temperature=0.5,
                                       top_p=0.9,
