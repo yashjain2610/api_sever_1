@@ -47,7 +47,7 @@ def get_gemini_responses(input, image, prompts):
         for part in response.parts:
             if part.text:
                 all_responses.append(part.text)
-    #print(all_responses)
+    print(all_responses)
     return all_responses
 
 def get_gemini_dims_responses(input, image, prompts):
