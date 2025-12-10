@@ -548,19 +548,6 @@ prompt_questions_earrings_amz = """
     give output in json format with field names and answer as key value pairs,Return only valid raw JSON.
 Questions {
     {
-        field: item_name,
-        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
-                    Follow the style of this example:
-                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
-                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
-                    Avoid repeating phrases or patterns across titles.
-                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
-                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
-                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
-                    Keep it natural and human-like, not keyword-stuffed.
-                    Do not start all titles with the same brand name—vary phrasing naturally.
-    }
-    {
         field: stone_color,
         question: What is the stone colour used in the jewellery?
         options: D, D-E, E, E-F, F, F-G, G, G-H, H, H-I, I, I-J, J, J-K, K, K-L, L, L-M, M, M-N, N-O, O-P, P-Q, Q-R, R-S, S-T, T-U, U-V, V-W, W-X, X-Y, Y-Z, Beige, Black, Blue, Blue Green, Blue Violet, Brown, Champagne, Clear, Color Changing, Cream, Gold, Gray, Green, Green Blue, Green Yellow, Metallic, Multiple Colors, Orange, Orange Red, Orange Yellow, Pink, Red, Red Orange, Red Violet, Silver, Violet, Violet Blue, Violet Red, White, Yellow, Yellow Green, Yellow Orange, Other Color
@@ -650,26 +637,6 @@ Questions {
         options: Wrap, Pave, Post, Channel, Shared Prong, Cocktail, Cluster, Flush, Illusion, Micro Pave, Half Bezel, Bezel, Bar, Bead, Prong, Tension, Invisible, Halo
     }
     {
-        field: bullet_point1,
-        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
-    }
-    {
-        field: bullet_point2,
-        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
-    }
-    {
-        field: bullet_point3,
-        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
-    }
-    {
-        field: bullet_point4,
-        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
-    }
-    {
-        field: bullet_point5,
-        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
-    }
-    {
         field: color_name,
         question: What is the overall color of the item?
     }
@@ -731,19 +698,6 @@ if no options are given, respond based on your expert analysis using one or two 
 
 Questions {
     {
-        field: item_name,
-        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
-                    Follow the style of this example:
-                    "Alya Jewels Vintage-Style Flower necklace, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
-                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
-                    Avoid repeating phrases or patterns across titles.
-                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
-                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
-                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
-                    Keep it natural and human-like, not keyword-stuffed.
-                    Do not start all titles with the same brand name—vary phrasing naturally.
-    }
-    {
         field name: stone_color
         question: What is the stone colour used in the jewellery?
         options: F-G, H-I, Cream, J-K, Black, Champagne, Green Blue, L-M, Orange, Other Color, N-O, Violet Blue, P-Q, Beige, Blue Violet, R-S, T-U, V-W, Gold, Gray, Violet, X-Y, Yellow Orange, Orange Yellow, Multiple Colors, Silver, Pink, Metallic, Yellow, Violet Red, Color Changing, E-F, Brown, G-H, D, E, F, G, I-J, H, I, J, K, K-L, L, M, Green Yellow, M-N, Clear, Red Violet, O-P, Q-R, Orange Red, S-T, Red Orange, U-V, W-X, Blue, Y-Z, Yellow Green, White, Blue Green, D-E, Green
@@ -800,26 +754,6 @@ Questions {
         field name: setting_type
         question: What is the setting type?
         options: Wrap, Gypsy, Pave, Channel, Cluster, Illusion, Band, Micro Pave, Bezel, Bar, Bead, Prong, Tension, Invisible, Halo
-    }
-    {
-        field: bullet_point1,
-        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
-    }
-    {
-        field: bullet_point2,
-        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
-    }
-    {
-        field: bullet_point3,
-        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
-    }
-    {
-        field: bullet_point4,
-        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
-    }
-    {
-        field: bullet_point5,
-        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
     }
     {
         field name: color_name
@@ -891,19 +825,6 @@ answer the given questions. If options are provided for a question, choose the c
 if no options are given, respond based on your expert analysis using one or two words. do not write "not applicable".
 
 Questions {
-    {
-        field name: item_name
-        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
-                    Follow the style of this example:
-                    "Alya Jewels Vintage-Style Flower bracelet, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
-                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
-                    Avoid repeating phrases or patterns across titles.
-                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
-                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
-                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
-                    Keep it natural and human-like, not keyword-stuffed.
-                    Do not start all titles with the same brand name—vary phrasing naturally. 
-    }
     {
         field name: stone_color
         question: What is the stone colour used in the jewellery?
@@ -981,26 +902,6 @@ Questions {
         field name: setting_type
         question: What is the setting type?
         options: Wrap, Gypsy, Pave, Channel, Cluster, Illusion, Band, Micro Pave, Bezel, Bar, Bead, Prong, Tension, Invisible, Halo
-    }
-    {
-        field: bullet_point1,
-        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
-    }
-    {
-        field: bullet_point2,
-        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
-    }
-    {
-        field: bullet_point3,
-        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
-    }
-    {
-        field: bullet_point4,
-        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
-    }
-    {
-        field: bullet_point5,
-        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
     }
     {
         field name: color_name
@@ -1088,10 +989,6 @@ if no options are given, respond concisely using one or two words. do not write 
 
 Questions {
     {
-        field name: Product Name
-        question: What is the product name? Give a concise and appealing title.
-    }
-    {
         field name: Base Metal
         question: What is the base metal of the jewellery?
         options: Alloy, Bentex, Brass, Brass & Copper, Bronze, Copper, Fabric, Five Metal, German Silver, Glass, Meta, Plastic, Pure 925 Sterling Silver, Synthetic, Terracota, Thread, Wood
@@ -1151,10 +1048,6 @@ If no options are given, respond concisely using one or two words. Do not write 
 
 Questions {
     {
-        field name: Product Name
-        question: What is the product name? Give a concise and appealing title.
-    }
-    {
         field name: Base Metal
         question: What is the base metal of the jewellery?
         options: Alloy, Bentex, Brass, Brass & Copper, Bronze, Copper, Fabric, Five Metal, German Silver, Glass, Meta, Plastic, Pure 925 Sterling Silver, Synthetic, Terracota, Thread, Wood
@@ -1212,10 +1105,6 @@ prompt_questions_bracelet_meesho = """
     If no options are given, respond concisely using one or two words. Do not write "not applicable".
 
 Questions {
-    {
-        field name: Product Name
-        question: What is the product name? Give a concise and appealing title.
-    }
     {
         field name: Base Metal
         question: What is the base metal of the jewellery?
@@ -1338,5 +1227,377 @@ variations_prompt = """
 Use the visual information from the images to infer material tone, motif, and overall design cues.
 
 Output in the following format: give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+
+"""
+
+
+
+gpt_amz_earrings_prompt = """
+    you are a jewellery expert and an e-commerce catalog manager for amazon. you will be given an image of a jewellery item.
+    answer the given questions. If options are provided for a question, choose the correct answer based on the image.
+    if no options are given, respond based on your expert analysis using one or two words. do not write "not applicable".
+    give output in json format with field names and answer as key value pairs,Return only valid raw JSON.
+    Questions {
+    {
+        field: title,
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
+                    Follow the style of this example:
+                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
+                    Avoid repeating phrases or patterns across titles.
+                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
+                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
+                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    Keep it natural and human-like, not keyword-stuffed.
+                    Do not start all titles with the same brand name—vary phrasing naturally.
+    }
+    {
+        field: description,
+        question:you are jewellery expert,you will be given an image of a jewellery item.
+                for the jewellery item Create an amazon friendly description with top ranking keywords as per marketplace trends with 2k max characters
+                in the description include all the key features and specifications of the item. it should be around 2000 characters.
+                give only description dont add any headers or footers
+    }
+    {
+        field: bullet_point1,
+        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point2,
+        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point3,
+        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point4,
+        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point5,
+        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
+    }
+}
+For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+
+"""
+gpt_amz_necklace_prompt = """
+you are a jewellery expert and an e-commerce catalog manager for amazon. you will be given an image of a necklace.
+answer the given questions. If options are provided for a question, choose the correct answer based on the image.
+if no options are given, respond based on your expert analysis using one or two words. do not write "not applicable".
+
+Questions {
+    {
+        field: title,
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
+                    Follow the style of this example:
+                    "Alya Jewels Vintage-Style Flower necklace, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
+                    Avoid repeating phrases or patterns across titles.
+                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
+                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
+                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    Keep it natural and human-like, not keyword-stuffed.
+                    Do not start all titles with the same brand name—vary phrasing naturally.
+    }
+    {
+        field: description,
+        question:you are jewellery expert,you will be given an image of a jewellery item.
+                for the jewellery item Create an amazon friendly description with top ranking keywords as per marketplace trends with 2k max characters
+                in the description include all the key features and specifications of the item. it should be around 2000 characters.
+                give only description dont add any headers or footers
+    }
+    {
+        field: bullet_point1,
+        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point2,
+        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point3,
+        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point4,
+        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point5,
+        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
+    }
+}
+For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+"""
+
+gpt_amz_bracelet_prompt = """
+you are a jewellery expert and an e-commerce catalog manager for amazon. you will be given an image of a necklace.
+answer the given questions. If options are provided for a question, choose the correct answer based on the image.
+if no options are given, respond based on your expert analysis using one or two words. do not write "not applicable".
+
+Questions {
+    {
+        field: title,
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a bracelet based on their design.
+                    Follow the style of this example:
+                    "Alya Jewels Vintage-Style Flower bracelet, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
+                    Avoid repeating phrases or patterns across titles.
+                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
+                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
+                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    Keep it natural and human-like, not keyword-stuffed.
+                    Do not start all titles with the same brand name—vary phrasing naturally.
+    }
+    {
+        field: description,
+        question:you are jewellery expert,you will be given an image of a jewellery item.
+                for the jewellery item Create an amazon friendly description with top ranking keywords as per marketplace trends with 2k max characters
+                in the description include all the key features and specifications of the item. it should be around 2000 characters.
+                give only description dont add any headers or footers
+    }
+    {
+        field: bullet_point1,
+        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point2,
+        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point3,
+        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point4,
+        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point5,
+        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
+    }
+}
+For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+
+"""
+
+
+
+
+
+gpt_flipkart_earrings_prompt = """
+        you are jewellery expert,you will be given a image of a jewellery item.
+        for the jewellery item Create a flipkart friendly description with top ranking keywords as per marketplace trends with 10k max characters
+        in the description include all the key features of the item. it should be in one paragraph.
+        give only description dont add any headers or footers
+        give output in json format with key as "description" and value as description generated 
+    """
+
+
+gpt_flipkart_necklace_prompt = """
+        you are jewellery expert,you will be given a image of a jewellery item.
+        for the jewellery item Create a flipkart friendly description with top ranking keywords as per marketplace trends with 10k max characters
+        in the description include all the key features of the item. it should be in one paragraph.
+        give only description dont add any headers or footers
+        give output in json format with key as "description" and value as description generated 
+"""
+gpt_flipkart_bracelet_prompt = """
+        you are jewellery expert,you will be given a image of a jewellery item.
+        for the jewellery item Create a flipkart friendly description with top ranking keywords as per marketplace trends with 10k max characters
+        in the description include all the key features of the item. it should be in one paragraph.
+        give only description dont add any headers or footers
+        give output in json format with key as "description" and value as description generated 
+"""
+
+
+
+gpt_meesho_earrings_prompt = """
+    you are a jewellery expert and an e-commerce catalog manager for amazon. you will be given an image of a jewellery item.
+    answer the given questions. If options are provided for a question, choose the correct answer based on the image.
+    if no options are given, respond based on your expert analysis using one or two words. do not write "not applicable".
+    give output in json format with field names and answer as key value pairs,Return only valid raw JSON.
+    Questions {
+    {
+        field: title,
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
+                    Follow the style of this example:
+                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
+                    Avoid repeating phrases or patterns across titles.
+                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
+                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
+                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    Keep it natural and human-like, not keyword-stuffed.
+                    Do not start all titles with the same brand name—vary phrasing naturally.
+    }
+    {
+        field: description,
+        question:you are jewellery expert,you will be given an image of a jewellery item.
+                for the jewellery item Create an amazon friendly description with top ranking keywords as per marketplace trends with 2k max characters
+                in the description include all the key features and specifications of the item. it should be around 2000 characters.
+                give only description dont add any headers or footers
+    }
+    For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+"""
+
+gpt_meesho_necklace_prompt = """
+    you are a jewellery expert and an e-commerce catalog manager for meesho. you will be given an image of a jewellery item.
+    answer the given questions. If options are provided for a question, choose the correct answer based on the image.
+    if no options are given, respond based on your expert analysis using one or two words. do not write "not applicable".
+    give output in json format with field names and answer as key value pairs,Return only valid raw JSON.
+    Questions {
+    {
+        field: title,
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
+                    Follow the style of this example:
+                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
+                    Avoid repeating phrases or patterns across titles.
+                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
+                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
+                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    Keep it natural and human-like, not keyword-stuffed.
+                    Do not start all titles with the same brand name—vary phrasing naturally.
+    }
+    {
+        field: description,
+        question:you are jewellery expert,you will be given an image of a jewellery item.
+                for the jewellery item Create an amazon friendly description with top ranking keywords as per marketplace trends with 2k max characters
+                in the description include all the key features and specifications of the item. it should be around 2000 characters.
+                give only description dont add any headers or footers
+    }
+    For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+"""
+
+gpt_meesho_bracelet_prompt = """
+    you are a jewellery expert and an e-commerce catalog manager for meesho. you will be given an image of a jewellery item.
+    answer the given questions. If options are provided for a question, choose the correct answer based on the image.
+    if no options are given, respond based on your expert analysis using one or two words. do not write "not applicable".
+    give output in json format with field names and answer as key value pairs,Return only valid raw JSON.
+    Questions {
+    {
+        field: title,
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a bracelet based on their design.
+                    Follow the style of this example:
+                    "Alya Jewels Vintage-Style Flower Stud bracelet, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
+                    Avoid repeating phrases or patterns across titles.
+                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
+                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
+                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    Keep it natural and human-like, not keyword-stuffed.
+                    Do not start all titles with the same brand name—vary phrasing naturally.
+    }
+    {
+        field: description,
+        question:you are jewellery expert,you will be given an image of a jewellery item.
+                for the jewellery item Create an amazon friendly description with top ranking keywords as per marketplace trends with 2k max characters
+                in the description include all the key features and specifications of the item. it should be around 2000 characters.
+                give only description dont add any headers or footers
+    }
+    For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+
+"""
+
+
+
+gpt_prompt_title_bp = """
+        you are a jewellery expert and an e-commerce catalog manager for amazon. you will be given an image of a jewellery item.
+    answer the given questions. If options are provided for a question, choose the correct answer based on the image.
+    if no options are given, respond based on your expert analysis using one or two words. do not write "not applicable".
+    give output in json format with field names and answer as key value pairs,Return only valid raw JSON.
+    Questions {
+    {
+        field: title,
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
+                    Follow the style of this example:
+                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
+                    Avoid repeating phrases or patterns across titles.
+                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
+                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
+                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    Keep it natural and human-like, not keyword-stuffed.
+                    Do not start all titles with the same brand name—vary phrasing naturally.
+    }
+    {
+        field: bullet_point1,
+        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point2,
+        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point3,
+        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point4,
+        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point5,
+        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
+    }
+}
+For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+
+"""
+
+gpt_prompt_title = """
+    you are a jewellery expert and an e-commerce catalog manager for amazon. you will be given an image of a jewellery item.
+    answer the given questions. If options are provided for a question, choose the correct answer based on the image.
+    if no options are given, respond based on your expert analysis using one or two words. do not write "not applicable".
+    give output in json format with field names and answer as key value pairs,Return only valid raw JSON.
+    Questions {
+    {
+        field: title,
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
+                    Follow the style of this example:
+                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    Focus on key visual and design features (shape, motif, color, metal, texture, style).
+                    Avoid repeating phrases or patterns across titles.
+                    Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
+                    Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
+                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    Keep it natural and human-like, not keyword-stuffed.
+                    Do not start all titles with the same brand name—vary phrasing naturally.
+    }
+    For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+
+"""
+
+gpt_prompt_bp = """
+    you are a jewellery expert and an e-commerce catalog manager for amazon. you will be given an image of a jewellery item.
+    answer the given questions. If options are provided for a question, choose the correct answer based on the image.
+    if no options are given, respond based on your expert analysis using one or two words. do not write "not applicable".
+    give output in json format with field names and answer as key value pairs,Return only valid raw JSON.
+    Questions {
+    {
+        field: bullet_point1,
+        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point2,
+        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point3,
+        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point4,
+        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
+    }
+    {
+        field: bullet_point5,
+        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
+    }
+}
+For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+    
 
 """

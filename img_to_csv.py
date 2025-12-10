@@ -37,6 +37,8 @@ from flp_scraper import *
 from myn_scraper import *
 import zipfile
 import time
+from openai_utils import *
+from json_storage import *
 
 app = FastAPI()
 load_dotenv()
@@ -589,6 +591,8 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
         
         js["prompt"] = prom
         js["s3_url"] = s3_url
+        if js["quality"] != "B" or js["quality"] != "C":
+            js["quality"] = "A"
         os.remove(save_path)
 
         end2 = time.time()
@@ -711,15 +715,15 @@ async def catalog_ai(req: CatalogRequest):
 
 
     input_prompt_map = {
-        "fli_ear": ([prompt_description_earrings_flipkart, prompt_questions_earrings_flipkart], fixed_values_earrings),
-        "ama_ear": ([prompt_description_earrings_amz, prompt_questions_earrings_amz], fixed_values_earrings_amz),
-        "mee_ear": ([prompt_description_earrings_meesho, prompt_questions_earrings_meesho], fixed_values_earrings_meesho),
-        "fli_nec": ([prompt_description_necklace_flipkart, prompt_questions_necklace_flipkart], fixed_values_necklace_flipkart),
-        "ama_nec": ([prompt_description_necklace_amz, prompt_questions_necklace_amz], fixed_values_necklace_amz),
-        "mee_nec": ([prompt_description_necklace_meesho, prompt_questions_necklace_meesho], fixed_values_necklace_meesho),
-        "fli_bra": ([prompt_description_bracelet_flipkart, prompt_questions_bracelet_flipkart], fixed_values_bracelet_flipkart),
-        "mee_bra": ([prompt_description_bracelet_meesho, prompt_questions_bracelet_meesho], fixed_values_bracelet_meesho),
-        "ama_bra": ([prompt_description_bracelet_amz, prompt_questions_bracelet_amz], fixed_values_bracelet_amz),
+        "fli_ear": ([prompt_questions_earrings_flipkart], fixed_values_earrings, gpt_flipkart_earrings_prompt),
+        "ama_ear": ([prompt_questions_earrings_amz], fixed_values_earrings_amz, gpt_amz_earrings_prompt),
+        "mee_ear": ([prompt_questions_earrings_meesho], fixed_values_earrings_meesho, gpt_meesho_earrings_prompt),
+        "fli_nec": ([prompt_questions_necklace_flipkart], fixed_values_necklace_flipkart, gpt_flipkart_necklace_prompt),
+        "ama_nec": ([prompt_questions_necklace_amz], fixed_values_necklace_amz , gpt_amz_necklace_prompt),
+        "mee_nec": ([prompt_questions_necklace_meesho], fixed_values_necklace_meesho, gpt_meesho_necklace_prompt),
+        "fli_bra": ([prompt_questions_bracelet_flipkart], fixed_values_bracelet_flipkart, gpt_flipkart_bracelet_prompt),
+        "mee_bra": ([prompt_questions_bracelet_meesho], fixed_values_bracelet_meesho, gpt_meesho_bracelet_prompt),
+        "ama_bra": ([prompt_questions_bracelet_amz], fixed_values_bracelet_amz, gpt_amz_bracelet_prompt),
     }
 
     dims_prompt_map = {
@@ -730,7 +734,7 @@ async def catalog_ai(req: CatalogRequest):
         "ama_bra": [prompt_dimensions_bracelet_amz],
     }
 
-    input_prompts , fixed_values = input_prompt_map.get(format)
+    input_prompts , fixed_values , gpt_prompt = input_prompt_map.get(format)
     dims_prompts = dims_prompt_map.get(format, [])
 
     if not input_prompts:
@@ -774,13 +778,16 @@ async def catalog_ai(req: CatalogRequest):
             image_data = input_image_setup(io.BytesIO(image_bytes), "image/jpeg")
             response_list = get_gemini_responses("Analyze this image carefully.", image_data, input_prompts)
 
-            description = response_list[0] if len(response_list) > 0 else "No description"
+            #description = response_list[0] if len(response_list) > 0 else "No description"
             response_json = {}
 
-            if len(response_list) > 1:
+            if len(response_list) > 0:
                 try:
-                    cleaned = response_list[1].strip().replace("```json", "").replace("```", "").strip()
+                    cleaned = response_list[0].strip().replace("```json", "").replace("```", "").strip()
                     response_json = json.loads(cleaned)
+                    # print(response_json)
+                    # print()
+                    # print()
                 except Exception as e:
                     response_json = {"error": f"Failed to parse JSON: {str(e)}"}
 
@@ -792,6 +799,53 @@ async def catalog_ai(req: CatalogRequest):
                     response_json.update(dims_json)
                 except Exception as e:
                     response_json["dimensions_error"] = f"Failed to parse dimensions: {str(e)}"
+
+            gpt_dict = {}
+            available_dict = fetch_data_for_sku(skuid)
+            
+            if available_dict.get("sku_exists") == False:
+                gpt_dict = ask_gpt_with_image(prompt = gpt_prompt , image_bytes = image_bytes)
+            else:
+                if req.marketplace.lower()[:3] == "ama":
+                    gpt_dict["description"] = available_dict.get("description")
+                    if available_dict.get("title") == False and available_dict.get("bullet_points") == False:
+                        temp_dict = ask_gpt_with_image(prompt = gpt_prompt_title_bp , image_bytes = image_bytes)
+                        gpt_dict["item_name"] = temp_dict.get("title")
+                    elif available_dict.get("title") == False:
+                        title_dict = ask_gpt_with_image(prompt = gpt_prompt_title , image_bytes = image_bytes)
+                        gpt_dict["item_name"] = title_dict.get("title")
+                        gpt_dict["bullet_points"] = available_dict.get("bullet_points")
+                    elif available_dict.get("bullet_points") == False:
+                        temp_dict = ask_gpt_with_image(prompt = gpt_prompt_bp , image_bytes = image_bytes)
+                        gpt_dict["item_name"] = available_dict.get("title")
+                        gpt_dict.update(temp_dict)
+                    else:
+                        available_dict.pop("sku_exists", None)
+                        gpt_dict["item_name"] = available_dict.get("title")
+                        gpt_dict["bullet_points"] = available_dict.get("bullet_points")
+                        gpt_dict["description"] = available_dict.get("description")
+                elif req.marketplace.lower()[:3] == "fli":
+                    gpt_dict["description"] = available_dict.get("description")
+                else:
+                    gpt_dict["description"] = available_dict.get("description")
+                    if available_dict.get("title") == False:
+                        title_dict = ask_gpt_with_image(prompt = gpt_prompt_title , image_bytes = image_bytes)
+                        gpt_dict["Product Name"] = title_dict.get("title")
+                    else:
+                        gpt_dict["Product Name"] = available_dict.get("title")
+
+
+
+
+            gpt_dict = expand_bullet_points(gpt_dict)
+            store_data_for_sku(skuid, gpt_dict)
+            gpt_dict = expand_bullet_points(gpt_dict)
+            #print(gpt_dict)
+
+            description = gpt_dict.get("description", "No description")
+            gpt_dict.pop("description", None)
+
+            response_json.update(gpt_dict)
 
             dict = {
                 "filename": url,
@@ -807,7 +861,7 @@ async def catalog_ai(req: CatalogRequest):
                     "stones_creation_method" : "unknown"
                 }
 
-                if response_json["stones_number_of_stones"] == 0:
+                if response_json.get("stones_number_of_stones",0) == 0:
                     response_json.update(temp_dict)
                 
             final_response = {**dict ,**response_json, **fixed_values}
