@@ -1368,7 +1368,7 @@ async def create_order(file: UploadFile = File(...)):
         temp_path = tmp.name
         tmp.write(await file.read())
 
-    model_1 = genai.GenerativeModel('gemini-2.5-flash',
+    model_1 = genai.GenerativeModel('gemini-2.0-flash',
                                   generation_config=genai.types.GenerationConfig(
                                       temperature=0.5,
                                       top_p=0.9,
