@@ -39,7 +39,7 @@ def get_gemini_responses(input, image, prompts):
                                       temperature=0.5,
                                       top_p=0.9,
                                       top_k=40,
-                                      max_output_tokens=2048*4
+                                      max_output_tokens=2048
                                   ))
     all_responses = []
     for prompt in prompts:
