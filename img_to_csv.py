@@ -622,6 +622,73 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
                 "s3_url": js["s3_url"],
             }
 
+
+
+class DeleteImageRequest(BaseModel):
+    s3_url: str
+
+def extract_s3_key(s3_url: str) -> str:
+    """
+    Converts:
+    https://bucket.s3.amazonaws.com/folder/img.jpg
+    → folder/img.jpg
+    """
+    return s3_url.split(".amazonaws.com/")[-1]
+
+# ---------- DELETE API ----------
+@app.post("/delete_image")
+async def delete_image(request: DeleteImageRequest):
+
+    s3_urls = [(url.strip()) for url in request.s3_url.split(",")]
+
+    for s3_url in s3_urls:
+
+        s3_key = extract_s3_key(s3_url)
+
+        # Load hash map
+        try:
+            with open(INT_HASH_MAP_FILE, "r") as f:
+                id_to_path = json.load(f)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to load hash map: {str(e)}")
+
+        # Find Milvus ID
+        milvus_id = None
+        for _id, path in id_to_path.items():
+            if path == s3_url or path.endswith(s3_key):
+                milvus_id = int(_id)
+                break
+
+        if milvus_id is None:
+            raise HTTPException(status_code=404, detail="Image not found in index")
+
+        # ---- Delete from S3 ----
+        try:
+            s3.delete_object(Bucket=S3_BUCKET, Key=s3_key)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"S3 delete failed: {str(e)}")
+
+        # ---- Delete from Milvus ----
+        try:
+            collection_db.delete(expr=f"id in [{milvus_id}]")
+            collection_db.flush()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Milvus delete failed: {str(e)}")
+
+        # ---- Update hash map ----
+        del id_to_path[str(milvus_id)]
+
+        try:
+            with open(INT_HASH_MAP_FILE, "w") as f:
+                json.dump(id_to_path, f)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to update hash map: {str(e)}")
+
+    return {
+        "status": "success"
+    }
+
+
 @app.post("/regenerate")
 async def regenerate(previous_prompt: str=Form(...),style: str=Form(...)):
     new_prompt = previous_prompt + f"""Keep the jwellery features same and the type of jwellery should not change, and change the description to {style} describing jwellery features. The change should be significant.
