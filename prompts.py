@@ -1260,23 +1260,23 @@ gpt_amz_earrings_prompt = """
     }
     {
         field: bullet_point1,
-        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
+        question: Write Bullet Point 1 (600 characters) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
     }
     {
         field: bullet_point2,
-        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
+        question: Write Bullet Point 2 (600 characters) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
     }
     {
         field: bullet_point3,
-        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
+        question: Write Bullet Point 3 (600 characters) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
     }
     {
         field: bullet_point4,
-        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
+        question: Write Bullet Point 4 (600 characters) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
     }
     {
         field: bullet_point5,
-        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
+        question: Write Bullet Point 5 (600 characters) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
     }
 }
 For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
@@ -1308,23 +1308,23 @@ Questions {
     }
     {
         field: bullet_point1,
-        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
+        question: Write Bullet Point 1 (600 characters) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
     }
     {
         field: bullet_point2,
-        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
+        question: Write Bullet Point 2 (600 characters) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
     }
     {
         field: bullet_point3,
-        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
+        question: Write Bullet Point 3 (600 characters) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
     }
     {
         field: bullet_point4,
-        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
+        question: Write Bullet Point 4 (600 characters) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
     }
     {
         field: bullet_point5,
-        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
+        question: Write Bullet Point 5 (600 characters) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
     }
 }
 For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
@@ -1356,23 +1356,23 @@ Questions {
     }
     {
         field: bullet_point1,
-        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
+        question: Write Bullet Point 1 (600 characters) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
     }
     {
         field: bullet_point2,
-        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
+        question: Write Bullet Point 2 (600 characters) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
     }
     {
         field: bullet_point3,
-        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
+        question: Write Bullet Point 3 (600 characters) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
     }
     {
         field: bullet_point4,
-        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
+        question: Write Bullet Point 4 (600 characters) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
     }
     {
         field: bullet_point5,
-        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
+        question: Write Bullet Point 5 (600 characters) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
     }
 }
 For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
@@ -1507,23 +1507,23 @@ gpt_prompt_title_bp = """
     }
     {
         field: bullet_point1,
-        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
+        question: Write Bullet Point 1 (600 characters) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
     }
     {
         field: bullet_point2,
-        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
+        question: Write Bullet Point 2 (600 characters) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
     }
     {
         field: bullet_point3,
-        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
+        question: Write Bullet Point 3 (600 characters) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
     }
     {
         field: bullet_point4,
-        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
+        question: Write Bullet Point 4 (600 characters) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
     }
     {
         field: bullet_point5,
-        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
+        question: Write Bullet Point 5 (600 characters) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
     }
 }
 For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
@@ -1563,23 +1563,23 @@ gpt_prompt_bp = """
     Questions {
     {
         field: bullet_point1,
-        question: Write Bullet Point 1 (350 words) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
+        question: Write Bullet Point 1 (600 characters) highlighting the style, appeal, or use case of the jewellery. Begin with a bolded or striking benefit-focused phrase (e.g., 'Exquisite Design', 'Timeless Appeal'). Follow it with a brief, engaging sentence describing how it enhances the wearer's look or complements various outfits or occasions. dont use '*' or other special characters.
     }
     {
         field: bullet_point2,
-        question: Write Bullet Point 2 (350 words) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
+        question: Write Bullet Point 2 (600 characters) focusing on the material, craftsmanship, or design details. Start with a phrase like 'Premium Quality' or 'Expert Craftsmanship'. Mention the type of metal, finish, or design technique used and the benefits it provides (e.g., durability, elegance, or polish). dont use '*' or other special characters.
     }
     {
         field: bullet_point3,
-        question: Write Bullet Point 3 (350 words) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
+        question: Write Bullet Point 3 (600 characters) describing the stone or embellishments used, along with their shape, color, or cut. Begin with a phrase like 'Elegant Embellishments' or 'Stunning Stones', and explain how they add sparkle, charm, or sophistication to the jewellery.dont use '*' or other special characters.
     }
     {
         field: bullet_point4,
-        question: Write Bullet Point 4 (350 words) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
+        question: Write Bullet Point 4 (600 characters) related to the comfort, closure type, or ease of wearing. Begin with something like 'All-Day Comfort' or 'Secure Fit'. Mention features such as lightweight design, comfortable wear, or the clasp type (e.g., Lobster Claw, Spring Ring). dont use '*' or other special characters.
     }
     {
         field: bullet_point5,
-        question: Write Bullet Point 5 (350 words) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
+        question: Write Bullet Point 5 (600 characters) presenting the gifting potential or occasion versatility of the jewellery. Start with a phrase like 'Perfect Gift Choice' or 'Versatile Accessory'. Mention if it’s ideal for birthdays, anniversaries, weddings, or daily wear. dont use '*' or other special characters.
     }
 }
 For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
