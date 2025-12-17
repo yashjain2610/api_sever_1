@@ -270,9 +270,9 @@ def index_single_image_from_s3(
         int_h = hash_to_int64(h)
 
         # If already indexed → skip
-        if h in indexed:
-            print(f"ℹ️ {image_key} already indexed, skipping.")
-            return False
+        # if h in indexed:
+        #     print(f"ℹ️ {image_key} already indexed, skipping.")
+        #     return False
 
         # Build S3 URL
         encoded_key = urllib.parse.quote(image_key)
@@ -477,16 +477,54 @@ def search_similar(collection, query_emb, top_k: int = 5):
 #     print(paths)
 #     index_images_from_s3(collection, paths, model, processor, device, batch_size)
 
-def main_index():
-    # paths = get_image_paths_from_s3(bucket_name=S3_BUCKET)
-    # print(paths)
-    # paths = ['A40.jpg']
-    # delete_images_from_s3(S3_BUCKET, paths)
-    start = time.time()
-    paths = get_image_paths_from_s3(bucket_name=S3_BUCKET)
-    end = time.time()
-    print(end - start)
-    print(paths)
+from urllib.parse import urlparse
+def upload_image_to_s3(s3_url: str, local_image_path: str):
+    """
+    Upload a local image file to an S3 bucket using a full S3 URL.
 
-if __name__ == "__main__":
-    main_index()
+    Args:
+        s3_url (str): Full S3 URL where the image should be uploaded.
+                      Example: "https://alyaimg.s3.amazonaws.com/1.jpg"
+        local_image_path (str): Local path of the image to upload.
+
+    Returns:
+        str: The same S3 URL if upload succeeds.
+    """
+
+    # Parse bucket & key from URL
+    parsed = urlparse(s3_url)
+    bucket = parsed.netloc.split(".")[0]        # ayaimg
+    key = parsed.path.lstrip("/")               # 1.jpg
+
+    # Initialize S3 client
+
+    try:
+        s3.upload_file(
+            Filename=local_image_path,
+            Bucket=bucket,
+            Key=key,
+            ExtraArgs={"ContentType": "image/jpeg"}
+        )
+        return s3_url
+
+    except Exception as e:
+        raise RuntimeError(f"Failed to upload image: {e}")
+
+# def main_index():
+#     # # paths = get_image_paths_from_s3(bucket_name=S3_BUCKET)
+#     # # print(paths)
+#     # # paths = ['A40.jpg']
+#     # # delete_images_from_s3(S3_BUCKET, paths)
+#     # start = time.time()
+#     # paths = get_image_paths_from_s3(bucket_name=S3_BUCKET)
+#     # end = time.time()
+#     # print(end - start)
+#     # print(paths)
+#     upload_image_to_s3("https://alyaimg.s3.amazonaws.com/image013.png", r"C:\Users\yash jain\Desktop\folders\aryanai_modules\python_intern\Correct Images\Earrings534\Copy of Earrings534_01.png")
+#     upload_image_to_s3("https://alyaimg.s3.amazonaws.com/image011.png", r"C:\Users\yash jain\Desktop\folders\aryanai_modules\python_intern\Correct Images\Earrings535\Copy of Earrings535_01.png")
+#     upload_image_to_s3("https://alyaimg.s3.amazonaws.com/image005.png", r"C:\Users\yash jain\Desktop\folders\aryanai_modules\python_intern\Correct Images\Earrings538\Copy of Earrings538_01.png")
+#     upload_image_to_s3("https://alyaimg.s3.amazonaws.com/image003.png", r"C:\Users\yash jain\Desktop\folders\aryanai_modules\python_intern\Correct Images\Earrings539\Copy of Earrings539_01.png")
+#     upload_image_to_s3("https://alyaimg.s3.amazonaws.com/image001.png", r"C:\Users\yash jain\Desktop\folders\aryanai_modules\python_intern\Correct Images\Earrings540\Copy of Earrings540_01.png")
+
+# if __name__ == "__main__":
+#     main_index()
