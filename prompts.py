@@ -593,6 +593,10 @@ Questions {
         options: Easter, Christmas, Graduation, Prom, Anniversary, Birthday, Cocktail Party, Thanksgiving, Womens Day, Bridal Shower, Engagement, New Year, Wedding, Communion, Halloween, Valentines Day	
     }
     {
+        field: generic_keywords,
+        question: give top related search terms for amazon without helping words, without comma and without repetition?    
+    }
+    {
         field: clasp_type,
         question: What is the clasp type of the item?
         options: Lobster Claw, Spring Ring, Box Clasp, Toggle, S-Hook, Magnetic
@@ -1241,7 +1245,7 @@ gpt_amz_earrings_prompt = """
     Questions {
     {
         field: title,
-        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design for amazon's SEO for top ranking.
                     Follow the style of this example:
                     "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
                     Focus on key visual and design features (shape, motif, color, metal, texture, style).
@@ -1255,7 +1259,7 @@ gpt_amz_earrings_prompt = """
     }
     {
         field: description,
-        question:You are a jewellery domain expert. You will be provided with an image of a jewellery item. Based on the image, generate an Amazon-optimized product description using high-ranking, marketplace-relevant keywords. The description must be concise, SEO-friendly, and under 2000 characters.Include all visible and inferable key features and specifications.striclty adhere to the 2000 character limit.
+        question:You are a jewellery domain expert. You will be provided with an image of a jewellery item. Based on the image, generate an Amazon-optimized product description using high-ranking, marketplace-relevant keywords. The description must be concise, SEO-friendly, and under 2000 characters.Include all visible and inferable key features and specifications for amazon's SEO for top ranking.striclty adhere to the 2000 character limit.
                  give only description dont add any headers or footers
     }
     {
@@ -1290,7 +1294,7 @@ if no options are given, respond based on your expert analysis using one or two 
 Questions {
     {
         field: title,
-        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design for amazon's SEO for top ranking.
                     Follow the style of this example:
                     "Alya Jewels Vintage-Style Flower necklace, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
                     Focus on key visual and design features (shape, motif, color, metal, texture, style).
@@ -1303,7 +1307,7 @@ Questions {
     }
     {
         field: description,
-        question:You are a jewellery domain expert. You will be provided with an image of a jewellery item. Based on the image, generate an Amazon-optimized product description using high-ranking, marketplace-relevant keywords. The description must be concise, SEO-friendly, and under 2000 characters.Include all visible and inferable key features and specifications.striclty adhere to the 2000 character limit.
+        question:You are a jewellery domain expert. You will be provided with an image of a jewellery item. Based on the image, generate an Amazon-optimized product description using high-ranking, marketplace-relevant keywords. The description must be concise, SEO-friendly, and under 2000 characters.Include all visible and inferable key features and specifications for amazon's SEO for top ranking.striclty adhere to the 2000 character limit.
                 give only description dont add any headers or footers
     }
     {
@@ -1338,7 +1342,7 @@ if no options are given, respond based on your expert analysis using one or two 
 Questions {
     {
         field: title,
-        question: Generate a unique and descriptive item title (maximum 160 characters) for a bracelet based on their design.
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a bracelet based on their design for amazon's SEO for top ranking.
                     Follow the style of this example:
                     "Alya Jewels Vintage-Style Flower bracelet, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
                     Focus on key visual and design features (shape, motif, color, metal, texture, style).
@@ -1351,7 +1355,7 @@ Questions {
     }
     {
         field: description,
-        question:You are a jewellery domain expert. You will be provided with an image of a jewellery item. Based on the image, generate an Amazon-optimized product description using high-ranking, marketplace-relevant keywords. The description must be concise, SEO-friendly, and under 2000 characters.Include all visible and inferable key features and specifications.striclty adhere to the 2000 character limit.
+        question:You are a jewellery domain expert. You will be provided with an image of a jewellery item. Based on the image, generate an Amazon-optimized product description using high-ranking, marketplace-relevant keywords. The description must be concise, SEO-friendly, and under 2000 characters.Include all visible and inferable key features and specifications for amazon's SEO for top ranking.striclty adhere to the 2000 character limit.
                 give only description dont add any headers or footers
     }
     {
@@ -1494,7 +1498,7 @@ gpt_prompt_title_bp = """
     Questions {
     {
         field: title,
-        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design for amazon's SEO for top ranking.
                     Follow the style of this example:
                     "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
                     Focus on key visual and design features (shape, motif, color, metal, texture, style).
@@ -1539,7 +1543,7 @@ gpt_prompt_title = """
     Questions {
     {
         field: title,
-        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
+        question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design for amazon's SEO for top ranking.
                     Follow the style of this example:
                     "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
                     Focus on key visual and design features (shape, motif, color, metal, texture, style).
