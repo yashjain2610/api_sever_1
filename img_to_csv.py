@@ -533,6 +533,13 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
                 s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{unique_name}"
             except Exception as e:
                 return JSONResponse(status_code=500, content={"error": f"Failed to upload to S3: {str(e)}"})
+        
+        # if duplicate:
+        #     return {
+        #         "display_name": image_name,
+        #         "s3_url": js["s3_url"],
+        #         "duplicate": "duplicate found"
+        #     }
             
         end = time.time()
         print(end - start)
