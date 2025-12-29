@@ -1247,14 +1247,14 @@ gpt_amz_earrings_prompt = """
         field: title,
         question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design for amazon's SEO for top ranking.
                     Follow the style of this example:
-                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design"
                     Focus on key visual and design features (shape, motif, color, metal, texture, style).
                     Avoid repeating phrases or patterns across titles.
                     Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
                     Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
-                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
                     Keep it natural and human-like, not keyword-stuffed.
                     vary phrasing naturally.
+                    do not mention "pack of 1" or "pair of earrings" mention other related keywords with top search volume
                     strictly adhere to character limit
     }
     {
@@ -1296,13 +1296,13 @@ Questions {
         field: title,
         question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design for amazon's SEO for top ranking.
                     Follow the style of this example:
-                    "Alya Jewels Vintage-Style Flower necklace, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    "Alya Jewels Vintage-Style Flower necklace, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design"
                     Focus on key visual and design features (shape, motif, color, metal, texture, style).
                     Avoid repeating phrases or patterns across titles.
                     Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
                     Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
-                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
                     Keep it natural and human-like, not keyword-stuffed.
+                    do not mention "pack of 1" or "pair of earrings" mention other related keywords with top search volume
                     Do not start all titles with the same brand name—vary phrasing naturally.
     }
     {
@@ -1344,12 +1344,12 @@ Questions {
         field: title,
         question: Generate a unique and descriptive item title (maximum 160 characters) for a bracelet based on their design for amazon's SEO for top ranking.
                     Follow the style of this example:
-                    "Alya Jewels Vintage-Style Flower bracelet, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    "Alya Jewels Vintage-Style Flower bracelet, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design"
                     Focus on key visual and design features (shape, motif, color, metal, texture, style).
                     Avoid repeating phrases or patterns across titles.
                     Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
                     Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
-                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    do not mention "pack of 1" or "pair of earrings" mention other related keywords with top search volume
                     Keep it natural and human-like, not keyword-stuffed.
                     Do not start all titles with the same brand name—vary phrasing naturally.
     }
@@ -1415,12 +1415,12 @@ gpt_meesho_earrings_prompt = """
         field: title,
         question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
                     Follow the style of this example:
-                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design"
                     Focus on key visual and design features (shape, motif, color, metal, texture, style).
                     Avoid repeating phrases or patterns across titles.
                     Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
                     Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
-                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    do not mention "pack of 1" or "pair of earrings" mention other related keywords with top search volume
                     Keep it natural and human-like, not keyword-stuffed.
                     Do not start all titles with the same brand name—vary phrasing naturally.
     }
@@ -1442,12 +1442,12 @@ gpt_meesho_necklace_prompt = """
         field: title,
         question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design.
                     Follow the style of this example:
-                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design"
                     Focus on key visual and design features (shape, motif, color, metal, texture, style).
                     Avoid repeating phrases or patterns across titles.
                     Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
                     Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
-                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    do not mention "pack of 1" or "pair of earrings" mention other related keywords with top search volume
                     Keep it natural and human-like, not keyword-stuffed.
                     Do not start all titles with the same brand name—vary phrasing naturally.
     }
@@ -1469,12 +1469,12 @@ gpt_meesho_bracelet_prompt = """
         field: title,
         question: Generate a unique and descriptive item title (maximum 160 characters) for a bracelet based on their design.
                     Follow the style of this example:
-                    "Alya Jewels Vintage-Style Flower Stud bracelet, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    "Alya Jewels Vintage-Style Flower Stud bracelet, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design"
                     Focus on key visual and design features (shape, motif, color, metal, texture, style).
                     Avoid repeating phrases or patterns across titles.
                     Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
                     Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
-                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    do not mention "pack of 1" or "pair of earrings" mention other related keywords with top search volume
                     Keep it natural and human-like, not keyword-stuffed.
                     Do not start all titles with the same brand name—vary phrasing naturally.
     }
@@ -1500,12 +1500,12 @@ gpt_prompt_title_bp = """
         field: title,
         question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design for amazon's SEO for top ranking.
                     Follow the style of this example:
-                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design"
                     Focus on key visual and design features (shape, motif, color, metal, texture, style).
                     Avoid repeating phrases or patterns across titles.
                     Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
                     Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
-                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    do not mention "pack of 1" or "pair of earrings" mention other related keywords with top search volume
                     Keep it natural and human-like, not keyword-stuffed.
                     Do not start all titles with the same brand name—vary phrasing naturally.
     }
@@ -1545,12 +1545,12 @@ gpt_prompt_title = """
         field: title,
         question: Generate a unique and descriptive item title (maximum 160 characters) for a pair of earrings based on their design for amazon's SEO for top ranking.
                     Follow the style of this example:
-                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design, Pack of 1"
+                    "Alya Jewels Vintage-Style Flower Stud Earrings, Rose Gold and Silver Glitter Finish, 5-Petal Floral Design"
                     Focus on key visual and design features (shape, motif, color, metal, texture, style).
                     Avoid repeating phrases or patterns across titles.
                     Use diverse adjectives and jewelry-related terms (e.g., “minimalist,” “boho,” “art deco,” “filigree,” “geometric,” “ethnic,” etc.).
                     Mention metal tone, embellishments, or finish if visible (e.g., “gold-plated,” “oxidized silver,” “enamel work”).
-                    End with “Pack of 1” or “Pair of Earrings” if appropriate.
+                    do not mention "pack of 1" or "pair of earrings" mention other related keywords with top search volume
                     Keep it natural and human-like, not keyword-stuffed.
                     Do not start all titles with the same brand name—vary phrasing naturally.
     }
