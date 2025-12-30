@@ -134,7 +134,7 @@ def get_gemini_responses(input_text, image, prompts):
 
         try:
             response = generate_with_failover(
-                model="gemini-2.0-flash-preview-image-generation",
+                model="gemini-2.5-flash-image",
                 contents=content,
                 config=types.GenerateContentConfig(
                     response_modalities=['TEXT', 'IMAGE']
@@ -157,25 +157,6 @@ def get_gemini_responses(input_text, image, prompts):
                 structured_response["images"].append(part.inline_data.data)
 
         all_responses.append(structured_response)
-
-        # prompt_response = {
-        #     "prompt": prompt,
-        #     "text": "",
-        #     "images": []
-        # }
-
-        # for part in response.parts:
-        #     if hasattr(part, "text") and part.text:
-        #         prompt_response["text"] += part.text.strip()
-        #     elif hasattr(part, "inline_data"):
-        #         b64_data = part.inline_data.data
-        #         mime_type = part.inline_data.mime_type
-        #         img_data_uri = f"data:{mime_type};base64,{b64_data}"
-        #         prompt_response["images"].append(img_data_uri)
-        
-        # print(prompt_response)
-
-        # all_responses.append(prompt_response)
 
     return all_responses
 
