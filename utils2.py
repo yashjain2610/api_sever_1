@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import io
 import base64
 import openpyxl
 from prompts import *
@@ -11,10 +12,19 @@ from google.genai import types
 from google.api_core import exceptions as google_exceptions
 import itertools
 import grpc
+from openai import OpenAI
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+API_KEY = os.getenv("API_KEY_GPT")
+proj_id = os.getenv("PROJ_ID")
+client = OpenAI(
+    api_key=API_KEY,
+    project=proj_id
+    )
+
 
 
 API_KEYS = [
@@ -27,6 +37,12 @@ API_KEYS = [
 #print(API_KEYS)
 clients = [genai.Client(api_key=key) for key in API_KEYS]
 client_cycle = itertools.cycle(clients)
+
+
+def pil_to_base64(image: Image.Image) -> str:
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 
 
@@ -179,3 +195,42 @@ def input_image_setup_local(image_path):
 def encode_image(uploaded_image):
     img_bytes = uploaded_image.read()
     return base64.b64encode(img_bytes).decode("utf-8")
+
+
+
+def generate_images_from_gpt(
+    image: Image.Image,
+    prompts: list[str],
+    client: OpenAI,
+    size: str = "1024x1024"
+):
+    """
+    Runs a single image with multiple prompts using gpt-image-1
+    and returns structured responses.
+    """
+
+    base64_image = pil_to_base64(image)
+    all_responses = []
+
+    for prompt in prompts:
+        result = client.images.generate(
+            model="gpt-image-1",
+            prompt=prompt,
+            image=base64_image,
+            size=size,
+            quality="low"
+        )
+
+        structured_response = {
+            "prompt": prompt,
+            "text": "",
+            "images": []
+        }
+
+        for img in result.data:
+            img_bytes = base64.b64decode(img.b64_json)
+            structured_response["images"].append(img_bytes)
+
+        all_responses.append(structured_response)
+
+    return all_responses

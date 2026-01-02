@@ -30,7 +30,7 @@ import tempfile
 import re
 from prompts2 import *
 from utils2 import get_gemini_responses as gen_image_responses
-from utils2 import resize_img,resize_img2
+from utils2 import resize_img,resize_img2,generate_images_from_gpt
 from urllib.parse import urlparse
 from scraper import *
 from flp_scraper import *
@@ -798,6 +798,7 @@ async def catalog_ai(req: CatalogRequest):
         "fli_bra": ([prompt_questions_bracelet_flipkart], fixed_values_bracelet_flipkart, gpt_flipkart_bracelet_prompt),
         "mee_bra": ([prompt_questions_bracelet_meesho], fixed_values_bracelet_meesho, gpt_meesho_bracelet_prompt),
         "ama_bra": ([prompt_questions_bracelet_amz], fixed_values_bracelet_amz, gpt_amz_bracelet_prompt),
+        "sho_ear": ([prompt_questions_earrings_shopsy], fixed_values_earrings, gpt_flipkart_earrings_prompt),
     }
 
     dims_prompt_map = {
@@ -898,7 +899,7 @@ async def catalog_ai(req: CatalogRequest):
                         gpt_dict["item_name"] = available_dict.get("title")
                         gpt_dict["bullet_points"] = available_dict.get("bullet_points")
                         gpt_dict["description"] = available_dict.get("description")
-                elif req.marketplace.lower()[:3] == "fli":
+                elif req.marketplace.lower()[:3] == "fli" or req.marketplace.lower()[:3] == "sho":
                     gpt_dict["description"] = available_dict.get("description")
                 else:
                     gpt_dict["description"] = available_dict.get("description")
@@ -957,12 +958,13 @@ async def catalog_ai(req: CatalogRequest):
         "fli_ear": "earrings_flipkart.xlsx",
         "ama_ear": "earrings_amz.xlsx",
         "mee_ear": "earrings_meesho.xlsx",
+        "sho_ear": "earrings_shopsy.xlsx",
         "fli_nec": "necklace_flipkart.xlsx",
         "ama_nec": "necklace_amz.xlsx",
         "mee_nec": "necklace_meesho.xlsx",
         "fli_bra": "bracelet_flipkart.xlsx",
         "mee_bra": "bracelet_meesho.xlsx",
-        "ama_bra": "bracelet_amz.xlsx",
+        "ama_bra": "bracelet_amz.xlsx"
     }
 
 
@@ -987,6 +989,8 @@ async def catalog_ai(req: CatalogRequest):
         write_to_excel_amz_xl(excel_results, filename=tmp_path, target_fields=target_fields_earrings_amz, fixed_values=fixed_values_earrings_amz)
     elif format == "mee_ear":
         write_to_excel_meesho(excel_results, filename=tmp_path, target_fields=target_fields_earrings_meesho, fixed_values=fixed_values_earrings_meesho)
+    elif format == "sho_ear":
+        write_to_excel_flipkart(excel_results, filename=tmp_path, target_fields=target_fields_earrings, fixed_values=fixed_values_earrings)
     elif format == "fli_nec":
         write_to_excel_flipkart(excel_results, filename=tmp_path, target_fields=target_fields_necklace_flipkart, fixed_values=fixed_values_necklace_flipkart)
     elif format == "ama_nec":
@@ -1351,6 +1355,7 @@ def clear_excel_file(type: str = Form(...) , marketplace: str = Form(...)):
         "fli_ear": "earrings_flipkart.xlsx",
         "ama_ear": "earrings_amz.xlsx",
         "mee_ear": "earrings_meesho.xlsx",
+        "sho_ear": "earrings_shopsy.xlsx",
         "fli_nec": "necklace_flipkart.xlsx",
         "ama_nec": "necklace_amz.xlsx",
         "mee_nec": "necklace_meesho.xlsx",
@@ -1389,7 +1394,7 @@ def clear_excel_file(type: str = Form(...) , marketplace: str = Form(...)):
     if "amz" in filename_lower or "ama" in filename_lower:
         start_row = 4
         sheet_number = 0
-    elif "fli" in filename_lower:
+    elif "fli" in filename_lower or "sho" in filename_lower:
         start_row = 5
         sheet_number = 2
     elif "mee" in filename_lower:
@@ -1583,7 +1588,7 @@ async def generate_images(request: ImageRequest):
             except Exception as e:
                 return JSONResponse(status_code=400, content={"error": f"Failed to decode image from URL: {url}", "details": str(e)})
 
-            responses = gen_image_responses("analyse the image", image, prompt_list)
+            responses = generate_images_from_gpt(image, prompt_list)
             image_urls = []
             parsed = urlparse(url)
             filename_base = os.path.basename(parsed.path) 

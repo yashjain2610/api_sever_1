@@ -1590,3 +1590,148 @@ For output format = give output in json format with field name and answer as key
     
 
 """
+
+
+prompt_questions_earrings_shopsy = """
+you are jewellery expert and an e-commerce catalog manager for flipkart,you will be given a image of a jewellery item.
+answer the given questions. If options are provided for a question, then you have to choose the right answer from that option only.
+if no options are provided generate response on your expertise in one or two words max. dont write not applicable analyse the image and generate a response
+
+Questions {
+    {
+        field_name: Type
+        question: What is the type of the earring?
+        options: Chandbali Earring, Clip-on Earring, Cuff Earring, Drops & Danglers, Ear Thread, Earring Set, Hoop Earring, Huggie Earring, Jhumki Earring, Magnetic Earring, Plug Earring, Rhinestone Studs, Stud Earring, Tassel Earring, Tunnel Earring
+    }
+    {
+        field_name: Color
+        question: What is the color of the jewellery?
+        options: Aqua, Beige, Black, Blue, Bronze, Brown, Copper, Gold, Green, Grey, Maroon, Multicolor, Orange, Pink, Platinum, Purple, Red, Rose Gold, Sea Green, Silver, Turquoise, White, Yellow
+    }
+    {
+        field_name: Base Material
+        question: what is the base material of the item, Base Material refers to the substance used to make the bezel/case/body of a particular product.
+        options: Acrylic, Alloy, Aluminum, Bone, Brass, Bronze, Ceramic, Cobalt, Copper, Cotton Dori, Crystal, Enamel, Fabric, German Silver, Glass, Gold, Ivory, Jute, Lac, Leather, Metal, Mother of Pearl, Nickel, Paper, Plastic, Porcelain, Resin, Ribbon, Rubber, Shell, Silicone, Silk Dori, Silver, Stainless Steel, Steel, Sterling Silver, Stone, Terracotta, Tungsten, White Metal, Wood, Zinc
+    }
+    {
+        field_name: Gemstone
+        question: What is the gemstone used in the jewellery?
+        options: Agate, Alexandrite, Amber, Amethyst, Andalusite, Aquamarine, Beads, Beryl, Black Diamond, Blue Sapphire, Carnelian, Cat's Eye, Chalcedony, Citrine, Coral, Crystal, Cubic Zirconia, Danburite, Diamond, Diopside, Emerald, Garnet, Iolite, Jade, Kyanite, Labradorite, Lapis Lazuli, Malachite, Moissanite, Moonstone, Morganite, Mother of Pearl, NA, Onyx, Opal, Orange Sapphire, Pearl, Peridot, Quartz, Ruby, Sapphire, Spinel, Swarovski Crystal, Swarovski Zirconia, Tanzanite, Tiger Eye, Titanium Drusy, Topaz, Tourmaline, Tsavorite, Turquoise, White Zircon, Zircon
+    }
+    {
+        field_name: Pearl Type
+        question: What is the pearl type of the jewellery? Pearl Type refers to the type of Pearls that the product comes with.
+        options: Cultured, Freshwater, Plastic, South Sea, Tahitian, NA
+    }
+    {
+        field_name: Collection
+        question: What is the collection?
+        options: Ethnic, Contemporary
+    }
+    {
+        field_name: Occasion
+        question: What is the occasion?
+        options: Everyday, Love, Party, Religious, Wedding & Engagement, Workwear
+    }
+    {
+        field_name: Piercing Required
+        question: Is piercing required for this earring? Piercing Required refers to whether there is any piercing required to wear the product or not. Possible values are Yes or No.
+        options: Yes, No
+    }
+    {
+        field_name: Number of Gemstones
+        question: How many gemstones are there in the jewellery?
+    }
+    {
+        field_name: Earring Back Type
+        question: What is the earring back type?, Earring Back Type refers to the type of locking mechanism that the earrings have at the back. Possible values are Butterfly Back, Push Back, Screw Back, Locking Back, French Back, Lever Back, Friction Back, Fish Hook Back, etc.
+    }
+    {
+        field_name: Finish
+        question: What is the finish of the jewellery?, Finish refers to the final appearance given to the base material of a product. Possible values are Matte, Glossy, Shimmer, etc.
+    }
+    {
+        field_name: Design
+        question: What is the design?
+        options: Heavy, Minimal, Statement
+    }
+    {
+        field_name: Metal Color
+        question: What is the metal colour of the jewellery? Metal Color refers to the color of the metals present in the product. Possible values are Black, White, etc.
+    }
+    {
+        field_name: Natural/Synthetic Diamond
+        question: Is the diamond used in the jewellery natural or synthetic? Natural/Synthetic Diamond refers to whether the stone is a natural produced stone or synthetically produced/cultivated in a laboratory/industry.
+        options: Natural, Synthetic
+    }
+    {
+        field_name: Pearl Shape
+        question: What is the shape of the pearl used in the jewellery? Pearl Shape refers to the physical form of the pearl.
+    }
+    {
+        field_name: Pearl Grade
+        question: what is the grade of the pearl , Pearl Grade refers to the quality with respect to the existence and visual appearance of internal characteristics of a pearl. Possible values are BB Grade, A Grade, AA Grade, AA+ Grade, AAA Grade, etc.
+    }
+    {
+        field_name: Pearl Color
+        question: What is the color of the pearl used in the jewellery?
+    }
+    {
+        field_name: Other Features
+        question: give some other feautures of the jewellery item, Other Features refers to any additional information on the features of the product that would be useful to a customer. Possible values are Handmade, Bendy & Wearable, Gentle Fit, etc.
+    }
+    {
+        field_name: Search Keywords
+        question: share the top ranking keywords of the item for flipkart marketplace. Make sure the item gets maximum visibility. The keywords should be '::' separated.
+    }
+    {
+        field_name: Key Features
+        question: share key features of the item(image) as per flipkart standards. dont give in bullet points ,only in one line
+    }
+    {
+        field_name: Trend
+        question: What is the trend of the jewellery? select one from the options.
+        options: Afghani, American Diamond Jewellery, Antique Picks, Asymmetrical, Big Size, Botanical Designs, Chandbalis, Chandelier, Chuncky Chain Jewellery, Crystals, Cutwork, Dainty-Light, Detailed Tassels, Drop Earrings, Dual Tone, Earcuff, Enamel, Geometrical Shapes, Gold Jhumkas, Handcrafted, Hearts, Hoops, Jhumki, Kundan, Layered, Long Chain, Minimal Pearl Jewellery, Organic Forms, Oversized Danglers, Oxidised Silver, Party Blings, Peacock, Pearl, Rose Gold, Silver, Stud Earrings, Swarovski, Tassel, Tribal, White Gold
+    }
+    {
+        field_name: Closure Type
+        question: What is the closure type of the jewellery?
+        options: Clip-on, Hooks, Hoopwire, Magnetic, Push Plugs, Screw
+    }
+    {
+        field_name: Sub Type
+        question: What is the sub type of the jewellery?
+        options: Bar Danglers, Bead Tassels, Chain Cuffs, Chandbali Jhumkis, Chandelier Earring, Closed Hoop, Dangle Earring, Dangler Tunnels, Dreamcatchers, Drop Tassels, Ear Spike, Fan Tassels, Hoop Chandbali, Hoop Jhumkis, Layered Hoop, Layered Jhumki, Mesh Danglers, Needle Thread, Open Hoop, Pom Pom Tassels, Stud Tunnels, Tiered Tassels
+    }
+    {
+        field_name: Earring Shape
+        question: what is the earring shape of the product, Earring Shape refers to the physical form of a product.
+    }
+    {
+        field_name: With Ear Chain
+        question: Does the jewellery have an ear chain?
+        options: Yes, No
+    }
+    {
+        field_name: Earring Set Type
+        question: What is the earring set type?
+        options: Chandbali Earring, Cuff Earring, Drops & Danglers, Hoop Earring, Jhumki Earring, Stud Earring, Tunnel Earring
+    }
+    {
+        field_name: Ornamentation Type
+        question: What is the ornamentation type of the jewellery? Ornamentation Type refers to the decorative elements added to the product to enhance its appearance and make it more attractive. Select only one option.
+        options: Beads, Coins, Cutwork/Filigree, Dried Flowers, Enamel Decorations, Feather, Gemstones, Ghungroo, Glitter, Hand-painted, Kundan, Mirror Work, Pearl, Pom Poms, Stones, Tassel
+    }
+    {
+        field_name: Trend AW 16
+        question: What is the Trend 2 of the jewellery? Trend AW 16 refers to the name of the trend for Autumn Winter 2016. Select from the options.
+        options: Abstract Geometric Danglers, Asymmetric Earring, Chain Links, Chandbali, Chandelier Earrings, Charm Studs, Double Side Earrings, Ear Jacket Double Side Earrings, Ear cuffs, Fine Hoop Earrings, Gold Metal Jhumkas, Jhumka with Long Chain, Long Chain Drop Earrings, Minimal Gold Tone Jewelry, Offbeat Danglers, Silver Metal Jhumkas, Spike Earrings, Statement Jewelry, Tassel, Tribal, Unpaired Earring, Upside Down Asymmetric Earrings
+    }
+    {
+        field: is_scale,
+        question: Is there a scale in the image besides the jwellery item? 
+        options: Yes, No
+    }
+}
+For output format = give output in json format with field name and answer as key value pairs,Return only valid raw JSON. Do not wrap in triple backticks or markdown.
+"""
