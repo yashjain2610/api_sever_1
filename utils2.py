@@ -201,7 +201,6 @@ def encode_image(uploaded_image):
 def generate_images_from_gpt(
     image: Image.Image,
     prompts: list[str],
-    client: OpenAI,
     size: str = "1024x1024"
 ):
     """
