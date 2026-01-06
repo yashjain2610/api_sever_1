@@ -215,7 +215,6 @@ def generate_images_from_gpt(
         result = client.images.generate(
             model="gpt-image-1",
             prompt=prompt,
-            image=base64_image,
             size=size,
             quality="low"
         )
