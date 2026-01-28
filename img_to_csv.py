@@ -32,7 +32,6 @@ from prompts2 import *
 from utils2 import get_gemini_responses as gen_image_responses
 from utils2 import resize_img,resize_img2,generate_images_from_gpt
 from urllib.parse import urlparse
-from scraper import *
 import zipfile
 import time
 from openai_utils import *
