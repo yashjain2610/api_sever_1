@@ -501,6 +501,10 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
         s3_url = ""
         if duplicate:
             s3_url = matches[0]["path"]
+            # Extract S3 key from URL
+            s3_key = s3_url.split("/")[-1]
+            # Remove timestamp_uuid_ prefix
+            original_name = "_".join(s3_key.split("_")[2:])
         
 
         # typ=json.loads(style)
@@ -533,7 +537,7 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
         
         if duplicate:
             return {
-                "display_name": image_name,
+                "display_name": original_name,
                 "s3_url": s3_url,
                 "duplicate": "duplicate found"
             }
