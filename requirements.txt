@@ -16,5 +16,3 @@ tqdm
 transformers
 boto3
 openpyxl
-
-torch
