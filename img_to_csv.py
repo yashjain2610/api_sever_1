@@ -67,6 +67,29 @@ collection_db = init_milvus(
     collection_name=os.getenv("COLLECTION_NAME", "image_embeddings")
 )
 
+# Flag to control whether to run full S3 indexing on startup
+REINDEX_ON_STARTUP = os.getenv("REINDEX_ON_STARTUP", "false").lower() == "true"
+# Flag to clean orphan entries from Milvus (fixes "unknown" path issue)
+CLEAN_ORPHANS_ON_STARTUP = os.getenv("CLEAN_ORPHANS_ON_STARTUP", "false").lower() == "true"
+
+@app.on_event("startup")
+async def startup_event():
+    """Run cleanup and/or indexing on startup based on env flags"""
+    # First, clean orphan entries if enabled
+    if CLEAN_ORPHANS_ON_STARTUP:
+        print("Cleaning orphan entries from Milvus...")
+        clean_orphan_entries(collection_db)
+        print("Orphan cleanup complete.")
+
+    # Then, run full re-index if enabled
+    if REINDEX_ON_STARTUP:
+        print("Starting full S3 image indexing...")
+        paths = get_image_paths_from_s3(S3_BUCKET)
+        index_images_from_s3(collection_db, paths, clipmodel, processor, device)
+        print("Startup indexing complete.")
+
+    if not CLEAN_ORPHANS_ON_STARTUP and not REINDEX_ON_STARTUP:
+        print("Skipping startup tasks (set CLEAN_ORPHANS_ON_STARTUP=true or REINDEX_ON_STARTUP=true to enable)")
 
 gl=None
 
@@ -489,22 +512,26 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
         for _id, dist in results:
             print(dist)
             print()
-            if 100 - dist >= 95:
+            if dist < 95:
                 path = id_to_path.get(str(_id), "unknown")
                 matches.append({"id": _id, "distance": dist, "path": path})
 
         duplicate = False
-
-        if matches:
-            duplicate = True
-
         s3_url = ""
-        if duplicate:
+        original_name = ""
+
+        # Only treat as duplicate if we have a valid path (not "unknown")
+        if matches and matches[0]["path"] != "unknown":
+            duplicate = True
             s3_url = matches[0]["path"]
             # Extract S3 key from URL
             s3_key = s3_url.split("/")[-1]
-            # Remove timestamp_uuid_ prefix
-            original_name = "_".join(s3_key.split("_")[2:])
+            # Remove timestamp_uuid_ prefix if present
+            parts = s3_key.split("_")
+            if len(parts) > 2:
+                original_name = "_".join(parts[2:])
+            else:
+                original_name = s3_key
         
 
         # typ=json.loads(style)
@@ -714,23 +741,19 @@ async def reg_title(previous_title:str=Form(...),color:str=Form(...),attributes:
 
 @app.post("/image_similarity_search")
 async def image_searh(file: UploadFile = File(...), top_k: int = 1):
-    # Step 1: Re-index all images (only new or deleted ones will be changed)
-    paths = get_image_paths_from_s3(S3_BUCKET)
-    index_images_from_s3(collection_db, paths, clipmodel, processor, device)
-
-    # Step 2: Read query image and embed it
+    # Step 1: Read query image and embed it
+    image_bytes = await file.read()
     try:
-        image = Image.open(BytesIO(await file.read())).convert("RGB")
+        image = Image.open(BytesIO(image_bytes)).convert("RGB")
     except Exception as e:
         return JSONResponse(status_code=400, content={"error": f"Invalid image: {str(e)}"})
 
     query_emb = embed_image(image, clipmodel, processor, device)
 
-    # Step 3: Search similar
-
+    # Step 2: Search similar
     results = search_similar(collection_db, query_emb, top_k)
 
-    # Step 4: Load ID-to-path map
+    # Step 3: Load ID-to-path map
     int_hash_map_file = os.getenv("INT_HASH_MAP_FILE", "int_hash_to_path.json")
     try:
         with open(int_hash_map_file, 'r') as f:
@@ -738,14 +761,54 @@ async def image_searh(file: UploadFile = File(...), top_k: int = 1):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": f"Failed to load hash map: {str(e)}"})
 
-    # Step 5: Build response
+    # Step 4: Check for duplicates (distance < 95 threshold, skip "unknown" paths)
     matches = []
     for _id, dist in results:
-        if 100 - dist >= 90:
+        if dist < 95:
             path = id_to_path.get(str(_id), "unknown")
-            matches.append({"id": _id, "distance": dist, "path": path})
+            # Only count as duplicate if path is valid (not "unknown")
+            if path != "unknown":
+                matches.append({"id": _id, "distance": dist, "path": path})
 
-    return {"results": matches}
+    # Step 5: If duplicate found, return match info (don't upload)
+    if matches:
+        return {
+            "duplicate_found": True,
+            "results": matches
+        }
+
+    # Step 6: No duplicate - upload new image to S3 and index it
+    image_name = file.filename
+    save_path = f"./{image_name}"
+
+    # Save the uploaded image to disk temporarily
+    with open(save_path, "wb") as f:
+        f.write(image_bytes)
+
+    try:
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")
+        unique_id = uuid.uuid4().hex[:8]
+        unique_name = f"{timestamp}_{unique_id}_{image_name}"
+
+        s3.upload_file(
+            Filename=save_path,
+            Bucket=S3_BUCKET,
+            Key=unique_name,
+            ExtraArgs={"ContentType": "image/jpeg"}
+        )
+        index_single_image_from_s3(collection_db, unique_name, clipmodel, processor, device)
+        s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{unique_name}"
+    except Exception as e:
+        os.remove(save_path)
+        return JSONResponse(status_code=500, content={"error": f"Failed to upload to S3: {str(e)}"})
+
+    os.remove(save_path)
+
+    return {
+        "duplicate_found": False,
+        "image_name": image_name,
+        "s3_url": s3_url
+    }
 
 class CatalogRequest(BaseModel):
     image_urls: str
