@@ -226,11 +226,11 @@ def index_images_from_s3(
         try:
             collection.flush()
             collection.load()
-            print("✅ S3 collection flushed and reloaded.")
+            print("[OK] S3 collection flushed and reloaded.")
         except Exception as e:
-            print(f"❌ Error during S3 flush/load: {e}")
+            print(f"[ERROR] Error during S3 flush/load: {e}")
     else:
-        print("ℹ️ No changes to flush from S3.")
+        print("[INFO] No changes to flush from S3.")
 
     with open(index_file, 'w') as f:
         json.dump(current_hashes, f)
@@ -238,7 +238,7 @@ def index_images_from_s3(
     with open(int_hash_file, 'w') as f:
         json.dump(int_hash_to_path, f)
 
-    print(f"✅ Indexed {len(current_hashes)} S3 images into Milvus.")
+    print(f"[OK] Indexed {len(current_hashes)} S3 images into Milvus.")
 
 
 def index_single_image_from_s3(
@@ -301,11 +301,11 @@ def index_single_image_from_s3(
         collection.flush()
         collection.load()
 
-        print(f"✅ Indexed single image: {image_key}")
+        print(f"[OK] Indexed single image: {image_key}")
         return True
 
     except Exception as e:
-        print(f"❌ Failed to index {image_key}: {e}")
+        print(f"[ERROR] Failed to index {image_key}: {e}")
         return False
 
 def get_image_paths(image_dir: str):
@@ -369,6 +369,84 @@ def init_milvus(host: str, port: str, collection_name: str, dim: int = 512):
 
     col.load()
     return col
+
+
+def clean_orphan_entries(collection, int_hash_file=INT_HASH_MAP_FILE):
+    """
+    Find and delete orphan entries from Milvus that don't have mappings in JSON.
+    This fixes the "unknown" path issue.
+    """
+    print("[CLEANUP] Starting orphan cleanup...")
+
+    # Load JSON mappings
+    if os.path.exists(int_hash_file):
+        with open(int_hash_file, 'r') as f:
+            id_to_path = json.load(f)
+        json_ids = set(id_to_path.keys())
+    else:
+        print("[CLEANUP] No JSON file found, skipping cleanup.")
+        return 0
+
+    # Get all IDs from Milvus
+    collection.load()
+
+    # Query all entities from Milvus (get IDs only)
+    try:
+        # Get count of entities
+        num_entities = collection.num_entities
+        print(f"[CLEANUP] Milvus has {num_entities} entries")
+        print(f"[CLEANUP] JSON has {len(json_ids)} mappings")
+
+        if num_entities == 0:
+            print("[CLEANUP] Milvus is empty, nothing to clean.")
+            return 0
+
+        # Query all IDs from Milvus
+        results = collection.query(
+            expr="id >= 0",
+            output_fields=["id"],
+            limit=num_entities + 1000  # Add buffer
+        )
+
+        milvus_ids = set(str(r["id"]) for r in results)
+        print(f"[CLEANUP] Retrieved {len(milvus_ids)} IDs from Milvus")
+
+        # Find orphans (in Milvus but not in JSON)
+        orphan_ids = milvus_ids - json_ids
+
+        if not orphan_ids:
+            print("[CLEANUP] No orphan entries found. All clean!")
+            return 0
+
+        print(f"[CLEANUP] Found {len(orphan_ids)} orphan entries to delete")
+
+        # Delete orphans in batches
+        orphan_list = list(orphan_ids)
+        batch_size = 100
+        deleted_count = 0
+
+        for i in range(0, len(orphan_list), batch_size):
+            batch = orphan_list[i:i + batch_size]
+            ids_str = ", ".join(batch)
+            expr = f"id in [{ids_str}]"
+            try:
+                collection.delete(expr=expr)
+                deleted_count += len(batch)
+                print(f"[CLEANUP] Deleted batch {i//batch_size + 1}: {len(batch)} entries")
+            except Exception as e:
+                print(f"[CLEANUP] Error deleting batch: {e}")
+
+        # Flush changes
+        collection.flush()
+        collection.load()
+
+        print(f"[CLEANUP] Complete! Deleted {deleted_count} orphan entries.")
+        return deleted_count
+
+    except Exception as e:
+        print(f"[CLEANUP] Error during cleanup: {e}")
+        return 0
+
 
 def index_images(collection, image_paths, model, processor, device, batch_size=128, index_file=INDEX_FILE, int_hash_file=INT_HASH_MAP_FILE):
     indexed = {}
@@ -434,17 +512,17 @@ def index_images(collection, image_paths, model, processor, device, batch_size=1
         expr = f"id in [{', '.join(map(str, deleted_ids))}]"
         print(expr)
         collection.delete(expr=expr)
-        print(f"\U0001f5d1️ Deleted {len(deleted_hashes)} stale embeddings from Milvus.")
+        print(f"[DELETED] Deleted {len(deleted_hashes)} stale embeddings from Milvus.")
 
     if new_embeddings_inserted:
         try:
             collection.flush()
             collection.load()
-            print("✅ Collection flushed and reloaded.")
+            print("[OK] Collection flushed and reloaded.")
         except Exception as e:
-            print(f"❌ Error during flush/load: {e}")
+            print(f"[ERROR] Error during flush/load: {e}")
     else:
-        print("ℹ️ No changes to flush; collection unchanged.")
+        print("[INFO] No changes to flush; collection unchanged.")
 
     with open(index_file, 'w') as f:
         json.dump(current_hashes, f)
@@ -452,7 +530,7 @@ def index_images(collection, image_paths, model, processor, device, batch_size=1
     with open(int_hash_file, 'w') as f:
         json.dump(int_hash_to_path, f)
 
-    print(f"✅ Indexed {len(current_hashes)} images into Milvus.")
+    print(f"[OK] Indexed {len(current_hashes)} images into Milvus.")
 
 
 # ------------------------ Search Function ------------------------
