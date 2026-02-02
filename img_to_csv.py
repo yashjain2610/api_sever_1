@@ -20,7 +20,7 @@ from datetime import date,datetime,timezone
 import uvicorn
 from PIL import Image
 from io import BytesIO
-from pymilvus import Collection
+from pymilvus import Collection, utility, connections
 from typing import List
 from utils import *
 from prompts import *
@@ -64,7 +64,7 @@ clipmodel, processor, device = init_clip()
 collection_db = init_milvus(
     host=os.getenv("MILVUS_HOST", "localhost"),
     port=os.getenv("MILVUS_PORT", "19530"),
-    collection_name=os.getenv("COLLECTION_NAME", "image_embeddings")
+    collection_name=os.getenv("COLLECTION_NAME", "image_embeddings_cosine")
 )
 
 # Flag to control whether to run full S3 indexing on startup
@@ -512,7 +512,7 @@ async def generate_caption(file: UploadFile = File(...),type: str = Form(...)):
         for _id, dist in results:
             print(dist)
             print()
-            if dist < 95:
+            if dist < 0.05:  # IP distance: 0.05 = ~95% similarity
                 path = id_to_path.get(str(_id), "unknown")
                 matches.append({"id": _id, "distance": dist, "path": path})
 
@@ -761,11 +761,14 @@ async def image_searh(file: UploadFile = File(...), top_k: int = 1):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": f"Failed to load hash map: {str(e)}"})
 
-    # Step 4: Check for duplicates (distance < 95 threshold, skip "unknown" paths)
+    # Step 4: Check for duplicates (COSINE distance < 0.3 = ~70% similarity)
     matches = []
+    print(f"[DEBUG] Search results: {results}")
     for _id, dist in results:
-        if dist < 95:
+        print(f"[DEBUG] ID: {_id}, Distance: {dist}")
+        if dist < 0.05:  # IP distance: 0.05 = ~95% similarity
             path = id_to_path.get(str(_id), "unknown")
+            print(f"[DEBUG] Path for ID {_id}: {path}")
             # Only count as duplicate if path is valid (not "unknown")
             if path != "unknown":
                 matches.append({"id": _id, "distance": dist, "path": path})
@@ -816,6 +819,70 @@ class CatalogRequest(BaseModel):
     marketplace: str
     skuids: str
 
+
+@app.post("/reset_image_collection")
+async def reset_image_collection():
+    """
+    Drop and recreate the image embeddings collection with COSINE metric.
+    Use this to fix metric type issues or start fresh.
+    """
+    global collection_db
+
+    collection_name = os.getenv("COLLECTION_NAME", "image_embeddings_cosine")
+
+    try:
+        # Drop existing collection if it exists
+        if utility.has_collection(collection_name):
+            utility.drop_collection(collection_name)
+            print(f"[RESET] Dropped collection: {collection_name}")
+
+        # Clear the JSON index files to start fresh
+        index_file = "indexed_hashes.json"
+        int_hash_file = "int_hash_to_path.json"
+
+        if os.path.exists(index_file):
+            os.remove(index_file)
+            print(f"[RESET] Deleted {index_file}")
+
+        if os.path.exists(int_hash_file):
+            os.remove(int_hash_file)
+            print(f"[RESET] Deleted {int_hash_file}")
+
+        # Recreate collection with COSINE metric
+        collection_db = init_milvus(
+            host=os.getenv("MILVUS_HOST", "localhost"),
+            port=os.getenv("MILVUS_PORT", "19530"),
+            collection_name=collection_name
+        )
+
+        print(f"[RESET] Created new collection: {collection_name} with COSINE metric")
+
+        return {
+            "success": True,
+            "message": f"Collection '{collection_name}' reset with COSINE metric. Run /reindex_images to populate."
+        }
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": f"Failed to reset collection: {str(e)}"})
+
+
+@app.post("/reindex_images")
+async def reindex_images():
+    """
+    Reindex all images from S3 into the current collection.
+    """
+    try:
+        print("[REINDEX] Starting S3 image indexing...")
+        paths = get_image_paths_from_s3(S3_BUCKET)
+        index_images_from_s3(collection_db, paths, clipmodel, processor, device)
+        print("[REINDEX] Indexing complete.")
+
+        return {
+            "success": True,
+            "message": f"Indexed {len(paths)} images from S3"
+        }
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": f"Failed to reindex: {str(e)}"})
 
 
 @app.post("/catalog-ai")
