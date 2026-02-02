@@ -57,6 +57,12 @@ model = genai.GenerativeModel(model_name="gemini-2.0-flash")
 S3_BUCKET = os.getenv("S3_BUCKET", "alyaimg")
 GENERATED_FOLDER = "gen_images/"
 
+# Dual bucket configuration
+BUCKET_MAP = {
+    "alya": "alyaimg",
+    "blysk": "blyskimg"
+}
+
 from image_search_engine import *
 
 # Load model and DB once
@@ -448,6 +454,7 @@ ALLOWED_EXTENSIONS = (".jpg", ".jpeg", ".png", ".webp")
 async def generate_caption(
     file: UploadFile = File(...),
     type: str = Form(...),
+    website: str = Form("alya"),  # "alya" or "blysk" - select S3 bucket
     check_duplicate: str = Form("yes")  # "yes" or "no" - bypass duplicate detection
 ):
 
@@ -476,6 +483,7 @@ async def generate_caption(
         - color: the color of the image that is detected by the model
         - s3_url: the URL of the image on Amazon S3
         - duplicate: if the image is a duplicate of an existing image, this key will be present with the value "duplicate found"
+        - website: "alya" (default) or "blysk" - select which S3 bucket to use
         - check_duplicate: "yes" (default) to check for duplicates, "no" to bypass duplicate detection
 
         If the image is not a duplicate, the output will not contain the "duplicate" key.
@@ -484,6 +492,11 @@ async def generate_caption(
 
         if not file:
             return {"error": "No files received"}
+
+        # Get bucket based on website selection
+        selected_bucket = BUCKET_MAP.get(website.lower(), S3_BUCKET)
+        if website.lower() not in BUCKET_MAP:
+            return JSONResponse(status_code=400, content={"error": f"Invalid website. Use 'alya' or 'blysk'"})
 
         image_bytes = await file.read()
 
@@ -550,15 +563,15 @@ async def generate_caption(
                 # Get file extension from original filename
                 file_ext = os.path.splitext(image_name)[1] or ".jpg"
                 unique_name = f"{timestamp}{file_ext}"
-                
+
                 s3.upload_file(
                     Filename=save_path,
-                    Bucket=S3_BUCKET,
+                    Bucket=selected_bucket,
                     Key=unique_name,
                     ExtraArgs={"ContentType": "image/jpeg"}
                 )
-                index_single_image_from_s3(collection_db, unique_name, clipmodel, processor, device)
-                s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{unique_name}"
+                index_single_image_from_s3(collection_db, unique_name, clipmodel, processor, device, s3_bucket=selected_bucket)
+                s3_url = f"https://{selected_bucket}.s3.amazonaws.com/{unique_name}"
             except Exception as e:
                 return JSONResponse(status_code=500, content={"error": f"Failed to upload to S3: {str(e)}"})
         
@@ -743,8 +756,14 @@ async def reg_title(previous_title:str=Form(...),color:str=Form(...),attributes:
 async def image_searh(
     file: UploadFile = File(...),
     top_k: int = 1,
+    website: str = "alya",  # "alya" or "blysk" - select S3 bucket
     check_duplicate: str = "yes"  # "yes" or "no" - bypass duplicate detection
 ):
+    # Get bucket based on website selection
+    selected_bucket = BUCKET_MAP.get(website.lower(), S3_BUCKET)
+    if website.lower() not in BUCKET_MAP:
+        return JSONResponse(status_code=400, content={"error": f"Invalid website. Use 'alya' or 'blysk'"})
+
     # Step 1: Read query image and embed it
     image_bytes = await file.read()
     try:
@@ -767,12 +786,12 @@ async def image_searh(
 
             s3.upload_file(
                 Filename=save_path,
-                Bucket=S3_BUCKET,
+                Bucket=selected_bucket,
                 Key=unique_name,
                 ExtraArgs={"ContentType": "image/jpeg"}
             )
-            index_single_image_from_s3(collection_db, unique_name, clipmodel, processor, device)
-            s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{unique_name}"
+            index_single_image_from_s3(collection_db, unique_name, clipmodel, processor, device, s3_bucket=selected_bucket)
+            s3_url = f"https://{selected_bucket}.s3.amazonaws.com/{unique_name}"
         except Exception as e:
             os.remove(save_path)
             return JSONResponse(status_code=500, content={"error": f"Failed to upload to S3: {str(e)}"})
@@ -830,12 +849,12 @@ async def image_searh(
 
         s3.upload_file(
             Filename=save_path,
-            Bucket=S3_BUCKET,
+            Bucket=selected_bucket,
             Key=unique_name,
             ExtraArgs={"ContentType": "image/jpeg"}
         )
-        index_single_image_from_s3(collection_db, unique_name, clipmodel, processor, device)
-        s3_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{unique_name}"
+        index_single_image_from_s3(collection_db, unique_name, clipmodel, processor, device, s3_bucket=selected_bucket)
+        s3_url = f"https://{selected_bucket}.s3.amazonaws.com/{unique_name}"
     except Exception as e:
         os.remove(save_path)
         return JSONResponse(status_code=500, content={"error": f"Failed to upload to S3: {str(e)}"})
