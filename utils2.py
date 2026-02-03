@@ -5,7 +5,8 @@ import base64
 import openpyxl
 from prompts import *
 import random
-from PIL import Image , ImageOps
+from PIL import Image, ImageOps
+from rembg import remove
 from io import BytesIO
 from google import genai
 from google.genai import types
@@ -198,37 +199,123 @@ def encode_image(uploaded_image):
 
 
 
+def extract_jewelry(image: Image.Image) -> Image.Image:
+    """
+    Extract jewelry from image with transparent background using rembg.
+
+    Args:
+        image: PIL Image of jewelry with any background
+
+    Returns:
+        PIL Image of jewelry with transparent background (RGBA)
+    """
+    no_bg = remove(image)
+
+    if no_bg.mode != 'RGBA':
+        no_bg = no_bg.convert('RGBA')
+
+    return no_bg
+
+
+def composite_jewelry_on_background(
+    jewelry_rgba: Image.Image,
+    background: Image.Image
+) -> Image.Image:
+    """
+    Composite the original jewelry onto a generated background.
+
+    Args:
+        jewelry_rgba: Jewelry image with transparent background (RGBA)
+        background: Generated background image
+
+    Returns:
+        Final composited image with original jewelry on new background
+    """
+    # Ensure background is RGBA
+    if background.mode != 'RGBA':
+        background = background.convert('RGBA')
+
+    # Resize jewelry to match background if needed
+    if jewelry_rgba.size != background.size:
+        jewelry_rgba = jewelry_rgba.resize(background.size, Image.Resampling.LANCZOS)
+
+    # Composite: paste jewelry on top of background using jewelry's alpha as mask
+    result = background.copy()
+    result.paste(jewelry_rgba, (0, 0), jewelry_rgba)
+
+    return result
+
+
 def generate_images_from_gpt(
     image: Image.Image,
     prompts: list[str],
-    size: str = "1024x1024"
+    size: str = "1024x1024",
+    use_composite: bool = True
 ):
     """
     Runs a single image with multiple prompts using gpt-image-1
     and returns structured responses.
-    """
 
-    base64_image = pil_to_base64(image)
+    Uses COMPOSITE approach for 100% jewelry preservation:
+    1. Extract original jewelry using rembg
+    2. Generate new background/scene with OpenAI
+    3. Composite original jewelry onto generated background
+
+    Args:
+        image: PIL Image to edit
+        prompts: List of prompts for each variation
+        size: Output image size
+        use_composite: If True, composite original jewelry onto generated background (100% preservation)
+    """
     all_responses = []
 
+    # Extract original jewelry with transparent background (for compositing later)
+    jewelry_rgba = None
+    if use_composite:
+        jewelry_rgba = extract_jewelry(image)
+
+    # Save image to temp buffer
+    img_buffer = io.BytesIO()
+    image.save(img_buffer, format="PNG")
+    img_buffer.seek(0)
+
     for prompt in prompts:
-        result = client.images.generate(
-            model="gpt-image-1",
-            prompt=prompt,
-            size=size,
-            quality="low"
-        )
+        # Build API call parameters
+        api_params = {
+            "model": "gpt-image-1",
+            "image": ("image.png", img_buffer, "image/png"),
+            "prompt": prompt,
+            "size": size,
+            "quality": "low"
+        }
+
+        result = client.images.edit(**api_params)
 
         structured_response = {
             "prompt": prompt,
-            "text": "",
             "images": []
         }
 
         for img in result.data:
             img_bytes = base64.b64decode(img.b64_json)
+
+            if use_composite and jewelry_rgba is not None:
+                # Open the generated image (this has AI-generated background + AI jewelry)
+                generated_img = Image.open(io.BytesIO(img_bytes))
+
+                # Composite: replace AI jewelry with ORIGINAL jewelry
+                final_img = composite_jewelry_on_background(jewelry_rgba, generated_img)
+
+                # Convert back to bytes
+                final_buffer = io.BytesIO()
+                final_img.save(final_buffer, format="PNG")
+                img_bytes = final_buffer.getvalue()
+
             structured_response["images"].append(img_bytes)
 
         all_responses.append(structured_response)
+
+        # Reset buffer pointer for next loop
+        img_buffer.seek(0)
 
     return all_responses
