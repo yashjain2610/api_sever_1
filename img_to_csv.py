@@ -1609,6 +1609,10 @@ async def create_order(file: UploadFile = File(...)):
 class ImageRequest(BaseModel):
     s3_urls: str
     product_type: str
+    num_images: int = 1  # Number of images to generate (default 1 for testing, max depends on product type)
+    image_types: List[int] = None  # For earrings: [1,2,3,4,5] - 1=White BG, 2=Hand, 3=Dimension, 4=Lifestyle, 5=Model
+    height: str = None  # Required if 3 is in image_types (dimension image), e.g., "2.5 cm"
+    width: str = None   # Required if 3 is in image_types (dimension image), e.g., "1.8 cm"
 
 def create_zip_from_s3_urls(image_urls, zip_filename):
     # Create an in-memory ZIP file
@@ -1670,17 +1674,54 @@ async def generate_images(request: ImageRequest):
         the image.
     """
 
-    prompt_map = {
-        "ear": [white_bgd_prompt, multicolor_1_prompt, multicolor_2_prompt, props_img_prompt, hand_prompt],
-        "bra": [white_bgd_bracelet_prompt, multicolor_1_bracelet_prompt, multicolor_2_bracelet_prompt, props_img_bracelet_prompt, hand_bracelet_prompt],
-        "nec": [white_bgd_necklace_prompt, multicolor_1_necklace_prompt, multicolor_2_necklace_prompt, props_img_necklace_prompt, hand_necklace_prompt, neck_necklace_prompt]
-    }
+    product_type = request.product_type[0:3].lower()
 
-    product_type = request.product_type[0:3]
+    # Track image types for response (None if using old system)
+    image_types_list = None
 
-    prompt_list = prompt_map.get(product_type.lower())
-    if not prompt_list:
-        return JSONResponse(status_code=400, content={"error": "Invalid product_type"})
+    # For earrings with image_types parameter, use the new catalog system
+    if product_type == "ear" and request.image_types is not None:
+        # Validate all image_types
+        for img_type in request.image_types:
+            if img_type not in EARRING_IMAGE_TYPES:
+                return JSONResponse(
+                    status_code=400,
+                    content={"error": f"Invalid image_type: {img_type}. Must be 1-5."}
+                )
+
+        # For dimension image (type 3), validate height and width
+        if 3 in request.image_types:
+            if not request.height or not request.width:
+                return JSONResponse(
+                    status_code=400,
+                    content={"error": "Dimension image (type 3) requires both 'height' and 'width' parameters."}
+                )
+
+        # Build prompt list from all requested image types
+        prompt_list = []
+        image_types_list = []
+        for img_type in request.image_types:
+            prompt = get_earring_prompt(img_type, request.height, request.width)
+            prompt_list.append(prompt)
+            image_types_list.append({
+                "type": img_type,
+                "name": EARRING_IMAGE_TYPES[img_type]["name"]
+            })
+    else:
+        # Fallback to original behavior for other product types or when image_types not specified
+        prompt_map = {
+            "ear": [white_bgd_prompt, multicolor_1_prompt, multicolor_2_prompt, props_img_prompt, hand_prompt],
+            "bra": [white_bgd_bracelet_prompt, multicolor_1_bracelet_prompt, multicolor_2_bracelet_prompt, props_img_bracelet_prompt, hand_bracelet_prompt],
+            "nec": [white_bgd_necklace_prompt, multicolor_1_necklace_prompt, multicolor_2_necklace_prompt, props_img_necklace_prompt, hand_necklace_prompt, neck_necklace_prompt]
+        }
+
+        prompt_list = prompt_map.get(product_type)
+        if not prompt_list:
+            return JSONResponse(status_code=400, content={"error": "Invalid product_type"})
+
+        # Limit number of images to generate
+        num_images = min(request.num_images, len(prompt_list))
+        prompt_list = prompt_list[:num_images]
 
     results = {}
     url = request.s3_urls
@@ -1712,17 +1753,27 @@ async def generate_images(request: ImageRequest):
                 gen_image.save(img_buffer, format="PNG")
                 resized_img_bytes = img_buffer.getvalue()
 
-                filename = f"{name_no_ext}_prompt{i}.png"
+                # Use image_type in filename if specified, otherwise use prompt index
+                if image_types_list is not None:
+                    img_type = image_types_list[i]["type"]
+                    filename = f"{name_no_ext}_type{img_type}.png"
+                else:
+                    filename = f"{name_no_ext}_prompt{i}.png"
                 key = f"{GENERATED_FOLDER}{filename}"
 
                 # Upload to S3
                 s3.put_object(Bucket=S3_BUCKET, Key=key, Body=resized_img_bytes, ContentType="image/png")
 
                 image_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{key}"
-                image_urls.append({
+                image_info = {
                     "prompt_index": i,
                     "image_url": image_url
-                })
+                }
+                # Add image_type info if specified
+                if image_types_list is not None:
+                    image_info["image_type"] = image_types_list[i]["type"]
+                    image_info["image_type_name"] = image_types_list[i]["name"]
+                image_urls.append(image_info)
             
             urls = [img['image_url'] for img in image_urls]
             zip_url = create_zip_from_s3_urls(urls, f"{name_no_ext}.zip")

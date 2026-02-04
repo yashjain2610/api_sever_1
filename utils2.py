@@ -249,30 +249,18 @@ def composite_jewelry_on_background(
 def generate_images_from_gpt(
     image: Image.Image,
     prompts: list[str],
-    size: str = "1024x1024",
-    use_composite: bool = True
+    size: str = "1024x1024"
 ):
     """
-    Runs a single image with multiple prompts using gpt-image-1
+    Runs a single image with multiple prompts using gpt-image-1.5
     and returns structured responses.
-
-    Uses COMPOSITE approach for 100% jewelry preservation:
-    1. Extract original jewelry using rembg
-    2. Generate new background/scene with OpenAI
-    3. Composite original jewelry onto generated background
 
     Args:
         image: PIL Image to edit
         prompts: List of prompts for each variation
         size: Output image size
-        use_composite: If True, composite original jewelry onto generated background (100% preservation)
     """
     all_responses = []
-
-    # Extract original jewelry with transparent background (for compositing later)
-    jewelry_rgba = None
-    if use_composite:
-        jewelry_rgba = extract_jewelry(image)
 
     # Save image to temp buffer
     img_buffer = io.BytesIO()
@@ -282,11 +270,12 @@ def generate_images_from_gpt(
     for prompt in prompts:
         # Build API call parameters
         api_params = {
-            "model": "gpt-image-1",
+            "model": "gpt-image-1.5",
             "image": ("image.png", img_buffer, "image/png"),
             "prompt": prompt,
             "size": size,
-            "quality": "low"
+            "quality": "low",
+            "n": 1
         }
 
         result = client.images.edit(**api_params)
@@ -298,19 +287,6 @@ def generate_images_from_gpt(
 
         for img in result.data:
             img_bytes = base64.b64decode(img.b64_json)
-
-            if use_composite and jewelry_rgba is not None:
-                # Open the generated image (this has AI-generated background + AI jewelry)
-                generated_img = Image.open(io.BytesIO(img_bytes))
-
-                # Composite: replace AI jewelry with ORIGINAL jewelry
-                final_img = composite_jewelry_on_background(jewelry_rgba, generated_img)
-
-                # Convert back to bytes
-                final_buffer = io.BytesIO()
-                final_img.save(final_buffer, format="PNG")
-                img_bytes = final_buffer.getvalue()
-
             structured_response["images"].append(img_bytes)
 
         all_responses.append(structured_response)
@@ -319,3 +295,75 @@ def generate_images_from_gpt(
         img_buffer.seek(0)
 
     return all_responses
+
+
+def generate_earring_catalog_image(
+    image: Image.Image,
+    image_type: int,
+    height: str = None,
+    width: str = None,
+    size: str = "1024x1024"
+):
+    """
+    Generate a specific catalog image type for Amazon earrings.
+
+    Args:
+        image: PIL Image of the earring
+        image_type: Integer 1-5 representing the catalog image type:
+            1 - White Background (main product image)
+            2 - Lifestyle Background 1 (pastel gradient)
+            3 - Dimension Image (with height/width markings)
+            4 - Lifestyle Background 2 (moody/editorial)
+            5 - Model Wearing (AI-generated model)
+        height: Height dimension (e.g., "2.5 cm") - required for type 3
+        width: Width dimension (e.g., "1.8 cm") - required for type 3
+        size: Output image size
+
+    Returns:
+        dict with prompt and generated image bytes
+    """
+    from prompts2 import get_earring_prompt, EARRING_IMAGE_TYPES
+
+    # Validate image type
+    if image_type not in EARRING_IMAGE_TYPES:
+        raise ValueError(f"Invalid image type: {image_type}. Must be 1-5.")
+
+    # Get the prompt
+    prompt = get_earring_prompt(image_type, height, width)
+    config = EARRING_IMAGE_TYPES[image_type]
+
+    # Save image to temp buffer
+    img_buffer = io.BytesIO()
+    image.save(img_buffer, format="PNG")
+    img_buffer.seek(0)
+
+    # Build API call parameters
+    api_params = {
+        "model": "gpt-image-1.5",
+        "image": ("image.png", img_buffer, "image/png"),
+        "prompt": prompt,
+        "size": size,
+        "quality": "medium",
+        "n": 1
+    }
+
+    result = client.images.edit(**api_params)
+
+    response = {
+        "image_type": image_type,
+        "image_type_name": config["name"],
+        "prompt": prompt,
+        "images": []
+    }
+
+    for img in result.data:
+        img_bytes = base64.b64decode(img.b64_json)
+        response["images"].append(img_bytes)
+
+    return response
+
+
+def print_earring_image_types():
+    """Print available earring catalog image types."""
+    from prompts2 import list_earring_image_types
+    list_earring_image_types()
