@@ -1734,6 +1734,11 @@ async def generate_images(request: ImageRequest):
             name_no_ext = os.path.splitext(filename_base)[0]
 
             for i, item in enumerate(responses):
+                # Skip failed generations (empty images list due to rate limit or other errors)
+                if not item.get("images"):
+                    print(f"[WARNING] Skipping image {i} - generation failed: {item.get('error', 'unknown error')}")
+                    continue
+
                 img_bytes = item["images"][0]
 
                 gen_image = Image.open(io.BytesIO(img_bytes))

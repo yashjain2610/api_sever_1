@@ -251,33 +251,52 @@ def composite_jewelry_on_background(
 def _generate_single_image(args):
     """
     Helper function to generate a single image (used for parallel execution).
+    Includes retry logic for rate limit (429) errors.
     """
     prompt, img_bytes, size, prompt_index = args
 
     total_start = time.time()
     print(f"[IMAGE {prompt_index}] Started at {time.strftime('%H:%M:%S')}")
 
-    # Step 1: Create buffer
-    buffer_start = time.time()
-    img_buffer = io.BytesIO(img_bytes)
-    buffer_time = time.time() - buffer_start
-    print(f"[IMAGE {prompt_index}] Buffer creation: {buffer_time:.2f}s")
+    # Retry settings for rate limit errors
+    max_retries = 3
+    base_delay = 15  # seconds
 
-    # Step 2: Prepare API params
-    api_params = {
-        "model": "gpt-image-1.5",
-        "image": ("image.png", img_buffer, "image/png"),
-        "prompt": prompt,
-        "size": size,
-        "quality": "low",
-        "n": 1
-    }
+    for attempt in range(max_retries):
+        # Step 1: Create buffer (must recreate for each attempt)
+        buffer_start = time.time()
+        img_buffer = io.BytesIO(img_bytes)
+        buffer_time = time.time() - buffer_start
+        if attempt == 0:
+            print(f"[IMAGE {prompt_index}] Buffer creation: {buffer_time:.2f}s")
 
-    # Step 3: API call (upload + processing + download)
-    api_start = time.time()
-    result = client.images.edit(**api_params)
-    api_time = time.time() - api_start
-    print(f"[IMAGE {prompt_index}] API call (upload+process+download): {api_time:.2f}s")
+        # Step 2: Prepare API params
+        api_params = {
+            "model": "gpt-image-1.5",
+            "image": ("image.png", img_buffer, "image/png"),
+            "prompt": prompt,
+            "size": size,
+            "quality": "low",
+            "n": 1
+        }
+
+        # Step 3: API call (upload + processing + download) with retry
+        api_start = time.time()
+        try:
+            result = client.images.edit(**api_params)
+            api_time = time.time() - api_start
+            print(f"[IMAGE {prompt_index}] API call (upload+process+download): {api_time:.2f}s")
+            break  # Success, exit retry loop
+        except Exception as e:
+            error_str = str(e)
+            if "429" in error_str or "rate_limit" in error_str.lower():
+                delay = base_delay * (attempt + 1)  # 15s, 30s, 45s
+                print(f"[IMAGE {prompt_index}] Rate limit hit (attempt {attempt + 1}/{max_retries}), waiting {delay}s...")
+                time.sleep(delay)
+                if attempt == max_retries - 1:
+                    raise  # Re-raise on final attempt
+            else:
+                raise  # Non-rate-limit error, don't retry
 
     # Step 4: Decode response
     decode_start = time.time()
