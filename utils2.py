@@ -5,6 +5,7 @@ import base64
 import openpyxl
 from prompts import *
 import random
+import time
 from PIL import Image, ImageOps
 from rembg import remove
 from io import BytesIO
@@ -253,9 +254,16 @@ def _generate_single_image(args):
     """
     prompt, img_bytes, size, prompt_index = args
 
-    # Create new buffer for this thread
-    img_buffer = io.BytesIO(img_bytes)
+    total_start = time.time()
+    print(f"[IMAGE {prompt_index}] Started at {time.strftime('%H:%M:%S')}")
 
+    # Step 1: Create buffer
+    buffer_start = time.time()
+    img_buffer = io.BytesIO(img_bytes)
+    buffer_time = time.time() - buffer_start
+    print(f"[IMAGE {prompt_index}] Buffer creation: {buffer_time:.2f}s")
+
+    # Step 2: Prepare API params
     api_params = {
         "model": "gpt-image-1.5",
         "image": ("image.png", img_buffer, "image/png"),
@@ -265,8 +273,14 @@ def _generate_single_image(args):
         "n": 1
     }
 
+    # Step 3: API call (upload + processing + download)
+    api_start = time.time()
     result = client.images.edit(**api_params)
+    api_time = time.time() - api_start
+    print(f"[IMAGE {prompt_index}] API call (upload+process+download): {api_time:.2f}s")
 
+    # Step 4: Decode response
+    decode_start = time.time()
     structured_response = {
         "prompt": prompt,
         "prompt_index": prompt_index,
@@ -276,6 +290,16 @@ def _generate_single_image(args):
     for img in result.data:
         img_bytes_result = base64.b64decode(img.b64_json)
         structured_response["images"].append(img_bytes_result)
+    decode_time = time.time() - decode_start
+    print(f"[IMAGE {prompt_index}] Decode response: {decode_time:.2f}s")
+
+    total_time = time.time() - total_start
+    print(f"[IMAGE {prompt_index}] TOTAL: {total_time:.2f}s")
+    print(f"[IMAGE {prompt_index}] Finished at {time.strftime('%H:%M:%S')}")
+    print("-" * 50)
+
+    # Add timing info for efficiency calculation
+    structured_response["_generation_time"] = total_time
 
     return structured_response
 
@@ -296,10 +320,19 @@ def generate_images_from_gpt(
         prompts: List of prompts for each variation
         size: Output image size
     """
+    overall_start = time.time()
+    print("=" * 60)
+    print(f"[BATCH] Starting generation of {len(prompts)} images")
+    print(f"[BATCH] Start time: {time.strftime('%H:%M:%S')}")
+    print("=" * 60)
+
     # Save image to bytes (will be shared across threads)
+    prep_start = time.time()
     img_buffer = io.BytesIO()
     image.save(img_buffer, format="PNG")
     img_bytes = img_buffer.getvalue()
+    prep_time = time.time() - prep_start
+    print(f"[BATCH] Image preparation: {prep_time:.2f}s (size: {len(img_bytes)/1024:.1f} KB)")
 
     # Prepare arguments for parallel execution
     args_list = [
@@ -329,6 +362,27 @@ def generate_images_from_gpt(
                     "images": [],
                     "error": str(e)
                 }
+
+    # Final summary
+    overall_time = time.time() - overall_start
+
+    # Calculate sequential time (sum of all individual times)
+    sequential_time = sum(
+        r.get("_generation_time", 0)
+        for r in all_responses
+        if r and "_generation_time" in r
+    )
+
+    # Calculate efficiency: sequential_time / parallel_time
+    efficiency = sequential_time / overall_time if overall_time > 0 else 1.0
+
+    print("=" * 60)
+    print(f"[BATCH] All {len(prompts)} images completed")
+    print(f"[BATCH] End time: {time.strftime('%H:%M:%S')}")
+    print(f"[BATCH] TOTAL BATCH TIME: {overall_time:.2f}s")
+    print(f"[BATCH] Sequential would be: {sequential_time:.2f}s")
+    print(f"[BATCH] Parallelization speedup: {efficiency:.1f}x")
+    print("=" * 60)
 
     return all_responses
 
