@@ -32,7 +32,7 @@ LOCAL_IMAGE_DIR = os.getenv("LOCAL_IMAGE_DIR", "./images")
 
 MILVUS_HOST = os.getenv("MILVUS_HOST", "localhost")
 MILVUS_PORT = os.getenv("MILVUS_PORT", "19530")
-COLLECTION_NAME = os.getenv("COLLECTION_NAME", "image_embeddings")
+COLLECTION_NAME = os.getenv("COLLECTION_NAME", "image_embeddings_ip")
 
 BATCH_SIZE = int(os.getenv("BATCH_SIZE", "64"))
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -333,11 +333,14 @@ def init_clip(device: str = None):
     return model, processor, device
 
 def embed_image(img: Image.Image, model, processor, device) -> np.ndarray:
-    """Preprocess and embed an image using CLIP."""
+    """Preprocess and embed an image using CLIP. Normalized for IP (cosine) similarity."""
     inputs = processor(images=img, return_tensors="pt").to(device)
     with torch.no_grad():
         features = model.get_image_features(**inputs)
-    return features.cpu().numpy().reshape(-1)
+    emb = features.cpu().numpy().reshape(-1)
+    # Normalize for IP metric (cosine similarity)
+    emb = emb / np.linalg.norm(emb)
+    return emb
 
 # ------------------------ Connect to Milvus ------------------------
 def init_milvus(host: str, port: str, collection_name: str, dim: int = 512):
@@ -363,7 +366,7 @@ def init_milvus(host: str, port: str, collection_name: str, dim: int = 512):
             index_params={
                 "index_type": "HNSW",
                 "params": {"M": 48, "efConstruction": 200},
-                "metric_type": "L2"
+                "metric_type": "IP"
             }
         )
 
@@ -536,10 +539,17 @@ def index_images(collection, image_paths, model, processor, device, batch_size=1
 # ------------------------ Search Function ------------------------
 def search_similar(collection, query_emb, top_k: int = 5):
     collection.load()
+    search_params = {"metric_type": "IP", "params": {"ef": 64}}
     results = collection.search(
-        [query_emb.tolist()], "embedding", {"metric_type": "L2"}, limit=top_k
+        data=[query_emb.tolist()],
+        anns_field="embedding",
+        param=search_params,
+        limit=top_k,
+        output_fields=["id"]
     )
-    return [(int(hit.id), float(hit.distance)) for hit in results[0]]
+    # For IP with normalized vectors: score ~1 = identical, ~0 = different
+    # Return as (id, 1 - score) so lower = more similar (consistent with distance)
+    return [(int(hit.id), 1 - float(hit.distance)) for hit in results[0]]
 
 
 # def main_index():

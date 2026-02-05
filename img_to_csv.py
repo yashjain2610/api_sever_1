@@ -70,7 +70,7 @@ clipmodel, processor, device = init_clip()
 collection_db = init_milvus(
     host=os.getenv("MILVUS_HOST", "localhost"),
     port=os.getenv("MILVUS_PORT", "19530"),
-    collection_name=os.getenv("COLLECTION_NAME", "image_embeddings")
+    collection_name=os.getenv("COLLECTION_NAME", "image_embeddings_ip")
 )
 
 # Flag to control whether to run full S3 indexing on startup
@@ -526,9 +526,9 @@ async def generate_caption(
             # Step 4: Build response
             matches = []
             for _id, dist in results:
-                print(dist)
+                print(f"IP distance: {dist}")
                 print()
-                if dist < 95:
+                if dist < 0.05:  # IP metric: 0.05 = ~95% similarity
                     path = id_to_path.get(str(_id), "unknown")
                     matches.append({"id": _id, "distance": dist, "path": path})
 
@@ -817,10 +817,10 @@ async def image_searh(
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": f"Failed to load hash map: {str(e)}"})
 
-    # Step 4: Check for duplicates (distance < 95 threshold, skip "unknown" paths)
+    # Step 4: Check for duplicates (IP metric: dist < 0.05 = ~95% similarity)
     matches = []
     for _id, dist in results:
-        if dist < 95:
+        if dist < 0.05:  # IP metric: 0.05 = ~95% similarity
             path = id_to_path.get(str(_id), "unknown")
             # Only count as duplicate if path is valid (not "unknown")
             if path != "unknown":
