@@ -1,0 +1,398 @@
+================================================================================
+                         API SERVER TEST PLAN
+================================================================================
+
+Before deploying to live AWS, we need to test the following endpoints:
+1. /image_similarity_search
+2. /generate_caption
+3. /generate-images
+
+
+================================================================================
+PREREQUISITES
+================================================================================
+
+1. Start the server:
+   uvicorn img_to_csv:app --reload --host 0.0.0.0 --port 8000
+
+2. Ensure .env file has:
+   - GOOGLE_API_KEY (for Gemini)
+   - AWS_ACCESS_KEY_ID
+   - AWS_SECRET_ACCESS_KEY
+   - S3_BUCKET=alyaimg
+   - ZILLIZ_URL
+   - ZILLIZ_TOKEN
+   - OPENAI_API_KEY
+
+3. Prepare test images:
+   - test_earring_1.jpg (new image)
+   - test_earring_2.jpg (different image)
+   - Copy of test_earring_1.jpg (for duplicate test)
+
+
+================================================================================
+TEST 1: /image_similarity_search
+================================================================================
+
+Purpose: Check if duplicate detection works with IP metric
+
++--------+----------------------------------+----------------------------------+
+| Test # | Test Case                        | Expected Result                  |
++--------+----------------------------------+----------------------------------+
+| 1.1    | Upload NEW image                 | duplicate_found: false           |
+|        | check_duplicate="yes"            | s3_url: new URL returned         |
++--------+----------------------------------+----------------------------------+
+| 1.2    | Upload SAME image again          | duplicate_found: true            |
+|        | check_duplicate="yes"            | results: [{path: existing URL}]  |
++--------+----------------------------------+----------------------------------+
+| 1.3    | Upload SAME image                | duplicate_found: false           |
+|        | check_duplicate="no"             | s3_url: new URL (uploaded again) |
+|        | (bypass duplicate check)         | duplicate_check: "skipped"       |
++--------+----------------------------------+----------------------------------+
+| 1.4    | Upload image to "alya" bucket    | s3_url contains "alyaimg"        |
+|        | website="alya"                   |                                  |
++--------+----------------------------------+----------------------------------+
+| 1.5    | Upload image to "blysk" bucket   | s3_url contains "blyskimg"       |
+|        | website="blysk"                  |                                  |
++--------+----------------------------------+----------------------------------+
+| 1.6    | Invalid website parameter        | Error: "Invalid website"         |
+|        | website="invalid"                |                                  |
++--------+----------------------------------+----------------------------------+
+| 1.7    | Upload slightly modified image   | Should detect as duplicate       |
+|        | (resized or compressed)          | if similarity > 95%              |
++--------+----------------------------------+----------------------------------+
+| 1.8    | Upload completely different      | duplicate_found: false           |
+|        | image                            |                                  |
++--------+----------------------------------+----------------------------------+
+
+
+CURL COMMANDS FOR TEST 1:
+-------------------------
+
+# Test 1.1 - New image
+curl -X POST "http://localhost:8000/image_similarity_search" \
+  -F "file=@test_earring_1.jpg" \
+  -F "check_duplicate=yes" \
+  -F "website=alya"
+
+# Test 1.2 - Same image (duplicate)
+curl -X POST "http://localhost:8000/image_similarity_search" \
+  -F "file=@test_earring_1.jpg" \
+  -F "check_duplicate=yes" \
+  -F "website=alya"
+
+# Test 1.3 - Bypass duplicate check
+curl -X POST "http://localhost:8000/image_similarity_search" \
+  -F "file=@test_earring_1.jpg" \
+  -F "check_duplicate=no" \
+  -F "website=alya"
+
+# Test 1.5 - Different bucket
+curl -X POST "http://localhost:8000/image_similarity_search" \
+  -F "file=@test_earring_2.jpg" \
+  -F "check_duplicate=yes" \
+  -F "website=blysk"
+
+
+================================================================================
+TEST 2: /generate_caption
+================================================================================
+
+Purpose: Check caption generation + duplicate detection
+
++--------+----------------------------------+----------------------------------+
+| Test # | Test Case                        | Expected Result                  |
++--------+----------------------------------+----------------------------------+
+| 2.1    | Upload NEW image                 | Returns full response:           |
+|        | check_duplicate="yes"            | - display_name                   |
+|        |                                  | - generated_name                 |
+|        |                                  | - quality (A/B/C)                |
+|        |                                  | - description                    |
+|        |                                  | - attributes                     |
+|        |                                  | - prompt                         |
+|        |                                  | - color                          |
+|        |                                  | - s3_url                         |
++--------+----------------------------------+----------------------------------+
+| 2.2    | Upload DUPLICATE image           | Returns:                         |
+|        | check_duplicate="yes"            | - display_name                   |
+|        |                                  | - s3_url (existing)              |
+|        |                                  | - duplicate: "duplicate found"   |
++--------+----------------------------------+----------------------------------+
+| 2.3    | Upload DUPLICATE image           | Returns full response            |
+|        | check_duplicate="no"             | (treats as new, generates        |
+|        |                                  | caption anyway)                  |
++--------+----------------------------------+----------------------------------+
+| 2.4    | Test different jewelry types     | Should work for all:             |
+|        | type="earring"                   | - earring                        |
+|        | type="necklace"                  | - necklace                       |
+|        | type="bracelet"                  | - bracelet                       |
++--------+----------------------------------+----------------------------------+
+| 2.5    | Test quality detection           | Should detect A/B/C              |
+|        | (image with A/B/C written)       | written on image                 |
++--------+----------------------------------+----------------------------------+
+| 2.6    | Test color detection             | Should return correct color      |
+|        |                                  | (gold, silver, rose gold, etc.)  |
++--------+----------------------------------+----------------------------------+
+| 2.7    | Invalid file (not image)         | Error response                   |
++--------+----------------------------------+----------------------------------+
+
+
+CURL COMMANDS FOR TEST 2:
+-------------------------
+
+# Test 2.1 - New image caption
+curl -X POST "http://localhost:8000/generate_caption" \
+  -F "file=@test_earring_1.jpg" \
+  -F "type=earring" \
+  -F "check_duplicate=yes" \
+  -F "website=alya"
+
+# Test 2.2 - Duplicate image
+curl -X POST "http://localhost:8000/generate_caption" \
+  -F "file=@test_earring_1.jpg" \
+  -F "type=earring" \
+  -F "check_duplicate=yes" \
+  -F "website=alya"
+
+# Test 2.3 - Bypass duplicate
+curl -X POST "http://localhost:8000/generate_caption" \
+  -F "file=@test_earring_1.jpg" \
+  -F "type=earring" \
+  -F "check_duplicate=no" \
+  -F "website=alya"
+
+
+================================================================================
+TEST 3: /generate-images (BATCH-4)
+================================================================================
+
+Purpose: Check batch image generation for earrings
+
++--------+----------------------------------+----------------------------------+
+| Test # | Test Case                        | Expected Result                  |
++--------+----------------------------------+----------------------------------+
+| 3.1    | Earring with default types       | 4 images generated:              |
+|        | (no image_types specified)       | - Type 1: White Background       |
+|        |                                  | - Type 2: Hand Holding           |
+|        |                                  | - Type 4: Lifestyle Nature       |
+|        |                                  | - Type 5: Model Wearing          |
+|        |                                  | + zip_url                        |
++--------+----------------------------------+----------------------------------+
+| 3.2    | Earring with custom types        | Only specified types generated   |
+|        | image_types=[1,2]                | - Type 1: White Background       |
+|        |                                  | - Type 2: Hand Holding           |
++--------+----------------------------------+----------------------------------+
+| 3.3    | Earring with type 3              | Should require height & width    |
+|        | image_types=[1,3]                | Error if not provided            |
++--------+----------------------------------+----------------------------------+
+| 3.4    | Earring with type 3 + dimensions | Should generate dimension image  |
+|        | image_types=[3]                  | with measurements                |
+|        | height="2.5 cm"                  |                                  |
+|        | width="1.8 cm"                   |                                  |
++--------+----------------------------------+----------------------------------+
+| 3.5    | Bracelet (non-earring)           | Uses old prompt system           |
+|        | product_type="bracelet"          | Generates based on num_images    |
++--------+----------------------------------+----------------------------------+
+| 3.6    | Necklace (non-earring)           | Uses old prompt system           |
+|        | product_type="necklace"          | Generates based on num_images    |
++--------+----------------------------------+----------------------------------+
+| 3.7    | Invalid product type             | Error: "Invalid product_type"    |
++--------+----------------------------------+----------------------------------+
+| 3.8    | Invalid image type               | Error: "Invalid image_type"      |
+|        | image_types=[6]                  |                                  |
++--------+----------------------------------+----------------------------------+
+| 3.9    | Check response structure         | Each image should have:          |
+|        |                                  | - prompt_index                   |
+|        |                                  | - image_url                      |
+|        |                                  | - image_type                     |
+|        |                                  | - image_type_name                |
++--------+----------------------------------+----------------------------------+
+| 3.10   | Check ZIP file                   | ZIP contains all generated       |
+|        |                                  | images, downloadable             |
++--------+----------------------------------+----------------------------------+
+
+
+CURL COMMANDS FOR TEST 3:
+-------------------------
+
+# Test 3.1 - Default batch-4 (earring)
+curl -X POST "http://localhost:8000/generate-images" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "s3_urls": "https://alyaimg.s3.amazonaws.com/YOUR_IMAGE.jpg",
+    "product_type": "earring"
+  }'
+
+# Test 3.2 - Custom types
+curl -X POST "http://localhost:8000/generate-images" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "s3_urls": "https://alyaimg.s3.amazonaws.com/YOUR_IMAGE.jpg",
+    "product_type": "earring",
+    "image_types": [1, 2]
+  }'
+
+# Test 3.4 - With dimension image
+curl -X POST "http://localhost:8000/generate-images" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "s3_urls": "https://alyaimg.s3.amazonaws.com/YOUR_IMAGE.jpg",
+    "product_type": "earring",
+    "image_types": [1, 3],
+    "height": "2.5 cm",
+    "width": "1.8 cm"
+  }'
+
+# Test 3.5 - Bracelet
+curl -X POST "http://localhost:8000/generate-images" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "s3_urls": "https://alyaimg.s3.amazonaws.com/YOUR_IMAGE.jpg",
+    "product_type": "bracelet",
+    "num_images": 3
+  }'
+
+
+================================================================================
+TEST 4: IP METRIC SPECIFIC TESTS
+================================================================================
+
+Purpose: Verify IP metric is working correctly
+
++--------+----------------------------------+----------------------------------+
+| Test # | Test Case                        | Expected Result                  |
++--------+----------------------------------+----------------------------------+
+| 4.1    | Check distance value in logs     | Distance should be between       |
+|        |                                  | 0 and 1 (not 0-100+)             |
++--------+----------------------------------+----------------------------------+
+| 4.2    | Identical image                  | Distance ~ 0.0                   |
+|        |                                  | (very similar)                   |
++--------+----------------------------------+----------------------------------+
+| 4.3    | Slightly different image         | Distance ~ 0.01 - 0.05           |
+|        | (same product, different angle)  | (still duplicate)                |
++--------+----------------------------------+----------------------------------+
+| 4.4    | Completely different image       | Distance > 0.1                   |
+|        |                                  | (not duplicate)                  |
++--------+----------------------------------+----------------------------------+
+| 4.5    | Check collection name            | Should be "image_embeddings_ip"  |
+|        | in Milvus/Zilliz                 | (not "image_embeddings")         |
++--------+----------------------------------+----------------------------------+
+
+
+================================================================================
+TEST 5: ERROR HANDLING
+================================================================================
+
++--------+----------------------------------+----------------------------------+
+| Test # | Test Case                        | Expected Result                  |
++--------+----------------------------------+----------------------------------+
+| 5.1    | Missing file parameter           | Error response                   |
++--------+----------------------------------+----------------------------------+
+| 5.2    | Invalid file format              | Error: "Invalid image"           |
++--------+----------------------------------+----------------------------------+
+| 5.3    | Invalid S3 URL                   | Error: "Failed to fetch image"   |
++--------+----------------------------------+----------------------------------+
+| 5.4    | Missing type parameter           | Error response                   |
+|        | (generate_caption)               |                                  |
++--------+----------------------------------+----------------------------------+
+| 5.5    | Server without API keys          | Should show clear error          |
++--------+----------------------------------+----------------------------------+
+
+
+================================================================================
+TEST 6: EDGE CASES
+================================================================================
+
++--------+----------------------------------+----------------------------------+
+| Test # | Test Case                        | Expected Result                  |
++--------+----------------------------------+----------------------------------+
+| 6.1    | Very large image (>10MB)         | Should handle or show error      |
++--------+----------------------------------+----------------------------------+
+| 6.2    | Very small image (<10KB)         | Should work normally             |
++--------+----------------------------------+----------------------------------+
+| 6.3    | Different image formats          | Should work:                     |
+|        |                                  | - JPG, JPEG, PNG, WEBP           |
++--------+----------------------------------+----------------------------------+
+| 6.4    | Image with transparency (PNG)    | Should handle correctly          |
++--------+----------------------------------+----------------------------------+
+| 6.5    | Concurrent requests              | Should handle multiple           |
+|        | (multiple uploads at once)       | requests without crash           |
++--------+----------------------------------+----------------------------------+
+
+
+================================================================================
+TEST RESULTS TEMPLATE
+================================================================================
+
+Copy this template to record your test results:
+
++--------+--------+----------------------------------+
+| Test # | Status | Notes                            |
++--------+--------+----------------------------------+
+| 1.1    | [ ]    |                                  |
+| 1.2    | [ ]    |                                  |
+| 1.3    | [ ]    |                                  |
+| 1.4    | [ ]    |                                  |
+| 1.5    | [ ]    |                                  |
+| 1.6    | [ ]    |                                  |
+| 1.7    | [ ]    |                                  |
+| 1.8    | [ ]    |                                  |
++--------+--------+----------------------------------+
+| 2.1    | [ ]    |                                  |
+| 2.2    | [ ]    |                                  |
+| 2.3    | [ ]    |                                  |
+| 2.4    | [ ]    |                                  |
+| 2.5    | [ ]    |                                  |
+| 2.6    | [ ]    |                                  |
+| 2.7    | [ ]    |                                  |
++--------+--------+----------------------------------+
+| 3.1    | [ ]    |                                  |
+| 3.2    | [ ]    |                                  |
+| 3.3    | [ ]    |                                  |
+| 3.4    | [ ]    |                                  |
+| 3.5    | [ ]    |                                  |
+| 3.6    | [ ]    |                                  |
+| 3.7    | [ ]    |                                  |
+| 3.8    | [ ]    |                                  |
+| 3.9    | [ ]    |                                  |
+| 3.10   | [ ]    |                                  |
++--------+--------+----------------------------------+
+| 4.1    | [ ]    |                                  |
+| 4.2    | [ ]    |                                  |
+| 4.3    | [ ]    |                                  |
+| 4.4    | [ ]    |                                  |
+| 4.5    | [ ]    |                                  |
++--------+--------+----------------------------------+
+| 5.1    | [ ]    |                                  |
+| 5.2    | [ ]    |                                  |
+| 5.3    | [ ]    |                                  |
+| 5.4    | [ ]    |                                  |
+| 5.5    | [ ]    |                                  |
++--------+--------+----------------------------------+
+| 6.1    | [ ]    |                                  |
+| 6.2    | [ ]    |                                  |
+| 6.3    | [ ]    |                                  |
+| 6.4    | [ ]    |                                  |
+| 6.5    | [ ]    |                                  |
++--------+--------+----------------------------------+
+
+Status: [P] = Pass, [F] = Fail, [S] = Skip
+
+
+================================================================================
+MINIMUM TESTS BEFORE DEPLOYMENT
+================================================================================
+
+If time is limited, run at least these critical tests:
+
+1. Test 1.1 - New image upload (similarity search)
+2. Test 1.2 - Duplicate detection works
+3. Test 2.1 - Caption generation works
+4. Test 2.2 - Caption duplicate detection works
+5. Test 3.1 - Batch-4 image generation works
+6. Test 4.1 - IP metric distance values are correct (0-1 range)
+
+
+================================================================================
+                              END OF TEST PLAN
+================================================================================

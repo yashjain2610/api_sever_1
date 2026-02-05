@@ -79,3 +79,6 @@ DOCUMENTATION/
 # Misc files
 234\ image
 today.txt
+
+# Test images folder (local testing only)
+test_images/
