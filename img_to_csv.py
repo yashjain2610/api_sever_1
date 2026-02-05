@@ -1793,13 +1793,27 @@ def update_zip_on_s3(zip_url: str, new_image_bytes: bytes, new_filename: str):
     zip_key = parsed.path.lstrip("/")
     zip_name = zip_key.split("/")[-1]
 
-    # Download original ZIP
-    response = requests.get(zip_url)
-    if response.status_code != 200:
-        raise Exception("Failed to download original zip")
+    # Extract bucket from URL
+    bucket_name = parsed.netloc.split('.')[0]  # e.g., "alyaimg" from "alyaimg.s3.amazonaws.com"
+
+    # Download original ZIP using S3 client (more reliable than requests)
+    try:
+        zip_obj = s3.get_object(Bucket=bucket_name, Key=zip_key)
+        zip_content = zip_obj['Body'].read()
+    except s3.exceptions.NoSuchKey:
+        raise Exception(f"ZIP file not found in S3: {zip_key}")
+    except Exception as e:
+        # Fallback to requests if S3 client fails
+        try:
+            response = requests.get(zip_url, timeout=30)
+            if response.status_code != 200:
+                raise Exception(f"Failed to download ZIP: {zip_url} - Status: {response.status_code}")
+            zip_content = response.content
+        except requests.exceptions.RequestException as req_err:
+            raise Exception(f"Failed to download ZIP from {zip_url} - S3 Error: {str(e)}, HTTP Error: {str(req_err)}")
 
     # Read ZIP into memory
-    zip_buffer_in = io.BytesIO(response.content)
+    zip_buffer_in = io.BytesIO(zip_content)
     zip_buffer_out = io.BytesIO()
 
     with zipfile.ZipFile(zip_buffer_in, 'r') as zin:
@@ -1813,10 +1827,10 @@ def update_zip_on_s3(zip_url: str, new_image_bytes: bytes, new_filename: str):
 
     # Upload new ZIP to S3 (overwrite)
     zip_buffer_out.seek(0)
-    s3.put_object(Bucket=S3_BUCKET, Key=zip_key, Body=zip_buffer_out.read(), ContentType="application/zip")
+    s3.put_object(Bucket=bucket_name, Key=zip_key, Body=zip_buffer_out.read(), ContentType="application/zip")
 
     # Return same public URL
-    return f"https://{S3_BUCKET}.s3.amazonaws.com/{zip_key}"
+    return f"https://{bucket_name}.s3.amazonaws.com/{zip_key}"
 
 @app.post("/regenerate-image")
 async def regenerate_image(
