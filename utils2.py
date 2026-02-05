@@ -14,6 +14,7 @@ from google.api_core import exceptions as google_exceptions
 import itertools
 import grpc
 from openai import OpenAI
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from dotenv import load_dotenv
 
@@ -246,6 +247,39 @@ def composite_jewelry_on_background(
     return result
 
 
+def _generate_single_image(args):
+    """
+    Helper function to generate a single image (used for parallel execution).
+    """
+    prompt, img_bytes, size, prompt_index = args
+
+    # Create new buffer for this thread
+    img_buffer = io.BytesIO(img_bytes)
+
+    api_params = {
+        "model": "gpt-image-1.5",
+        "image": ("image.png", img_buffer, "image/png"),
+        "prompt": prompt,
+        "size": size,
+        "quality": "low",
+        "n": 1
+    }
+
+    result = client.images.edit(**api_params)
+
+    structured_response = {
+        "prompt": prompt,
+        "prompt_index": prompt_index,
+        "images": []
+    }
+
+    for img in result.data:
+        img_bytes_result = base64.b64decode(img.b64_json)
+        structured_response["images"].append(img_bytes_result)
+
+    return structured_response
+
+
 def generate_images_from_gpt(
     image: Image.Image,
     prompts: list[str],
@@ -255,44 +289,46 @@ def generate_images_from_gpt(
     Runs a single image with multiple prompts using gpt-image-1.5
     and returns structured responses.
 
+    Uses PARALLEL execution for ~4x faster generation.
+
     Args:
         image: PIL Image to edit
         prompts: List of prompts for each variation
         size: Output image size
     """
-    all_responses = []
-
-    # Save image to temp buffer
+    # Save image to bytes (will be shared across threads)
     img_buffer = io.BytesIO()
     image.save(img_buffer, format="PNG")
-    img_buffer.seek(0)
+    img_bytes = img_buffer.getvalue()
 
-    for prompt in prompts:
-        # Build API call parameters
-        api_params = {
-            "model": "gpt-image-1.5",
-            "image": ("image.png", img_buffer, "image/png"),
-            "prompt": prompt,
-            "size": size,
-            "quality": "low",
-            "n": 1
+    # Prepare arguments for parallel execution
+    args_list = [
+        (prompt, img_bytes, size, idx)
+        for idx, prompt in enumerate(prompts)
+    ]
+
+    all_responses = [None] * len(prompts)  # Pre-allocate to maintain order
+
+    # Execute in parallel with ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = {
+            executor.submit(_generate_single_image, args): args[3]  # Map future to prompt_index
+            for args in args_list
         }
 
-        result = client.images.edit(**api_params)
-
-        structured_response = {
-            "prompt": prompt,
-            "images": []
-        }
-
-        for img in result.data:
-            img_bytes = base64.b64decode(img.b64_json)
-            structured_response["images"].append(img_bytes)
-
-        all_responses.append(structured_response)
-
-        # Reset buffer pointer for next loop
-        img_buffer.seek(0)
+        for future in as_completed(futures):
+            prompt_index = futures[future]
+            try:
+                result = future.result()
+                all_responses[prompt_index] = result
+            except Exception as e:
+                print(f"[ERROR] Failed to generate image {prompt_index}: {str(e)}")
+                all_responses[prompt_index] = {
+                    "prompt": prompts[prompt_index],
+                    "prompt_index": prompt_index,
+                    "images": [],
+                    "error": str(e)
+                }
 
     return all_responses
 
