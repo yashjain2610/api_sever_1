@@ -1609,10 +1609,13 @@ async def create_order(file: UploadFile = File(...)):
 class ImageRequest(BaseModel):
     s3_urls: str
     product_type: str
-    num_images: int = 1  # Number of images to generate (default 1 for testing, max depends on product type)
-    image_types: List[int] = None  # For earrings: [1,2,3,4,5] - 1=White BG, 2=Hand, 3=Dimension, 4=Lifestyle, 5=Model
+    num_images: int = 4  # Number of images to generate (default 4 for batch generation)
+    image_types: List[int] = None  # For earrings: [1,2,4,5] default - 1=White BG, 2=Hand, 4=Lifestyle, 5=Model (3=Dimension skipped by default)
     height: str = None  # Required if 3 is in image_types (dimension image), e.g., "2.5 cm"
     width: str = None   # Required if 3 is in image_types (dimension image), e.g., "1.8 cm"
+
+# Default image types for earrings (skip type 3 dimension image)
+DEFAULT_EARRING_IMAGE_TYPES = [1, 2, 4, 5]  # White BG, Hand, Lifestyle, Model
 
 def create_zip_from_s3_urls(image_urls, zip_filename):
     # Create an in-memory ZIP file
@@ -1679,10 +1682,14 @@ async def generate_images(request: ImageRequest):
     # Track image types for response (None if using old system)
     image_types_list = None
 
-    # For earrings with image_types parameter, use the new catalog system
-    if product_type == "ear" and request.image_types is not None:
+    # For earrings, use the new catalog system with default types [1,2,4,5] if not specified
+    if product_type == "ear":
+        # Use provided image_types or default to [1,2,4,5] (skip type 3 dimension)
+        image_types = request.image_types if request.image_types is not None else DEFAULT_EARRING_IMAGE_TYPES
+
+    if product_type == "ear" and image_types is not None:
         # Validate all image_types
-        for img_type in request.image_types:
+        for img_type in image_types:
             if img_type not in EARRING_IMAGE_TYPES:
                 return JSONResponse(
                     status_code=400,
@@ -1690,7 +1697,7 @@ async def generate_images(request: ImageRequest):
                 )
 
         # For dimension image (type 3), validate height and width
-        if 3 in request.image_types:
+        if 3 in image_types:
             if not request.height or not request.width:
                 return JSONResponse(
                     status_code=400,
@@ -1700,7 +1707,7 @@ async def generate_images(request: ImageRequest):
         # Build prompt list from all requested image types
         prompt_list = []
         image_types_list = []
-        for img_type in request.image_types:
+        for img_type in image_types:
             prompt = get_earring_prompt(img_type, request.height, request.width)
             prompt_list.append(prompt)
             image_types_list.append({
