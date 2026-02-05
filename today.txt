@@ -1,0 +1,486 @@
+It's working!
+
+  Summary of what's now configured:
+  - Metric: IP (Inner Product) with normalized embeddings
+  - Threshold: 0.05 (~95% similarity)
+  - Collection: image_embeddings_cosine
+
+  Results:
+  ┌─────────────────────────────┬──────────┬──────────────────────────┐
+  │            Test             │ Distance │          Result          │
+  ├─────────────────────────────┼──────────┼──────────────────────────┤
+  │ Similar but different image │ 0.248    │ duplicate_found: false ✓ │
+  ├─────────────────────────────┼──────────┼──────────────────────────┤
+  │ Exact same image            │ 0        │ duplicate_found: true ✓  │
+  └─────────────────────────────┴──────────┴──────────────────────────┘
+  The duplicate detection is now working correctly. You can adjust the threshold if needed:
+  - Lower (e.g., 0.02) = stricter, only near-identical images
+  - Higher (e.g., 0.1) = catches more variations
+
+❯ can you explain what is the issue you have found 
+
+● Here's what we found and fixed:
+
+  The Problem
+
+  Your original setup used L2 distance with a threshold of 95. Images were being flagged as duplicates incorrectly (false positives).
+
+  Issues Discovered
+
+  1. COSINE metric didn't work directly
+
+  When we switched to COSINE metric, we got distances of 0.999... for ALL images - even identical ones. This was wrong.
+
+  Why: CLIP embeddings from get_image_features() are not normalized. COSINE similarity requires normalized vectors (unit length) to work correctly.
+
+  2. Embeddings needed normalization
+
+  We added normalization to the embed_image function:
+  emb = emb / np.linalg.norm(emb)  # Normalize to unit vector
+
+  3. COSINE metric still had issues in Milvus
+
+  Even with normalized embeddings, COSINE metric in Zilliz Cloud returned strange values.
+
+  Solution: Switched to IP (Inner Product) metric, which works reliably with normalized vectors:
+  - IP score 1.0 = identical
+  - IP score 0.0 = completely different
+
+  4. Threshold was wrong
+
+  - Original L2 threshold: 95 (large number)
+  - For IP with normalized vectors: 0.05 (small number = 95% similarity)
+
+  Final Configuration
+  ┌────────────┬──────────────────┬─────────────────────────┐
+  │  Setting   │      Before      │          After          │
+  ├────────────┼──────────────────┼─────────────────────────┤
+  │ Metric     │ L2               │ IP                      │
+  ├────────────┼──────────────────┼─────────────────────────┤
+  │ Embeddings │ Raw              │ Normalized              │
+  ├────────────┼──────────────────┼─────────────────────────┤
+  │ Threshold  │ 95               │ 0.05                    │
+  ├────────────┼──────────────────┼─────────────────────────┤
+  │ Collection │ image_embeddings │ image_embeddings_cosine │
+  └────────────┴──────────────────┴─────────────────────────┘
+  Files Changed
+
+  1. image_search_engine.py:
+    - embed_image() - added normalization
+    - init_milvus() - changed to IP metric
+    - search_similar() - updated search params
+  2. img_to_csv.py:
+    - Threshold changed to 0.05
+    - Added /reset_image_collection endpoint
+    - Added /reindex_images endpoint
+
+
+NEXT
+
+Let me find all endpoints that use duplicate detection.
+
+● Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● Two endpoints use duplicate detection:
+
+  ---
+  1. /image_similarity_search (Duplicate Detection Only)
+
+  Purpose: Check if image exists, upload if new
+
+  Test Cases:
+  ┌───────────────────────┬─────────────────────────┬──────────────────────────────────────────────────────────┐
+  │         Test          │          Input          │                     Expected Output                      │
+  ├───────────────────────┼─────────────────────────┼──────────────────────────────────────────────────────────┤
+  │ New image             │ Upload fresh image      │ duplicate_found: false, s3_url: <new_url>                │
+  ├───────────────────────┼─────────────────────────┼──────────────────────────────────────────────────────────┤
+  │ Exact duplicate       │ Upload same image again │ duplicate_found: true, results: [{path: <existing_url>}] │
+  ├───────────────────────┼─────────────────────────┼──────────────────────────────────────────────────────────┤
+  │ Similar but different │ Upload similar image    │ duplicate_found: false, s3_url: <new_url>                │
+  └───────────────────────┴─────────────────────────┴──────────────────────────────────────────────────────────┘
+  ---
+  2. /generate_caption (Caption + Duplicate Check)
+
+  Purpose: Generate AI caption for jewelry image, check for duplicates
+
+  Parameters:
+  - file: image file
+  - type: style type (e.g., "Elegance", "Boldness", "Romance", etc.)
+
+  Test Cases:
+  ┌─────────────────┬───────────────────────────────┬──────────────────────────────────────────────────┐
+  │      Test       │             Input             │                 Expected Output                  │
+  ├─────────────────┼───────────────────────────────┼──────────────────────────────────────────────────┤
+  │ New image       │ Fresh image + type="Elegance" │ Caption generated, s3_url, no duplicate key      │
+  ├─────────────────┼───────────────────────────────┼──────────────────────────────────────────────────┤
+  │ Duplicate image │ Same image again              │ Response includes "duplicate": "duplicate found" │
+  └─────────────────┴───────────────────────────────┴──────────────────────────────────────────────────┘
+  ---
+  Test Now:
+
+  Test /generate_caption with new image:
+  POST http://localhost:8000/generate_caption
+  - file: any new image
+  - type: Elegance
+
+  Test /generate_caption with same image again:
+  - Should return duplicate info
+
+  Want me to show the expected response structure for /generate_caption?
+
+Two endpoints use duplicate detection:
+
+  ---
+  1. /image_similarity_search (Duplicate Detection Only)
+
+  Purpose: Check if image exists, upload if new
+
+  Test Cases:
+  ┌───────────────────────┬─────────────────────────┬──────────────────────────────────────────────────────────┐
+  │         Test          │          Input          │                     Expected Output                      │
+  ├───────────────────────┼─────────────────────────┼──────────────────────────────────────────────────────────┤
+  │ New image             │ Upload fresh image      │ duplicate_found: false, s3_url: <new_url>                │
+  ├───────────────────────┼─────────────────────────┼──────────────────────────────────────────────────────────┤
+  │ Exact duplicate       │ Upload same image again │ duplicate_found: true, results: [{path: <existing_url>}] │
+  ├───────────────────────┼─────────────────────────┼──────────────────────────────────────────────────────────┤
+  │ Similar but different │ Upload similar image    │ duplicate_found: false, s3_url: <new_url>                │
+  └───────────────────────┴─────────────────────────┴──────────────────────────────────────────────────────────┘
+  ---
+  2. /generate_caption (Caption + Duplicate Check)
+
+  Purpose: Generate AI caption for jewelry image, check for duplicates
+
+  Parameters:
+  - file: image file
+  - type: style type (e.g., "Elegance", "Boldness", "Romance", etc.)
+
+  Test Cases:
+  ┌─────────────────┬───────────────────────────────┬──────────────────────────────────────────────────┐
+  │      Test       │             Input             │                 Expected Output                  │
+  ├─────────────────┼───────────────────────────────┼──────────────────────────────────────────────────┤
+  │ New image       │ Fresh image + type="Elegance" │ Caption generated, s3_url, no duplicate key      │
+  ├─────────────────┼───────────────────────────────┼──────────────────────────────────────────────────┤
+  │ Duplicate image │ Same image again              │ Response includes "duplicate": "duplicate found" │
+  └─────────────────┴───────────────────────────────┴──────────────────────────────────────────────────┘
+  ---
+  Test Now:
+
+  Test /generate_caption with new image:
+  POST http://localhost:8000/generate_caption
+  - file: any new image
+  - type: Elegance
+
+  Test /generate_caption with same image again:
+  - Should return duplicate info
+
+  Want me to show the expected response structure for /generate_caption?
+
+❯ yes 
+
+● Read 1 file (ctrl+o to expand)
+
+● /generate_caption Expected Responses
+
+  If Duplicate Found:
+
+  {
+    "display_name": "original_image_name.jpg",
+    "s3_url": "https://alyaimg.s3.amazonaws.com/existing_image.jpg",
+    "duplicate": "duplicate found"
+  }
+
+  If New Image (No Duplicate):
+
+  {
+    "display_name": "uploaded_file.jpg",
+    "generated_name": "Celestial Diamond Ring",
+    "quality": "A",
+    "description": "Elegant criss-cross diamond ring perfect for formal occasions",
+    "attributes": "diamonds arranged in a criss-cross pattern",
+    "prompt": "Give an eye-catching, one-line description...",
+    "color": "Silver",
+    "s3_url": "https://alyaimg.s3.amazonaws.com/20260202_xyz_uploaded_file.jpg"
+  }
+
+  ---
+  Test Plan
+
+  Test 1: New image on /generate_caption
+
+  POST /generate_caption
+  - file: new_jewelry_image.jpg
+  - type: Elegance
+  Expected: Full response with generated_name, description, attributes, etc.
+
+  Test 2: Same image again on /generate_caption
+
+  POST /generate_caption
+  - file: new_jewelry_image.jpg (same as above)
+  - type: Elegance
+  Expected:
+  {
+    "display_name": "new_jewelry_image.jpg",
+    "s3_url": "https://...",
+    "duplicate": "duplicate found"
+  }
+
+  ---
+  Go ahead and test both scenarios on /generate_caption.
+
+  Final Testing Plan
+
+  Let's test both endpoints systematically.
+
+  ---
+  Endpoint 1: /image_similarity_search
+  ┌────────┬───────────────────────────────────────────┬────────────────────────────────────────────┐
+  │ Test # │                  Action                   │              Expected Result               │
+  ├────────┼───────────────────────────────────────────┼────────────────────────────────────────────┤
+  │ 1.1    │ Upload a brand new image                  │ duplicate_found: false, new s3_url         │
+  ├────────┼───────────────────────────────────────────┼────────────────────────────────────────────┤
+  │ 1.2    │ Upload same image again                   │ duplicate_found: true, shows existing path │
+  ├────────┼───────────────────────────────────────────┼────────────────────────────────────────────┤
+  │ 1.3    │ Upload same image with different filename │ duplicate_found: true                      │
+  ├────────┼───────────────────────────────────────────┼────────────────────────────────────────────┤
+  │ 1.4    │ Upload similar but different image        │ duplicate_found: false                     │
+  └────────┴───────────────────────────────────────────┴────────────────────────────────────────────┘
+  ---
+  Endpoint 2: /generate_caption
+  ┌────────┬──────────────────────────────────────────────┬───────────────────────────────────────────────────────────────────────────┐
+  │ Test # │                    Action                    │                              Expected Result                              │
+  ├────────┼──────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────┤
+  │ 2.1    │ Upload brand new image + type="Elegance"     │ Full response with generated_name, description, attributes, color, s3_url │
+  ├────────┼──────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────┤
+  │ 2.2    │ Upload same image again                      │ "duplicate": "duplicate found" with existing s3_url                       │
+  ├────────┼──────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────┤
+  │ 2.3    │ Upload different new image + type="Boldness" │ Full response (no duplicate)                                              │
+  └────────┴──────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────────┘
+  ---
+  Start Testing
+
+  Test 1.1: Upload a new image to /image_similarity_search
+
+  Go ahead and run the tests. Share the results for each:
+  - Server console output ([DEBUG] lines)
+  - Response body
+
+  
+● Now I have the complete picture. Here's the detailed analysis:
+
+  ---
+  CROSS-PLATFORM FIELD SHARING (Same SKU)
+
+  YES - Fields ARE Shared Across Platforms!
+
+  When the same SKU is processed for different marketplaces, the system REUSES certain GPT-generated fields from cache (data_store.json):
+
+  ┌─────────────────────────────────────────────────────────────────────────────┐
+  │                    CACHING LOGIC (img_to_csv.py:986-1018)                   │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │                                                                             │
+  │  IF SKU NOT IN CACHE:                                                       │
+  │     → Call GPT-4.1 with marketplace-specific prompt                         │
+  │     → Store result in data_store.json                                       │
+  │                                                                             │
+  │  IF SKU EXISTS IN CACHE:                                                    │
+  │     ┌──────────────┬──────────────┬──────────────┬──────────────┐           │
+  │     │    FIELD     │   AMAZON     │  FLIPKART/   │    MEESHO    │           │
+  │     │              │              │   SHOPSY     │              │           │
+  │     ├──────────────┼──────────────┼──────────────┼──────────────┤          │
+  │     │ Description  │  ✅ REUSED   │  ✅ REUSED   │  ✅ REUSED  │          │
+  │     │ Title        │  ✅ REUSED   │  ❌ NOT USED │  ✅ REUSED  │          │
+  │     │ Bullet Pts   │  ✅ REUSED   │  ❌ NOT USED │  ❌ NOT USED│          │
+  │     └──────────────┴──────────────┴──────────────┴──────────────┘          │
+  │                                                                             │
+  │  NOTE: First marketplace to process the SKU determines the cached style!   │
+  │        If Amazon first → Amazon SEO title is reused for Meesho             │
+  │        If Meesho first → Meesho title is reused for Amazon                 │
+  └─────────────────────────────────────────────────────────────────────────────┘
+
+  ---
+  NECKLACE - DETAILED FIELD BREAKDOWN
+
+  AMAZON NECKLACE (target_fields_necklace_amz - Line 278)
+  Source: Gemini AI
+  Fields: item_sku, part_number, stone_color, style_name, stones_color, item_type_name, occasion_type1, clasp_type, color_map, collection_name, material_type,
+    stones_type, stones_number_of_stones, setting_type, color_name, stone_shape, chain_length_unit, theme, stone_cut, chain_type, pearl_type, pearl_minimum_color,       
+    number_of_pearls
+  Count: 23 fields
+  ────────────────────────────────────────
+  Source: OpenAI GPT-4.1
+  Fields: item_name (title), bullet_point1-5, product_description
+  Count: 7 fields
+  ────────────────────────────────────────
+  Source: Fixed Values
+  Fields: feed_product_type, brand_name, manufacturer, target_gender, department_name, packer_contact_information, metal_type, lifecycle_supply_type, size_name,
+  quantity,
+     country_of_origin, HSN, currency, tax_code, condition_type, etc.
+  Count: 31 fields
+  FLIPKART NECKLACE (target_fields_necklace_flipkart - Line 207)
+  ┌───────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┬────────┐  │  Source   │                                                                     Fields                                                                     │ Count  │  ├───────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┤  │           │ Seller SKU ID, Base Material, Type, Color, Gemstone, Ideal For, Certification, Plating, Setting, Occasion, Diamond Color Grade, Pearl Type,    │        │  │ Gemini AI │ Collection, Diamond Cut, Finish, Number of Gemstones, Necklace Type, Clasp Type, Pearl Color, Pearl Shape, Other Features, Search Keywords,    │ 34     │  │           │ Key Features, Trend, Necklace Style, Necklace Length, Work Finish, Chain Style, Ornamentation Type, Pendant Shape, Necklace Design, Necklace   │ fields │  │           │ Width, Necklace Color                                                                                                                          │        │  ├───────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┤  │ OpenAI    │ Description (only)                                                                                                                             │ 1      │  │ GPT-4.1   │                                                                                                                                                │ field  │  ├───────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┤  │ Fixed     │ Listing Status, Fullfilment by, Procurement type, Shipping provider, delivery charges, HSN, Country Of Origin, Manufacturer Details, Packer    │ 17     │  │ Values    │ Details, Tax Code, Brand, Pack of, Sales Package                                                                                               │ fields │  └───────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┴────────┘  MEESHO NECKLACE (target_fields_necklace_meesho - Line 463)
+  ┌────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┬──────────┐
+  │     Source     │                                                       Fields                                                       │  Count   │
+  ├────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┼──────────┤
+  │ Gemini AI      │ Base Metal, Color, Occasion, Plating, Sizing, Stone Type, Trend, Type                                              │ 8 fields │
+  ├────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┼──────────┤
+  │ OpenAI GPT-4.1 │ Product Name (title), Product Description                                                                          │ 2 fields │
+  ├────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┼──────────┤
+  │ Fixed Values   │ variation, GST %, HSN ID, Country of origin, Manufacturer Details, Packer Details, Net Quantity, Brand Name, Brand │ 9 fields │
+  └────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┴──────────┘
+  ---
+  BRACELET - DETAILED FIELD BREAKDOWN
+
+  AMAZON BRACELET (target_fields_bracelet_amz - Line 112)
+  Source: Gemini AI
+  Fields: item_sku, part_number, stone_color, style_name, stones_color, item_type_name, occasion_type1-5, clasp_type, color_map, collection_name, material_type,
+    stones_type, number_of_stones, setting_type, color_name, stone_shape, chain_length_unit, theme, stone_cut, chain_type, gem_type, pearl_type,
+    pearl_minimum_color, number_of_pearls
+  Count: 30 fields
+  ────────────────────────────────────────
+  Source: OpenAI GPT-4.1
+  Fields: item_name (title), bullet_point1-5, product_description
+  Count: 7 fields
+  ────────────────────────────────────────
+  Source: Fixed Values
+  Fields: feed_product_type, update_delete, brand_name, manufacturer, metal_type, target_gender, packer_contact_information, gender, size_name, unit_count,
+    country_of_origin, HSN, currency, fulfillment_latency, tax_code, condition_type, etc.
+  Count: 25 fields
+  FLIPKART BRACELET (target_fields_bracelet_flipkart - Line 180)
+  Source: Gemini AI
+  Fields: Seller SKU ID, Type, Color, Base Material, Collection, Occasion, Body Structure, Number of Gemstones, Design, Finish, Tags/Charms Attachable, Tag/Charm Shape, 
+    Clasp, Stretchable, Adjustable Length, Metal Color, Natural/Synthetic Diamond, Pearl Color, Pearl Shape, Pearl Grade, Product Title, Other Features, Trend,
+    Search Keywords, Key Features, Style Type, Ornamentation Type, Brand Color
+  Count: 28 fields
+  ────────────────────────────────────────
+  Source: OpenAI GPT-4.1
+  Fields: Description (only)
+  Count: 1 field
+  ────────────────────────────────────────
+  Source: Fixed Values
+  Fields: Listing Status, Fullfilment by, Procurement type, Shipping provider, delivery charges, Weight, HSN, Country Of Origin, Manufacturer Details, Packer Details,   
+  Tax
+     Code, Brand, Pack of, Ideal For, Plating, Gemstone, Diamond Clarity, Diamond Color Grade, Pearl Type, Setting, Weight, Sales Package
+  Count: 22 fields
+  MEESHO BRACELET (target_fields_bracelet_meesho - Line 488)
+  ┌────────────────┬─────────────────────────────────────────────────────────────────────────────────────────────────────────────┬──────────┐
+  │     Source     │                                                   Fields                                                    │  Count   │
+  ├────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────┼──────────┤
+  │ Gemini AI      │ Base Metal, Closure, Color, Occasion, Plating, Sizing, Stone Type, Trend, Type                              │ 9 fields │
+  ├────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────┼──────────┤
+  │ OpenAI GPT-4.1 │ Product Name (title), Product Description                                                                   │ 2 fields │
+  ├────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────┼──────────┤
+  │ Fixed Values   │ variation, GST %, HSN ID, Country of origin, Manufacturer Details, Packer Details, Net Quantity, Brand Name │ 8 fields │
+  └────────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────┴──────────┘
+  ---
+  VISUAL SUMMARY: WHERE FIELDS COME FROM
+
+  ┌─────────────────────────────────────────────────────────────────────────────────────┐
+  │                           NECKLACE FIELD SOURCES                                    │
+  ├─────────────────────────────────────────────────────────────────────────────────────┤
+  │                                                                                     │
+  │  AMAZON NECKLACE:                                                                   │
+  │  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐                         │
+  │  │   GEMINI AI    │  │  OPENAI GPT    │  │  FIXED VALUES  │                         │
+  │  │   23 fields    │  │   7 fields     │  │   31 fields    │                         │
+  │  │                │  │                │  │                │                         │
+  │  │ • stone_color  │  │ • item_name    │  │ • brand_name   │                         │
+  │  │ • style_name   │  │ • bullet_pt1-5 │  │ • manufacturer │                         │
+  │  │ • occasion     │  │ • description  │  │ • HSN code     │                         │
+  │  │ • material     │  │                │  │ • tax_code     │                         │
+  │  │ • clasp_type   │  │                │  │ • currency     │                         │
+  │  │ • chain_type   │  │                │  │                │                         │
+  │  │ • pearl_type   │  │                │  │                │                         │
+  │  └────────────────┘  └────────────────┘  └────────────────┘                         │
+  │                                                                                     │
+  │  FLIPKART NECKLACE:                                                                 │
+  │  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐                         │
+  │  │   GEMINI AI    │  │  OPENAI GPT    │  │  FIXED VALUES  │                         │
+  │  │   34 fields    │  │   1 field      │  │   17 fields    │                         │
+  │  │                │  │                │  │                │                         │
+  │  │ • Necklace Type│  │ • Description  │  │ • Brand        │                         │
+  │  │ • Chain Style  │  │   (ONLY)       │  │ • HSN          │                         │
+  │  │ • Pendant Shape│  │                │  │ • Tax Code     │                         │
+  │  │ • Work Finish  │  │                │  │ • Shipping     │                         │
+  │  │ • 30+ more...  │  │                │  │                │                         │
+  │  └────────────────┘  └────────────────┘  └────────────────┘                         │
+  │                                                                                     │
+  │  MEESHO NECKLACE:                                                                   │
+  │  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐                         │
+  │  │   GEMINI AI    │  │  OPENAI GPT    │  │  FIXED VALUES  │                         │
+  │  │   8 fields     │  │   2 fields     │  │   9 fields     │                         │
+  │  │                │  │                │  │                │                         │
+  │  │ • Base Metal   │  │ • Product Name │  │ • Brand Name   │                         │
+  │  │ • Color        │  │ • Description  │  │ • GST %        │                         │
+  │  │ • Occasion     │  │                │  │ • HSN ID       │                         │
+  │  │ • Stone Type   │  │                │  │                │                         │
+  │  └────────────────┘  └────────────────┘  └────────────────┘                         │
+  │                                                                                     │
+  └─────────────────────────────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────────────────────────────┐
+  │                           BRACELET FIELD SOURCES                                    │
+  ├─────────────────────────────────────────────────────────────────────────────────────┤
+  │                                                                                     │
+  │  AMAZON BRACELET:                                                                   │
+  │  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐                         │
+  │  │   GEMINI AI    │  │  OPENAI GPT    │  │  FIXED VALUES  │                         │
+  │  │   30 fields    │  │   7 fields     │  │   25 fields    │                         │
+  │  │                │  │                │  │                │                         │
+  │  │ • occasion1-5  │  │ • item_name    │  │ • brand_name   │                         │
+  │  │ • clasp_type   │  │ • bullet_pt1-5 │  │ • metal_type   │                         │
+  │  │ • chain_type   │  │ • description  │  │ • HSN          │                         │
+  │  │ • gem_type     │  │                │  │                │                         │
+  │  └────────────────┘  └────────────────┘  └────────────────┘                         │
+  │                                                                                     │
+  │  FLIPKART BRACELET:                                                                 │
+  │  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐                         │
+  │  │   GEMINI AI    │  │  OPENAI GPT    │  │  FIXED VALUES  │                         │
+  │  │   28 fields    │  │   1 field      │  │   22 fields    │                         │
+  │  │                │  │                │  │                │                         │
+  │  │ • Body Struct  │  │ • Description  │  │ • Brand        │                         │
+  │  │ • Clasp        │  │   (ONLY)       │  │ • Ideal For    │                         │
+  │  │ • Stretchable  │  │                │  │ • Plating      │                         │
+  │  │ • Tag/Charm    │  │                │  │                │                         │
+  │  └────────────────┘  └────────────────┘  └────────────────┘                         │
+  │                                                                                     │
+  │  MEESHO BRACELET:                                                                   │
+  │  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐                         │
+  │  │   GEMINI AI    │  │  OPENAI GPT    │  │  FIXED VALUES  │                         │
+  │  │   9 fields     │  │   2 fields     │  │   8 fields     │                         │
+  │  │                │  │                │  │                │                         │
+  │  │ • Base Metal   │  │ • Product Name │  │ • Brand Name   │                         │
+  │  │ • Closure      │  │ • Description  │  │ • GST %        │                         │
+  │  │ • Stone Type   │  │                │  │ • HSN ID       │                         │
+  │  └────────────────┘  └────────────────┘  └────────────────┘                         │
+  │                                                                                     │
+  └─────────────────────────────────────────────────────────────────────────────────────┘
+
+  ---
+  CODE LOCATIONS FOR THIS LOGIC
+  ┌──────────────────────────┬─────────────────┬───────────┐
+  │          Logic           │      File       │   Line    │
+  ├──────────────────────────┼─────────────────┼───────────┤
+  │ SKU Cache Check          │ img_to_csv.py   │ 987       │
+  ├──────────────────────────┼─────────────────┼───────────┤
+  │ Amazon Reuse Logic       │ img_to_csv.py   │ 992-1009  │
+  ├──────────────────────────┼─────────────────┼───────────┤
+  │ Flipkart/Shopsy Reuse    │ img_to_csv.py   │ 1010-1011 │
+  ├──────────────────────────┼─────────────────┼───────────┤
+  │ Meesho Reuse Logic       │ img_to_csv.py   │ 1012-1018 │
+  ├──────────────────────────┼─────────────────┼───────────┤
+  │ Store to Cache           │ json_storage.py │ 48        │
+  ├──────────────────────────┼─────────────────┼───────────┤
+  │ Fetch from Cache         │ json_storage.py │ 71        │
+  ├──────────────────────────┼─────────────────┼───────────┤
+  │ Necklace Amazon Fields   │ excel_fields.py │ 278       │
+  ├──────────────────────────┼─────────────────┼───────────┤
+  │ Necklace Flipkart Fields │ excel_fields.py │ 207       │
+  ├──────────────────────────┼─────────────────┼───────────┤
+  │ Necklace Meesho Fields   │ excel_fields.py │ 463       │
+  ├──────────────────────────┼─────────────────┼───────────┤
+  │ Bracelet Amazon Fields   │ excel_fields.py │ 112       │
+  ├──────────────────────────┼─────────────────┼───────────┤
+  │ Bracelet Flipkart Fields │ excel_fields.py │ 180       │
+  ├──────────────────────────┼─────────────────┼───────────┤
+  │ Bracelet Meesho Fields   │ excel_fields.py │ 488       │
+  └──────────────────────────┴─────────────────┴───────────┘

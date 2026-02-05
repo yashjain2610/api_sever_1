@@ -62,9 +62,6 @@ nul
 indexed_hashes.json
 int_hash_to_path.json
 
-# Documentation
-DOCUMENTATION/
-
 # Images
 *.jpg
 *.jpeg
@@ -78,7 +75,6 @@ DOCUMENTATION/
 
 # Misc files
 234\ image
-today.txt
 
 # Test images folder (local testing only)
 test_images/
