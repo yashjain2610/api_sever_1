@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 import json
 import google.generativeai as genai
-from typing import List,Dict,Any
+from typing import List, Dict, Any, Optional
 import requests
 import logging
 import uuid
@@ -526,7 +526,7 @@ async def generate_caption(
             # Step 4: Build response
             matches = []
             for _id, dist in results:
-                print(f"IP distance: {dist}")
+                print(f"[generate_caption] IP distance: {dist} (similarity: {(1-dist)*100:.2f}%)")
                 print()
                 if dist < 0.05:  # IP metric: 0.05 = ~95% similarity
                     path = id_to_path.get(str(_id), "unknown")
@@ -820,6 +820,7 @@ async def image_searh(
     # Step 4: Check for duplicates (IP metric: dist < 0.05 = ~95% similarity)
     matches = []
     for _id, dist in results:
+        print(f"[image_similarity_search] IP distance: {dist} (similarity: {(1-dist)*100:.2f}%)")
         if dist < 0.05:  # IP metric: 0.05 = ~95% similarity
             path = id_to_path.get(str(_id), "unknown")
             # Only count as duplicate if path is valid (not "unknown")
@@ -1606,16 +1607,20 @@ async def create_order(file: UploadFile = File(...)):
         "products_data": products_array
     } 
 
+# Default image types for earrings (skip type 3 dimension image)
+DEFAULT_EARRING_IMAGE_TYPES = [1, 2, 4, 5]  # White BG, Hand, Lifestyle, Model
+
 class ImageRequest(BaseModel):
     s3_urls: str
     product_type: str
-    num_images: int = 4  # Number of images to generate (default 4 for batch generation)
-    image_types: List[int] = None  # For earrings: [1,2,4,5] default - 1=White BG, 2=Hand, 4=Lifestyle, 5=Model (3=Dimension skipped by default)
-    height: str = None  # Required if 3 is in image_types (dimension image), e.g., "2.5 cm"
-    width: str = None   # Required if 3 is in image_types (dimension image), e.g., "1.8 cm"
 
-# Default image types for earrings (skip type 3 dimension image)
-DEFAULT_EARRING_IMAGE_TYPES = [1, 2, 4, 5]  # White BG, Hand, Lifestyle, Model
+    class Config:
+        schema_extra = {
+            "example": {
+                "s3_urls": "https://alyaimg.s3.amazonaws.com/your_image.jpg",
+                "product_type": "ear"
+            }
+        }
 
 def create_zip_from_s3_urls(image_urls, zip_filename):
     # Create an in-memory ZIP file
@@ -1679,56 +1684,34 @@ async def generate_images(request: ImageRequest):
 
     product_type = request.product_type[0:3].lower()
 
-    # Track image types for response (None if using old system)
+    # Track image types for response
     image_types_list = None
 
-    # For earrings, use the new catalog system with default types [1,2,4,5] if not specified
+    # For earrings, use batch-4 generation with types [1,2,4,5]
     if product_type == "ear":
-        # Use provided image_types or default to [1,2,4,5] (skip type 3 dimension)
-        image_types = request.image_types if request.image_types is not None else DEFAULT_EARRING_IMAGE_TYPES
+        # Always use default types [1,2,4,5] (skip type 3 dimension)
+        image_types = DEFAULT_EARRING_IMAGE_TYPES
 
-    if product_type == "ear" and image_types is not None:
-        # Validate all image_types
-        for img_type in image_types:
-            if img_type not in EARRING_IMAGE_TYPES:
-                return JSONResponse(
-                    status_code=400,
-                    content={"error": f"Invalid image_type: {img_type}. Must be 1-5."}
-                )
-
-        # For dimension image (type 3), validate height and width
-        if 3 in image_types:
-            if not request.height or not request.width:
-                return JSONResponse(
-                    status_code=400,
-                    content={"error": "Dimension image (type 3) requires both 'height' and 'width' parameters."}
-                )
-
-        # Build prompt list from all requested image types
+        # Build prompt list from image types
         prompt_list = []
         image_types_list = []
         for img_type in image_types:
-            prompt = get_earring_prompt(img_type, request.height, request.width)
+            prompt = get_earring_prompt(img_type, None, None)
             prompt_list.append(prompt)
             image_types_list.append({
                 "type": img_type,
                 "name": EARRING_IMAGE_TYPES[img_type]["name"]
             })
     else:
-        # Fallback to original behavior for other product types or when image_types not specified
+        # Fallback to original behavior for bracelet/necklace (4 images)
         prompt_map = {
-            "ear": [white_bgd_prompt, multicolor_1_prompt, multicolor_2_prompt, props_img_prompt, hand_prompt],
-            "bra": [white_bgd_bracelet_prompt, multicolor_1_bracelet_prompt, multicolor_2_bracelet_prompt, props_img_bracelet_prompt, hand_bracelet_prompt],
-            "nec": [white_bgd_necklace_prompt, multicolor_1_necklace_prompt, multicolor_2_necklace_prompt, props_img_necklace_prompt, hand_necklace_prompt, neck_necklace_prompt]
+            "bra": [white_bgd_bracelet_prompt, multicolor_1_bracelet_prompt, multicolor_2_bracelet_prompt, hand_bracelet_prompt],
+            "nec": [white_bgd_necklace_prompt, multicolor_1_necklace_prompt, multicolor_2_necklace_prompt, hand_necklace_prompt]
         }
 
         prompt_list = prompt_map.get(product_type)
         if not prompt_list:
-            return JSONResponse(status_code=400, content={"error": "Invalid product_type"})
-
-        # Limit number of images to generate
-        num_images = min(request.num_images, len(prompt_list))
-        prompt_list = prompt_list[:num_images]
+            return JSONResponse(status_code=400, content={"error": "Invalid product_type. Use 'ear', 'bra', or 'nec'"})
 
     results = {}
     url = request.s3_urls
