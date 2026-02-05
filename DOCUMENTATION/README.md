@@ -76,12 +76,23 @@ Welcome! Visual workflow guides and comprehensive documentation for the jewelry 
 
 **⏱️ Use when writing tests**
 
+### **6. Recent Changes - February 2026** (Latest Updates)
+[**06_RECENT_CHANGES_FEB2026.md**](06_RECENT_CHANGES_FEB2026.md)
+- IP Metric for duplicate detection
+- Batch-4 image generation for earrings
+- Parallel execution (4x faster)
+- Rate limit handling with retry
+- Dual S3 bucket support (alya/blysk)
+
+**⏱️ 10 minutes to understand all recent changes**
+
 ---
 
 ## ⚡ Quick Navigation
 
 | Task | Go To | Time |
 |------|-------|------|
+| **See recent changes (Feb 2026)** | [Recent Changes](06_RECENT_CHANGES_FEB2026.md) | 10 min |
 | **Understand workflows visually** | [Workflow Diagrams](00_PROJECT_FLOW_DIAGRAMS.md) | 10 min |
 | **Understand full architecture** | [Project Structure](01_PROJECT_STRUCTURE_GUIDE.md) | 15 min |
 | **Learn how endpoints work** | [Code Explanation](02_CODE_EXPLANATION.md) | 20 min |
@@ -89,7 +100,7 @@ Welcome! Visual workflow guides and comprehensive documentation for the jewelry 
 | **Fix a bug** | [Debugging](04_DEBUGGING_CHECKLIST.md) | 10 min |
 | **Write tests** | [Testing Guide](05_TESTING_GUIDE.md) | 15 min |
 | **Change AI model** | [Modifications - Section 2](03_FILE_MODIFICATION_GUIDE.md) | 5 min |
-| **Debug Gemini API** | [Debugging - Gemini Issues](04_DEBUGGING_CHECKLIST.md) | 5 min |
+| **Debug rate limits** | [Recent Changes - Rate Limit](06_RECENT_CHANGES_FEB2026.md#4-rate-limit-handling) | 5 min |
 
 ### By Component
 
@@ -150,9 +161,11 @@ DOCUMENTATION/
 ├── 02_CODE_EXPLANATION.md                      (905 lines)
 ├── 03_FILE_MODIFICATION_GUIDE.md               (797 lines)
 ├── 04_DEBUGGING_CHECKLIST.md                   (961 lines)
-└── 05_TESTING_GUIDE.md                         (1292 lines)
+├── 05_TESTING_GUIDE.md                         (1292 lines)
+├── 06_RECENT_CHANGES_FEB2026.md                (NEW - Feb 2026 updates)
+└── api_docs.pdf                                (API documentation PDF)
 
-Total: 7,000+ lines of comprehensive documentation
+Total: 7,500+ lines of comprehensive documentation
 ```
 
 ---
@@ -181,9 +194,10 @@ User ↔ Streamlit UI ↔ FastAPI Server ↔ AI Services (Gemini, GPT-4)
 |-------|-----------|
 | **Frontend** | Streamlit |
 | **API** | FastAPI (Python) |
-| **AI** | Google Gemini 2.0, GPT-4 Vision, DALL-E |
-| **Storage** | AWS S3 |
-| **Vectors** | Milvus, ChromaDB |
+| **AI** | Google Gemini 2.5 Flash, GPT-Image 1.5 |
+| **Storage** | AWS S3 (dual bucket: alyaimg, blyskimg) |
+| **Vectors** | Milvus/Zilliz (IP metric, HNSW index) |
+| **Embeddings** | CLIP (openai/clip-vit-base-patch32) |
 | **Database** | JSON (local), PostgreSQL (optional) |
 
 ---
@@ -368,9 +382,17 @@ See [01 - PROJECT_STRUCTURE_GUIDE.md](#-architecture-overview):
 ## 📝 Document Version
 
 - **Created**: January 2025
-- **Last Updated**: January 2025
-- **Documentation Version**: 1.0
+- **Last Updated**: February 2026
+- **Documentation Version**: 2.0
 - **Compatible with**: Python 3.8+, FastAPI 0.95+
+
+### Recent Updates (February 2026)
+- Added IP metric for duplicate detection
+- Added batch-4 image generation for earrings
+- Added parallel execution (4x faster)
+- Added rate limit handling with retry logic
+- Added dual S3 bucket support (alya/blysk)
+- See [06_RECENT_CHANGES_FEB2026.md](06_RECENT_CHANGES_FEB2026.md) for details
 
 ---
 
